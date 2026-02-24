@@ -1,0 +1,203 @@
+{
+  "schemaVersion": "1.0.0",
+  "projectStateVersion": 5,
+  "summary": "Complete website with admin system for Bevinamarada Ayurvedic Store - an Ayurvedic pharmacy management system with customer-facing website and comprehensive admin dashboard for stock, income tracking, and business management",
+  "architectural_notes": [
+    "Mobile-first responsive design requirement - admin must manage from mobile",
+    "Two user roles: Admin (full access with login) and Customer (view-only, no login)",
+    "Ayurvedic theme: green/brown colors, Neem (Bevinamarada) inspiration",
+    "Performance: fast loading, SEO friendly",
+    "Security: secure admin panel",
+    "Future extensibility: online payment, GST reports, expiry tracking, supplier management, Kannada+English"
+  ],
+  "known_issues": [],
+  "isFixRequest": false,
+  "existing_features": [
+    {
+      "id": "feature-implement-secure-admin-authentication-system-with-username-and-password-login-that-restricts-dashboard-access-to-authenticated-admin-only",
+      "title": "Implement secure admin authentication system with username and password login that restricts dashboard access to authenticated admin only",
+      "reqIds": [
+        "REQ-1"
+      ],
+      "version": 1
+    },
+    {
+      "id": "feature-create-admin-dashboard-overview-displaying-today-s-income-monthly-income-total-income-total-products-count-out-of-stock-products-count-and-total-enquiries-count-with-clear-visual-presentation",
+      "title": "Create admin dashboard overview displaying today's income, monthly income, total income, total products count, out-of-stock products count, and total enquiries count with clear visual presentation",
+      "reqIds": [
+        "REQ-2"
+      ],
+      "version": 1
+    },
+    {
+      "id": "feature-build-product-management-system-allowing-admin-to-add-edit-and-delete-products-with-fields-for-product-name-category-price-and-stock-quantity-with-automatic-in-stock-out-of-stock-status-based-on-quantity",
+      "title": "Build product management system allowing admin to add, edit, and delete products with fields for product name, category, price, and stock quantity, with automatic in-stock/out-of-stock status based on quantity",
+      "reqIds": [
+        "REQ-3"
+      ],
+      "version": 1
+    },
+    {
+      "id": "feature-implement-sales-and-income-reporting-system-with-daily-sales-report-monthly-sales-report-and-product-wise-sales-report-accessible-from-admin-dashboard",
+      "title": "Implement sales and income reporting system with daily sales report, monthly sales report, and product-wise sales report accessible from admin dashboard",
+      "reqIds": [
+        "REQ-5"
+      ],
+      "version": 1
+    },
+    {
+      "id": "feature-create-customer-data-management-system-to-track-customer-name-phone-number-order-enquiry-history-and-identify-repeat-customers",
+      "title": "Create customer data management system to track customer name, phone number, order/enquiry history, and identify repeat customers",
+      "reqIds": [
+        "REQ-6"
+      ],
+      "version": 1
+    },
+    {
+      "id": "feature-implement-stock-alert-system-that-warns-admin-when-product-quantity-falls-below-configurable-threshold-default-5-units",
+      "title": "Implement stock alert system that warns admin when product quantity falls below configurable threshold (default 5 units)",
+      "reqIds": [
+        "REQ-7"
+      ],
+      "version": 1
+    },
+    {
+      "id": "feature-design-customer-home-page-with-ayurvedic-theme-featuring-store-introduction-trust-message-call-button-and-whatsapp-button-using-natural-green-brown-color-palette-inspired-by-neem-bevinamarada",
+      "title": "Design customer home page with Ayurvedic theme featuring store introduction, trust message, call button, and WhatsApp button using natural green/brown color palette inspired by Neem (Bevinamarada)",
+      "reqIds": [
+        "REQ-8"
+      ],
+      "version": 1
+    },
+    {
+      "id": "feature-create-about-us-page-displaying-owner-details-store-history-and-explanation-of-authentic-ayurveda-practices",
+      "title": "Create About Us page displaying owner details, store history, and explanation of authentic Ayurveda practices",
+      "reqIds": [
+        "REQ-9"
+      ],
+      "version": 1
+    },
+    {
+      "id": "feature-build-customer-products-page-displaying-product-list-with-images-price-short-description-and-clear-in-stock-or-out-of-stock-labels",
+      "title": "Build customer products page displaying product list with images, price, short description, and clear 'In Stock' or 'Out of Stock' labels",
+      "reqIds": [
+        "REQ-10"
+      ],
+      "version": 1
+    },
+    {
+      "id": "feature-create-contact-page-with-phone-number-whatsapp-chat-link-store-address-google-map-embed-and-enquiry-form-for-customer-submissions",
+      "title": "Create contact page with phone number, WhatsApp chat link, store address, Google map embed, and enquiry form for customer submissions",
+      "reqIds": [
+        "REQ-11"
+      ],
+      "version": 1
+    },
+    {
+      "id": "feature-ensure-entire-website-is-mobile-first-and-fully-responsive-with-admin-dashboard-optimized-for-mobile-business-management",
+      "title": "Ensure entire website is mobile-first and fully responsive, with admin dashboard optimized for mobile business management",
+      "reqIds": [
+        "REQ-12"
+      ],
+      "version": 1
+    },
+    {
+      "id": "feature-implement-product-image-upload-capability-in-admin-product-management-storing-images-as-static-assets-and-displaying-them-on-customer-products-page",
+      "title": "Implement product image upload capability in admin product management, storing images as static assets and displaying them on customer products page",
+      "reqIds": [
+        "REQ-13"
+      ],
+      "version": 1
+    },
+    {
+      "id": "feature-apply-a-cohesive-ayurvedic-visual-design-system-across-the-entire-customer-website-using-natural-green-and-brown-tones-organic-shapes-and-typography-that-evokes-traditional-wellness-and-trust-with-a-clean-layout-optimized-for-product-discovery-and-enquiries",
+      "title": "Apply a cohesive Ayurvedic visual design system across the entire customer website using natural green and brown tones, organic shapes, and typography that evokes traditional wellness and trust, with a clean layout optimized for product discovery and enquiries",
+      "reqIds": [
+        "REQ-14"
+      ],
+      "version": 1
+    },
+    {
+      "id": "feature-apply-bold-font-weight-to-the-login-button-text-in-the-admin-authentication-screen-at-xpath-html-1-body-1-div-1-div-1-main-1-div-1-section-1-div-1-div-1-div-2-a-1-button-1",
+      "title": "Apply bold font weight to the login button text in the admin authentication screen at XPath /html[1]/body[1]/div[1]/div[1]/main[1]/div[1]/section[1]/div[1]/div[1]/div[2]/a[1]/button[1]",
+      "reqIds": [
+        "REQ-15"
+      ],
+      "version": 1
+    }
+  ],
+  "new_feature_requests": [
+    {
+      "id": "AR-1",
+      "summary": "Secure admin login system with username/password authentication",
+      "reqIds": [],
+      "status": "pending"
+    },
+    {
+      "id": "AR-2",
+      "summary": "Admin dashboard with today's/monthly/total income, product count, out-of-stock count, and enquiries overview",
+      "reqIds": [],
+      "status": "pending"
+    },
+    {
+      "id": "AR-3",
+      "summary": "Product management system (add/edit/delete, name/category/price/stock quantity, auto in-stock/out-of-stock status)",
+      "reqIds": [],
+      "status": "pending"
+    },
+    {
+      "id": "AR-4",
+      "summary": "Sales & income reporting (daily/monthly/product-wise reports, optional Excel/PDF download)",
+      "reqIds": [],
+      "status": "pending"
+    },
+    {
+      "id": "AR-5",
+      "summary": "Customer data management (name/phone/order history/repeat customers)",
+      "reqIds": [],
+      "status": "pending"
+    },
+    {
+      "id": "AR-6",
+      "summary": "Stock alert system for low inventory (configurable threshold, e.g., <5 units)",
+      "reqIds": [],
+      "status": "pending"
+    },
+    {
+      "id": "AR-7",
+      "summary": "Customer home page with Ayurvedic theme, store intro, trust message, call/WhatsApp buttons",
+      "reqIds": [],
+      "status": "pending"
+    },
+    {
+      "id": "AR-8",
+      "summary": "About Us page with owner details, store history, Ayurveda explanation",
+      "reqIds": [],
+      "status": "pending"
+    },
+    {
+      "id": "AR-9",
+      "summary": "Products page with images, price, description, in-stock/out-of-stock labels",
+      "reqIds": [],
+      "status": "pending"
+    },
+    {
+      "id": "AR-10",
+      "summary": "Contact page with phone/WhatsApp/address/Google map/enquiry form",
+      "reqIds": [],
+      "status": "pending"
+    },
+    {
+      "id": "AR-14",
+      "summary": "Add option in product management to hide out-of-stock products from customer view while keeping them in admin inventory",
+      "reqIds": [
+        "REQ-4"
+      ],
+      "status": "pending"
+    }
+  ],
+  "gameProjectType": "none",
+  "projectName": "Bevinamarada Ayurvedic Store",
+  "clarification_mode": "instant",
+  "clarification_rounds": 0
+}

@@ -1,0 +1,38 @@
+{
+  "kind": "build_request",
+  "title": "Make login button text bold in admin login screen",
+  "priority": "normal",
+  "requirements": [
+    {
+      "id": "REQ-15",
+      "text": "Apply bold font weight to the login button text in the admin authentication screen at XPath /html[1]/body[1]/div[1]/div[1]/main[1]/div[1]/section[1]/div[1]/div[1]/div[2]/a[1]/button[1]",
+      "target": "frontend",
+      "source": {
+        "messageIds": [
+          "msg-current"
+        ],
+        "quotes": [
+          "Login button with bold design text"
+        ]
+      },
+      "acceptanceCriteria": [
+        "The login button text displays with bold font weight (font-weight-bold or font-weight-700)",
+        "The styling change applies only to the selected login button element",
+        "The button remains visually consistent with the Ayurvedic design theme"
+      ]
+    }
+  ],
+  "constraints": [
+    "Only modify the login button styling; do not change authentication logic or other UI elements",
+    "Maintain the existing Ayurvedic theme color palette and design consistency"
+  ],
+  "nonGoals": [
+    "Changing the authentication flow or login functionality",
+    "Modifying other buttons or text elements not specified",
+    "Altering the store banner background mentioned in earlier messages"
+  ],
+  "imageRequirements": {
+    "required": [],
+    "edits": []
+  }
+}

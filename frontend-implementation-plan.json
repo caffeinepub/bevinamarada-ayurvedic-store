@@ -1,0 +1,23 @@
+{
+  "kind": "implementation_plan",
+  "version": "1.0",
+  "title": "Make login button text bold in admin login screen",
+  "requirements": [
+    {
+      "id": "REQ-15",
+      "summary": "Apply bold font weight to the login button text in the admin authentication screen",
+      "acceptanceCriteria": [
+        "The login button text displays with bold font weight (font-weight-bold or font-weight-700)",
+        "The styling change applies only to the selected login button element",
+        "The button remains visually consistent with the Ayurvedic design theme"
+      ],
+      "file_operations": [
+        {
+          "path": "frontend/src/components/AdminGuard.tsx",
+          "operation": "modify",
+          "description": "Add font-bold or font-weight-700 class to the login button element in the unauthenticated screen. The button is located in the section that prompts users to login with Internet Identity. Apply the bold styling to maintain consistency with the Ayurvedic theme while ensuring the text weight change is visible."
+        }
+      ]
+    }
+  ]
+}

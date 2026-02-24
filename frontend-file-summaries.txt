@@ -1,0 +1,19 @@
+{
+  "frontend/src/App.tsx": "Main application component with TanStack Router setup, defining all customer and admin routes with proper layout nesting and theme provider integration.",
+  "frontend/src/hooks/useQueries.ts": "Comprehensive React Query hooks for all backend operations including products, customers, enquiries, dashboard, sales reports, and user profiles with proper error handling and cache invalidation.",
+  "frontend/src/components/Layout.tsx": "Customer-facing layout component with responsive navigation, Ayurvedic-themed header with neem leaf logo, mobile menu, and footer with attribution.",
+  "frontend/src/components/AdminLayout.tsx": "Admin panel layout with responsive sidebar navigation, mobile-optimized menu, and logout functionality.",
+  "frontend/src/components/AdminGuard.tsx": "Authentication guard component that handles login flow with bold text on the login button, profile setup for new users, admin role verification, and access denial screens.",
+  "frontend/src/components/ProductForm.tsx": "Reusable product form dialog for adding and editing products with all required fields, using ProductCategory enum values correctly for type safety.",
+  "frontend/src/pages/Home.tsx": "Customer home page with hero section featuring neem background, trust indicators, and call-to-action buttons for phone and WhatsApp.",
+  "frontend/src/pages/Products.tsx": "Customer products page displaying available products in a responsive grid with stock status badges and enquiry buttons.",
+  "frontend/src/pages/AboutUs.tsx": "About page with store story, Ayurvedic values, and explanation of Ayurveda with traditional imagery.",
+  "frontend/src/pages/Contact.tsx": "Contact page with store information, Google Maps embed, and enquiry form submission.",
+  "frontend/src/pages/AdminDashboard.tsx": "Admin dashboard displaying key metrics (income, products, enquiries) with low stock alerts.",
+  "frontend/src/pages/ProductManagement.tsx": "Admin product management page with table view, add/edit/delete functionality, and visibility toggle.",
+  "frontend/src/pages/CustomerManagement.tsx": "Admin customer management page displaying customer list with repeat customer identification.",
+  "frontend/src/pages/EnquiryManagement.tsx": "Admin enquiry management with tabbed view for all enquiries and today's enquiries.",
+  "frontend/src/pages/SalesReports.tsx": "Admin sales reports page showing daily, monthly, and product-wise sales analytics.",
+  "frontend/src/index.css": "Global styles with Ayurvedic color system using OKLCH values for sage green and earth brown tones in light and dark modes.",
+  "frontend/tailwind.config.js": "Tailwind configuration extended with Ayurvedic color palette, natural shadows, and custom font stack."
+}
