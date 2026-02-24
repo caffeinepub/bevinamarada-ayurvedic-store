@@ -19,56 +19,40 @@ export const _CaffeineStorageRefillResult = IDL.Record({
   'success' : IDL.Opt(IDL.Bool),
   'topped_up_amount' : IDL.Opt(IDL.Nat),
 });
-export const ProductCategory = IDL.Variant({
-  'clothing' : IDL.Null,
-  'food' : IDL.Null,
-  'toys' : IDL.Null,
-  'furniture' : IDL.Null,
-  'electronics' : IDL.Null,
-});
+export const ExternalBlob = IDL.Vec(IDL.Nat8);
 export const UserRole = IDL.Variant({
   'admin' : IDL.Null,
   'user' : IDL.Null,
   'guest' : IDL.Null,
 });
-export const AdminDashboard = IDL.Record({
-  'totalProducts' : IDL.Nat,
-  'outOfStockProducts' : IDL.Nat,
+export const StockItem = IDL.Record({
+  'id' : IDL.Nat,
+  'lowStockThreshold' : IDL.Nat,
+  'name' : IDL.Text,
+  'isLowStock' : IDL.Bool,
+  'quantity' : IDL.Nat,
+  'category' : IDL.Text,
+  'image' : IDL.Opt(ExternalBlob),
+  'unitPrice' : IDL.Nat,
+  'isTrending' : IDL.Bool,
+});
+export const UserProfile = IDL.Record({ 'name' : IDL.Text });
+export const IncomeSummary = IDL.Record({
   'todaysIncome' : IDL.Nat,
   'totalIncome' : IDL.Nat,
-  'totalEnquiries' : IDL.Nat,
   'monthlyIncome' : IDL.Nat,
 });
-export const Time = IDL.Int;
-export const Enquiry = IDL.Record({
-  'id' : IDL.Nat,
-  'name' : IDL.Text,
-  'createdAt' : Time,
-  'message' : IDL.Text,
-  'phone' : IDL.Text,
+export const RevenueOverview = IDL.Record({
+  'productBreakdown' : IDL.Vec(IDL.Tuple(IDL.Nat, IDL.Nat)),
+  'totalRevenue' : IDL.Nat,
+  'monthlyRevenue' : IDL.Nat,
 });
-export const Product = IDL.Record({
+export const Sale = IDL.Record({
   'id' : IDL.Nat,
-  'inStock' : IDL.Bool,
-  'name' : IDL.Text,
-  'imageUrl' : IDL.Opt(IDL.Text),
-  'isHidden' : IDL.Bool,
+  'stockItemId' : IDL.Nat,
+  'timestamp' : IDL.Int,
   'quantity' : IDL.Nat,
-  'category' : ProductCategory,
-  'price' : IDL.Nat,
-});
-export const UserProfile = IDL.Record({ 'name' : IDL.Text, 'role' : IDL.Text });
-export const Customer = IDL.Record({
-  'id' : IDL.Nat,
-  'name' : IDL.Text,
-  'isRepeatCustomer' : IDL.Bool,
-  'phone' : IDL.Text,
-});
-export const SalesReport = IDL.Record({
-  'monthlySales' : IDL.Nat,
-  'productWiseSales' : IDL.Vec(IDL.Tuple(IDL.Nat, IDL.Nat)),
-  'dailySales' : IDL.Nat,
-  'totalSales' : IDL.Nat,
+  'totalPrice' : IDL.Nat,
 });
 
 export const idlService = IDL.Service({
@@ -99,39 +83,43 @@ export const idlService = IDL.Service({
     ),
   '_caffeineStorageUpdateGatewayPrincipals' : IDL.Func([], [], []),
   '_initializeAccessControlWithSecret' : IDL.Func([IDL.Text], [], []),
-  'addCustomer' : IDL.Func([IDL.Text, IDL.Text], [IDL.Nat], []),
-  'addEnquiry' : IDL.Func([IDL.Text, IDL.Text, IDL.Text], [IDL.Nat], []),
-  'addProduct' : IDL.Func(
-      [IDL.Text, ProductCategory, IDL.Nat, IDL.Nat, IDL.Opt(IDL.Text)],
+  'addSale' : IDL.Func([IDL.Nat, IDL.Nat], [IDL.Nat], []),
+  'addStockItem' : IDL.Func(
+      [IDL.Text, IDL.Text, IDL.Nat, IDL.Nat, IDL.Nat, IDL.Opt(ExternalBlob)],
       [IDL.Nat],
       [],
     ),
   'assignCallerUserRole' : IDL.Func([IDL.Principal, UserRole], [], []),
-  'deleteProduct' : IDL.Func([IDL.Nat], [], []),
-  'editProduct' : IDL.Func(
-      [IDL.Nat, IDL.Text, ProductCategory, IDL.Nat, IDL.Nat, IDL.Opt(IDL.Text)],
-      [],
-      [],
-    ),
-  'getAdminDashboard' : IDL.Func([], [AdminDashboard], ['query']),
-  'getAllEnquiries' : IDL.Func([], [IDL.Vec(Enquiry)], ['query']),
-  'getAllProducts' : IDL.Func([], [IDL.Vec(Product)], ['query']),
+  'deleteStockItem' : IDL.Func([IDL.Nat], [], []),
+  'getAllStockItems' : IDL.Func([], [IDL.Vec(StockItem)], ['query']),
   'getCallerUserProfile' : IDL.Func([], [IDL.Opt(UserProfile)], ['query']),
   'getCallerUserRole' : IDL.Func([], [UserRole], ['query']),
-  'getCustomers' : IDL.Func([], [IDL.Vec(Customer)], ['query']),
-  'getMonthlySalesReport' : IDL.Func([], [SalesReport], ['query']),
-  'getProduct' : IDL.Func([IDL.Nat], [IDL.Opt(Product)], ['query']),
-  'getProducts' : IDL.Func([], [IDL.Vec(Product)], ['query']),
-  'getTodaysEnquiries' : IDL.Func([], [IDL.Vec(Enquiry)], ['query']),
+  'getIncomeSummary' : IDL.Func([], [IncomeSummary], ['query']),
+  'getLowStockItems' : IDL.Func([], [IDL.Vec(StockItem)], ['query']),
+  'getRevenueOverview' : IDL.Func([], [RevenueOverview], ['query']),
+  'getTodaysSales' : IDL.Func([], [IDL.Vec(Sale)], ['query']),
+  'getTrendingStockItems' : IDL.Func([], [IDL.Vec(StockItem)], ['query']),
   'getUserProfile' : IDL.Func(
       [IDL.Principal],
       [IDL.Opt(UserProfile)],
       ['query'],
     ),
-  'hideProduct' : IDL.Func([IDL.Nat], [], []),
   'isCallerAdmin' : IDL.Func([], [IDL.Bool], ['query']),
+  'markTrendingStockItem' : IDL.Func([IDL.Nat, IDL.Bool], [], []),
   'saveCallerUserProfile' : IDL.Func([UserProfile], [], []),
-  'updateRepeatCustomerStatus' : IDL.Func([IDL.Nat], [], []),
+  'updateStockItem' : IDL.Func(
+      [
+        IDL.Nat,
+        IDL.Text,
+        IDL.Text,
+        IDL.Nat,
+        IDL.Nat,
+        IDL.Nat,
+        IDL.Opt(ExternalBlob),
+      ],
+      [],
+      [],
+    ),
 });
 
 export const idlInitArgs = [];
@@ -148,56 +136,40 @@ export const idlFactory = ({ IDL }) => {
     'success' : IDL.Opt(IDL.Bool),
     'topped_up_amount' : IDL.Opt(IDL.Nat),
   });
-  const ProductCategory = IDL.Variant({
-    'clothing' : IDL.Null,
-    'food' : IDL.Null,
-    'toys' : IDL.Null,
-    'furniture' : IDL.Null,
-    'electronics' : IDL.Null,
-  });
+  const ExternalBlob = IDL.Vec(IDL.Nat8);
   const UserRole = IDL.Variant({
     'admin' : IDL.Null,
     'user' : IDL.Null,
     'guest' : IDL.Null,
   });
-  const AdminDashboard = IDL.Record({
-    'totalProducts' : IDL.Nat,
-    'outOfStockProducts' : IDL.Nat,
+  const StockItem = IDL.Record({
+    'id' : IDL.Nat,
+    'lowStockThreshold' : IDL.Nat,
+    'name' : IDL.Text,
+    'isLowStock' : IDL.Bool,
+    'quantity' : IDL.Nat,
+    'category' : IDL.Text,
+    'image' : IDL.Opt(ExternalBlob),
+    'unitPrice' : IDL.Nat,
+    'isTrending' : IDL.Bool,
+  });
+  const UserProfile = IDL.Record({ 'name' : IDL.Text });
+  const IncomeSummary = IDL.Record({
     'todaysIncome' : IDL.Nat,
     'totalIncome' : IDL.Nat,
-    'totalEnquiries' : IDL.Nat,
     'monthlyIncome' : IDL.Nat,
   });
-  const Time = IDL.Int;
-  const Enquiry = IDL.Record({
-    'id' : IDL.Nat,
-    'name' : IDL.Text,
-    'createdAt' : Time,
-    'message' : IDL.Text,
-    'phone' : IDL.Text,
+  const RevenueOverview = IDL.Record({
+    'productBreakdown' : IDL.Vec(IDL.Tuple(IDL.Nat, IDL.Nat)),
+    'totalRevenue' : IDL.Nat,
+    'monthlyRevenue' : IDL.Nat,
   });
-  const Product = IDL.Record({
+  const Sale = IDL.Record({
     'id' : IDL.Nat,
-    'inStock' : IDL.Bool,
-    'name' : IDL.Text,
-    'imageUrl' : IDL.Opt(IDL.Text),
-    'isHidden' : IDL.Bool,
+    'stockItemId' : IDL.Nat,
+    'timestamp' : IDL.Int,
     'quantity' : IDL.Nat,
-    'category' : ProductCategory,
-    'price' : IDL.Nat,
-  });
-  const UserProfile = IDL.Record({ 'name' : IDL.Text, 'role' : IDL.Text });
-  const Customer = IDL.Record({
-    'id' : IDL.Nat,
-    'name' : IDL.Text,
-    'isRepeatCustomer' : IDL.Bool,
-    'phone' : IDL.Text,
-  });
-  const SalesReport = IDL.Record({
-    'monthlySales' : IDL.Nat,
-    'productWiseSales' : IDL.Vec(IDL.Tuple(IDL.Nat, IDL.Nat)),
-    'dailySales' : IDL.Nat,
-    'totalSales' : IDL.Nat,
+    'totalPrice' : IDL.Nat,
   });
   
   return IDL.Service({
@@ -228,46 +200,43 @@ export const idlFactory = ({ IDL }) => {
       ),
     '_caffeineStorageUpdateGatewayPrincipals' : IDL.Func([], [], []),
     '_initializeAccessControlWithSecret' : IDL.Func([IDL.Text], [], []),
-    'addCustomer' : IDL.Func([IDL.Text, IDL.Text], [IDL.Nat], []),
-    'addEnquiry' : IDL.Func([IDL.Text, IDL.Text, IDL.Text], [IDL.Nat], []),
-    'addProduct' : IDL.Func(
-        [IDL.Text, ProductCategory, IDL.Nat, IDL.Nat, IDL.Opt(IDL.Text)],
+    'addSale' : IDL.Func([IDL.Nat, IDL.Nat], [IDL.Nat], []),
+    'addStockItem' : IDL.Func(
+        [IDL.Text, IDL.Text, IDL.Nat, IDL.Nat, IDL.Nat, IDL.Opt(ExternalBlob)],
         [IDL.Nat],
         [],
       ),
     'assignCallerUserRole' : IDL.Func([IDL.Principal, UserRole], [], []),
-    'deleteProduct' : IDL.Func([IDL.Nat], [], []),
-    'editProduct' : IDL.Func(
-        [
-          IDL.Nat,
-          IDL.Text,
-          ProductCategory,
-          IDL.Nat,
-          IDL.Nat,
-          IDL.Opt(IDL.Text),
-        ],
-        [],
-        [],
-      ),
-    'getAdminDashboard' : IDL.Func([], [AdminDashboard], ['query']),
-    'getAllEnquiries' : IDL.Func([], [IDL.Vec(Enquiry)], ['query']),
-    'getAllProducts' : IDL.Func([], [IDL.Vec(Product)], ['query']),
+    'deleteStockItem' : IDL.Func([IDL.Nat], [], []),
+    'getAllStockItems' : IDL.Func([], [IDL.Vec(StockItem)], ['query']),
     'getCallerUserProfile' : IDL.Func([], [IDL.Opt(UserProfile)], ['query']),
     'getCallerUserRole' : IDL.Func([], [UserRole], ['query']),
-    'getCustomers' : IDL.Func([], [IDL.Vec(Customer)], ['query']),
-    'getMonthlySalesReport' : IDL.Func([], [SalesReport], ['query']),
-    'getProduct' : IDL.Func([IDL.Nat], [IDL.Opt(Product)], ['query']),
-    'getProducts' : IDL.Func([], [IDL.Vec(Product)], ['query']),
-    'getTodaysEnquiries' : IDL.Func([], [IDL.Vec(Enquiry)], ['query']),
+    'getIncomeSummary' : IDL.Func([], [IncomeSummary], ['query']),
+    'getLowStockItems' : IDL.Func([], [IDL.Vec(StockItem)], ['query']),
+    'getRevenueOverview' : IDL.Func([], [RevenueOverview], ['query']),
+    'getTodaysSales' : IDL.Func([], [IDL.Vec(Sale)], ['query']),
+    'getTrendingStockItems' : IDL.Func([], [IDL.Vec(StockItem)], ['query']),
     'getUserProfile' : IDL.Func(
         [IDL.Principal],
         [IDL.Opt(UserProfile)],
         ['query'],
       ),
-    'hideProduct' : IDL.Func([IDL.Nat], [], []),
     'isCallerAdmin' : IDL.Func([], [IDL.Bool], ['query']),
+    'markTrendingStockItem' : IDL.Func([IDL.Nat, IDL.Bool], [], []),
     'saveCallerUserProfile' : IDL.Func([UserProfile], [], []),
-    'updateRepeatCustomerStatus' : IDL.Func([IDL.Nat], [], []),
+    'updateStockItem' : IDL.Func(
+        [
+          IDL.Nat,
+          IDL.Text,
+          IDL.Text,
+          IDL.Nat,
+          IDL.Nat,
+          IDL.Nat,
+          IDL.Opt(ExternalBlob),
+        ],
+        [],
+        [],
+      ),
   });
 };
 

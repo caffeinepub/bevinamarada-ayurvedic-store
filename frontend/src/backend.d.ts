@@ -7,54 +7,43 @@ export interface None {
     __kind__: "None";
 }
 export type Option<T> = Some<T> | None;
-export interface Product {
-    id: bigint;
-    inStock: boolean;
-    name: string;
-    imageUrl?: string;
-    isHidden: boolean;
-    quantity: bigint;
-    category: ProductCategory;
-    price: bigint;
+export class ExternalBlob {
+    getBytes(): Promise<Uint8Array<ArrayBuffer>>;
+    getDirectURL(): string;
+    static fromURL(url: string): ExternalBlob;
+    static fromBytes(blob: Uint8Array<ArrayBuffer>): ExternalBlob;
+    withUploadProgress(onProgress: (percentage: number) => void): ExternalBlob;
 }
-export interface Customer {
-    id: bigint;
-    name: string;
-    isRepeatCustomer: boolean;
-    phone: string;
-}
-export type Time = bigint;
-export interface SalesReport {
-    monthlySales: bigint;
-    productWiseSales: Array<[bigint, bigint]>;
-    dailySales: bigint;
-    totalSales: bigint;
-}
-export interface AdminDashboard {
-    totalProducts: bigint;
-    outOfStockProducts: bigint;
+export interface IncomeSummary {
     todaysIncome: bigint;
     totalIncome: bigint;
-    totalEnquiries: bigint;
     monthlyIncome: bigint;
 }
-export interface Enquiry {
+export interface StockItem {
     id: bigint;
+    lowStockThreshold: bigint;
     name: string;
-    createdAt: Time;
-    message: string;
-    phone: string;
+    isLowStock: boolean;
+    quantity: bigint;
+    category: string;
+    image?: ExternalBlob;
+    unitPrice: bigint;
+    isTrending: boolean;
+}
+export interface Sale {
+    id: bigint;
+    stockItemId: bigint;
+    timestamp: bigint;
+    quantity: bigint;
+    totalPrice: bigint;
+}
+export interface RevenueOverview {
+    productBreakdown: Array<[bigint, bigint]>;
+    totalRevenue: bigint;
+    monthlyRevenue: bigint;
 }
 export interface UserProfile {
     name: string;
-    role: string;
-}
-export enum ProductCategory {
-    clothing = "clothing",
-    food = "food",
-    toys = "toys",
-    furniture = "furniture",
-    electronics = "electronics"
 }
 export enum UserRole {
     admin = "admin",
@@ -62,25 +51,21 @@ export enum UserRole {
     guest = "guest"
 }
 export interface backendInterface {
-    addCustomer(name: string, phone: string): Promise<bigint>;
-    addEnquiry(name: string, phone: string, message: string): Promise<bigint>;
-    addProduct(name: string, category: ProductCategory, price: bigint, quantity: bigint, imageUrl: string | null): Promise<bigint>;
+    addSale(stockItemId: bigint, quantity: bigint): Promise<bigint>;
+    addStockItem(name: string, category: string, quantity: bigint, unitPrice: bigint, lowStockThreshold: bigint, image: ExternalBlob | null): Promise<bigint>;
     assignCallerUserRole(user: Principal, role: UserRole): Promise<void>;
-    deleteProduct(id: bigint): Promise<void>;
-    editProduct(id: bigint, name: string, category: ProductCategory, price: bigint, quantity: bigint, imageUrl: string | null): Promise<void>;
-    getAdminDashboard(): Promise<AdminDashboard>;
-    getAllEnquiries(): Promise<Array<Enquiry>>;
-    getAllProducts(): Promise<Array<Product>>;
+    deleteStockItem(id: bigint): Promise<void>;
+    getAllStockItems(): Promise<Array<StockItem>>;
     getCallerUserProfile(): Promise<UserProfile | null>;
     getCallerUserRole(): Promise<UserRole>;
-    getCustomers(): Promise<Array<Customer>>;
-    getMonthlySalesReport(): Promise<SalesReport>;
-    getProduct(id: bigint): Promise<Product | null>;
-    getProducts(): Promise<Array<Product>>;
-    getTodaysEnquiries(): Promise<Array<Enquiry>>;
+    getIncomeSummary(): Promise<IncomeSummary>;
+    getLowStockItems(): Promise<Array<StockItem>>;
+    getRevenueOverview(): Promise<RevenueOverview>;
+    getTodaysSales(): Promise<Array<Sale>>;
+    getTrendingStockItems(): Promise<Array<StockItem>>;
     getUserProfile(user: Principal): Promise<UserProfile | null>;
-    hideProduct(id: bigint): Promise<void>;
     isCallerAdmin(): Promise<boolean>;
+    markTrendingStockItem(id: bigint, isTrending: boolean): Promise<void>;
     saveCallerUserProfile(profile: UserProfile): Promise<void>;
-    updateRepeatCustomerStatus(id: bigint): Promise<void>;
+    updateStockItem(id: bigint, name: string, category: string, quantity: bigint, unitPrice: bigint, lowStockThreshold: bigint, image: ExternalBlob | null): Promise<void>;
 }

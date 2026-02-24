@@ -10,50 +10,36 @@ import type { ActorMethod } from '@icp-sdk/core/agent';
 import type { IDL } from '@icp-sdk/core/candid';
 import type { Principal } from '@icp-sdk/core/principal';
 
-export interface AdminDashboard {
-  'totalProducts' : bigint,
-  'outOfStockProducts' : bigint,
+export type ExternalBlob = Uint8Array;
+export interface IncomeSummary {
   'todaysIncome' : bigint,
   'totalIncome' : bigint,
-  'totalEnquiries' : bigint,
   'monthlyIncome' : bigint,
 }
-export interface Customer {
-  'id' : bigint,
-  'name' : string,
-  'isRepeatCustomer' : boolean,
-  'phone' : string,
+export interface RevenueOverview {
+  'productBreakdown' : Array<[bigint, bigint]>,
+  'totalRevenue' : bigint,
+  'monthlyRevenue' : bigint,
 }
-export interface Enquiry {
+export interface Sale {
   'id' : bigint,
-  'name' : string,
-  'createdAt' : Time,
-  'message' : string,
-  'phone' : string,
-}
-export interface Product {
-  'id' : bigint,
-  'inStock' : boolean,
-  'name' : string,
-  'imageUrl' : [] | [string],
-  'isHidden' : boolean,
+  'stockItemId' : bigint,
+  'timestamp' : bigint,
   'quantity' : bigint,
-  'category' : ProductCategory,
-  'price' : bigint,
+  'totalPrice' : bigint,
 }
-export type ProductCategory = { 'clothing' : null } |
-  { 'food' : null } |
-  { 'toys' : null } |
-  { 'furniture' : null } |
-  { 'electronics' : null };
-export interface SalesReport {
-  'monthlySales' : bigint,
-  'productWiseSales' : Array<[bigint, bigint]>,
-  'dailySales' : bigint,
-  'totalSales' : bigint,
+export interface StockItem {
+  'id' : bigint,
+  'lowStockThreshold' : bigint,
+  'name' : string,
+  'isLowStock' : boolean,
+  'quantity' : bigint,
+  'category' : string,
+  'image' : [] | [ExternalBlob],
+  'unitPrice' : bigint,
+  'isTrending' : boolean,
 }
-export type Time = bigint;
-export interface UserProfile { 'name' : string, 'role' : string }
+export interface UserProfile { 'name' : string }
 export type UserRole = { 'admin' : null } |
   { 'user' : null } |
   { 'guest' : null };
@@ -85,33 +71,29 @@ export interface _SERVICE {
   >,
   '_caffeineStorageUpdateGatewayPrincipals' : ActorMethod<[], undefined>,
   '_initializeAccessControlWithSecret' : ActorMethod<[string], undefined>,
-  'addCustomer' : ActorMethod<[string, string], bigint>,
-  'addEnquiry' : ActorMethod<[string, string, string], bigint>,
-  'addProduct' : ActorMethod<
-    [string, ProductCategory, bigint, bigint, [] | [string]],
+  'addSale' : ActorMethod<[bigint, bigint], bigint>,
+  'addStockItem' : ActorMethod<
+    [string, string, bigint, bigint, bigint, [] | [ExternalBlob]],
     bigint
   >,
   'assignCallerUserRole' : ActorMethod<[Principal, UserRole], undefined>,
-  'deleteProduct' : ActorMethod<[bigint], undefined>,
-  'editProduct' : ActorMethod<
-    [bigint, string, ProductCategory, bigint, bigint, [] | [string]],
-    undefined
-  >,
-  'getAdminDashboard' : ActorMethod<[], AdminDashboard>,
-  'getAllEnquiries' : ActorMethod<[], Array<Enquiry>>,
-  'getAllProducts' : ActorMethod<[], Array<Product>>,
+  'deleteStockItem' : ActorMethod<[bigint], undefined>,
+  'getAllStockItems' : ActorMethod<[], Array<StockItem>>,
   'getCallerUserProfile' : ActorMethod<[], [] | [UserProfile]>,
   'getCallerUserRole' : ActorMethod<[], UserRole>,
-  'getCustomers' : ActorMethod<[], Array<Customer>>,
-  'getMonthlySalesReport' : ActorMethod<[], SalesReport>,
-  'getProduct' : ActorMethod<[bigint], [] | [Product]>,
-  'getProducts' : ActorMethod<[], Array<Product>>,
-  'getTodaysEnquiries' : ActorMethod<[], Array<Enquiry>>,
+  'getIncomeSummary' : ActorMethod<[], IncomeSummary>,
+  'getLowStockItems' : ActorMethod<[], Array<StockItem>>,
+  'getRevenueOverview' : ActorMethod<[], RevenueOverview>,
+  'getTodaysSales' : ActorMethod<[], Array<Sale>>,
+  'getTrendingStockItems' : ActorMethod<[], Array<StockItem>>,
   'getUserProfile' : ActorMethod<[Principal], [] | [UserProfile]>,
-  'hideProduct' : ActorMethod<[bigint], undefined>,
   'isCallerAdmin' : ActorMethod<[], boolean>,
+  'markTrendingStockItem' : ActorMethod<[bigint, boolean], undefined>,
   'saveCallerUserProfile' : ActorMethod<[UserProfile], undefined>,
-  'updateRepeatCustomerStatus' : ActorMethod<[bigint], undefined>,
+  'updateStockItem' : ActorMethod<
+    [bigint, string, string, bigint, bigint, bigint, [] | [ExternalBlob]],
+    undefined
+  >,
 }
 export declare const idlService: IDL.ServiceClass;
 export declare const idlInitArgs: IDL.Type[];

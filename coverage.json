@@ -1,35 +1,56 @@
 {
   "kind": "coverage_report",
   "version": "1.0",
-  "generatedAt": "2026-02-24T09:41:21.010Z",
+  "generatedAt": "2026-02-24T14:29:20.038Z",
   "sources": {
     "buildRequest": true,
     "implementationPlan": true
   },
   "requirements": {
-    "total": 1,
-    "implemented": 1,
+    "total": 3,
+    "implemented": 3,
     "items": [
       {
-        "id": "REQ-15",
-        "summary": "Apply bold font weight to the login button text in the admin authentication screen at XPath /html[1]/body[1]/div[1]/div[1]/main[1]/div[1]/section[1]/div[1]/div[1]/div[2]/a[1]/button[1]",
+        "id": "REQ-1",
+        "summary": "On mobile screens (below md breakpoint), hide the left sidebar by default so it does not overlap the main dashboard content. Add a hamburger/menu toggle button visible only on mobile that opens and closes the sidebar as a slide-in drawer from the left side of the screen.",
         "status": "implemented",
         "plannedFiles": [
-          "frontend/src/components/AdminGuard.tsx"
+          "frontend/src/components/AdminLayout.tsx"
         ],
         "matchedFiles": [
-          "frontend/src/components/AdminGuard.tsx"
+          "frontend/src/components/AdminLayout.tsx"
+        ]
+      },
+      {
+        "id": "REQ-2",
+        "summary": "On mobile screens, the main content area must occupy the full width of the viewport when the sidebar is closed. Remove any left margin or offset that was previously reserved for the sidebar on small screens.",
+        "status": "implemented",
+        "plannedFiles": [
+          "frontend/src/components/AdminLayout.tsx"
+        ],
+        "matchedFiles": [
+          "frontend/src/components/AdminLayout.tsx"
+        ]
+      },
+      {
+        "id": "REQ-3",
+        "summary": "When the mobile sidebar drawer is open, add a semi-transparent dark backdrop overlay behind the drawer and on top of the main content. Tapping the backdrop should close the drawer.",
+        "status": "implemented",
+        "plannedFiles": [
+          "frontend/src/components/AdminLayout.tsx"
+        ],
+        "matchedFiles": [
+          "frontend/src/components/AdminLayout.tsx"
         ]
       }
     ]
   },
   "changedFiles": [
     "build-request.json",
-    "build-template/README.md",
     "feature_evidence.json",
     "frontend-file-summaries.txt",
     "frontend-implementation-plan.json",
-    "frontend/src/components/AdminGuard.tsx",
+    "frontend/src/components/AdminLayout.tsx",
     "project_state.json",
     "scratch/component-selection.json",
     "spec.md",

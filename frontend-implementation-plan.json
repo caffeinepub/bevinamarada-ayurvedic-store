@@ -1,21 +1,55 @@
 {
   "kind": "implementation_plan",
   "version": "1.0",
-  "title": "Make login button text bold in admin login screen",
+  "title": "Fix mobile sidebar overlap with slide-out menu",
   "requirements": [
     {
-      "id": "REQ-15",
-      "summary": "Apply bold font weight to the login button text in the admin authentication screen",
+      "id": "REQ-1",
+      "summary": "Implement mobile-responsive sidebar with hamburger toggle that hides sidebar by default on mobile and opens it as a slide-in drawer",
       "acceptanceCriteria": [
-        "The login button text displays with bold font weight (font-weight-bold or font-weight-700)",
-        "The styling change applies only to the selected login button element",
-        "The button remains visually consistent with the Ayurvedic design theme"
+        "On screens narrower than the md breakpoint, the sidebar is hidden by default and does not overlap any content",
+        "A visible hamburger/menu icon button appears in the top bar on mobile screens",
+        "Tapping the menu button slides the sidebar in from the left as a drawer overlay",
+        "Tapping the menu button again, or tapping outside the drawer, slides the sidebar back out and hides it",
+        "On desktop (md and above), the sidebar remains always visible in its original layout, unchanged"
       ],
       "file_operations": [
         {
-          "path": "frontend/src/components/AdminGuard.tsx",
+          "path": "frontend/src/components/AdminLayout.tsx",
           "operation": "modify",
-          "description": "Add font-bold or font-weight-700 class to the login button element in the unauthenticated screen. The button is located in the section that prompts users to login with Internet Identity. Apply the bold styling to maintain consistency with the Ayurvedic theme while ensuring the text weight change is visible."
+          "description": "Add state management for mobile sidebar visibility using React useState. Add a hamburger menu button that is visible only on mobile screens (below md breakpoint) in the top bar area. Wrap the existing sidebar nav in a container that is hidden by default on mobile (translate -100% off-screen) and shown on desktop. Apply conditional CSS classes to slide the sidebar in from the left when open state is true on mobile. Use Tailwind responsive classes (md:) to ensure desktop layout remains unchanged with the sidebar always visible."
+        }
+      ]
+    },
+    {
+      "id": "REQ-2",
+      "summary": "Ensure main content area occupies full viewport width on mobile when sidebar is closed",
+      "acceptanceCriteria": [
+        "When the sidebar is closed on mobile, the main content stretches to full viewport width with no sidebar-sized gap or margin on the left",
+        "When the sidebar drawer is open on mobile, it overlays the content rather than pushing it aside",
+        "On desktop, the main content layout is unaffected"
+      ],
+      "file_operations": [
+        {
+          "path": "frontend/src/components/AdminLayout.tsx",
+          "operation": "modify",
+          "description": "Modify the main content wrapper to remove any left margin or padding reserved for the sidebar on mobile screens. Ensure the main content area uses full width (w-full) on mobile and only applies sidebar offset on desktop (md:ml-64 or similar). Position the sidebar as absolute or fixed on mobile so it overlays content instead of pushing it aside. On desktop, retain the existing layout with sidebar and content side-by-side."
+        }
+      ]
+    },
+    {
+      "id": "REQ-3",
+      "summary": "Add semi-transparent backdrop overlay on mobile when sidebar drawer is open that closes the drawer when tapped",
+      "acceptanceCriteria": [
+        "A semi-transparent overlay appears over the main content when the sidebar drawer is open on mobile",
+        "Tapping the overlay closes the sidebar drawer",
+        "The overlay is not present on desktop"
+      ],
+      "file_operations": [
+        {
+          "path": "frontend/src/components/AdminLayout.tsx",
+          "operation": "modify",
+          "description": "Add a backdrop overlay element that renders conditionally when the mobile sidebar is open. Style the backdrop with semi-transparent dark background (e.g., bg-black/50) and position it fixed over the main content area but behind the sidebar (z-index layering). Add an onClick handler to the backdrop that closes the sidebar by setting the open state to false. Use Tailwind responsive classes to ensure the backdrop only appears on mobile screens (below md breakpoint) and is never rendered on desktop."
         }
       ]
     }

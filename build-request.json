@@ -1,35 +1,75 @@
 {
   "kind": "build_request",
-  "title": "Make login button text bold in admin login screen",
-  "priority": "normal",
+  "title": "Fix mobile sidebar overlap with slide-out menu",
+  "projectName": "Bevinamarada Ayurvedic Store",
+  "priority": "high",
   "requirements": [
     {
-      "id": "REQ-15",
-      "text": "Apply bold font weight to the login button text in the admin authentication screen at XPath /html[1]/body[1]/div[1]/div[1]/main[1]/div[1]/section[1]/div[1]/div[1]/div[2]/a[1]/button[1]",
+      "id": "REQ-1",
+      "text": "On mobile screens (below md breakpoint), hide the left sidebar by default so it does not overlap the main dashboard content. Add a hamburger/menu toggle button visible only on mobile that opens and closes the sidebar as a slide-in drawer from the left side of the screen.",
       "target": "frontend",
       "source": {
         "messageIds": [
-          "msg-current"
+          "msg-6"
         ],
         "quotes": [
-          "Login button with bold design text"
+          "On mobile screens, the left sidebar overlaps the dashboard content. The sidebar should be hidden or shown as a slide menu"
         ]
       },
       "acceptanceCriteria": [
-        "The login button text displays with bold font weight (font-weight-bold or font-weight-700)",
-        "The styling change applies only to the selected login button element",
-        "The button remains visually consistent with the Ayurvedic design theme"
+        "On screens narrower than the md breakpoint, the sidebar is hidden by default and does not overlap any content",
+        "A visible hamburger/menu icon button appears in the top bar on mobile screens",
+        "Tapping the menu button slides the sidebar in from the left as a drawer overlay",
+        "Tapping the menu button again, or tapping outside the drawer, slides the sidebar back out and hides it",
+        "On desktop (md and above), the sidebar remains always visible in its original layout, unchanged"
+      ]
+    },
+    {
+      "id": "REQ-2",
+      "text": "On mobile screens, the main content area must occupy the full width of the viewport when the sidebar is closed. Remove any left margin or offset that was previously reserved for the sidebar on small screens.",
+      "target": "frontend",
+      "source": {
+        "messageIds": [
+          "msg-6"
+        ],
+        "quotes": [
+          "the main content should be full width"
+        ]
+      },
+      "acceptanceCriteria": [
+        "When the sidebar is closed on mobile, the main content stretches to full viewport width with no sidebar-sized gap or margin on the left",
+        "When the sidebar drawer is open on mobile, it overlays the content rather than pushing it aside",
+        "On desktop, the main content layout is unaffected"
+      ]
+    },
+    {
+      "id": "REQ-3",
+      "text": "When the mobile sidebar drawer is open, add a semi-transparent dark backdrop overlay behind the drawer and on top of the main content. Tapping the backdrop should close the drawer.",
+      "target": "frontend",
+      "source": {
+        "messageIds": [
+          "msg-6"
+        ],
+        "quotes": [
+          "The sidebar should be hidden or shown as a slide menu"
+        ]
+      },
+      "acceptanceCriteria": [
+        "A semi-transparent overlay appears over the main content when the sidebar drawer is open on mobile",
+        "Tapping the overlay closes the sidebar drawer",
+        "The overlay is not present on desktop"
       ]
     }
   ],
   "constraints": [
-    "Only modify the login button styling; do not change authentication logic or other UI elements",
-    "Maintain the existing Ayurvedic theme color palette and design consistency"
+    "Do not modify any files under frontend/src/hooks/ or frontend/src/components/ui/",
+    "Desktop sidebar layout must remain unchanged",
+    "All changes must be confined to AdminLayout.tsx and related layout styles"
   ],
   "nonGoals": [
-    "Changing the authentication flow or login functionality",
-    "Modifying other buttons or text elements not specified",
-    "Altering the store banner background mentioned in earlier messages"
+    "Adding new navigation items to the sidebar",
+    "Changing sidebar content or styling beyond mobile responsiveness",
+    "Modifying backend logic"
   ],
   "imageRequirements": {
     "required": [],

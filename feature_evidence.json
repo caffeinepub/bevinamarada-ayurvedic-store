@@ -2,10 +2,10 @@
   "kind": "feature_evidence_report",
   "features": [
     {
-      "featureId": "feature-apply-bold-font-weight-to-the-login-button-text-in-the-admin-authentication-screen-at-xpath-html-1-body-1-div-1-div-1-main-1-div-1-section-1-div-1-div-1-div-2-a-1-button-1",
-      "featureTitle": "Apply bold font weight to the login button text in the admin authentication screen at XPath /html[1]/body[1]/div[1]/div[1]/main[1]/div[1]/section[1]/div[1]/div[1]/div[2]/a[1]/button[1]",
+      "featureId": "feature-on-mobile-screens-below-md-breakpoint-hide-the-left-sidebar-by-default-so-it-does-not-overlap-the-main-dashboard-content-add-a-hamburger-menu-toggle-button-visible-only-on-mobile-that-opens-and-closes-the-sidebar-as-a-slide-in-drawer-from-the-left-side-of-the-screen",
+      "featureTitle": "On mobile screens (below md breakpoint), hide the left sidebar by default so it does not overlap the main dashboard content. Add a hamburger/menu toggle button visible only on mobile that opens and closes the sidebar as a slide-in drawer from the left side of the screen.",
       "files": [
-        "frontend/src/components/AdminGuard.tsx"
+        "frontend/src/components/AdminLayout.tsx"
       ],
       "components": [
         "authorization@4.0.0",
@@ -17,7 +17,47 @@
         "github-export-icp-cli@1.0.0"
       ],
       "testIds": [
-        "REQ-15"
+        "REQ-1"
+      ],
+      "confidence": "high"
+    },
+    {
+      "featureId": "feature-on-mobile-screens-the-main-content-area-must-occupy-the-full-width-of-the-viewport-when-the-sidebar-is-closed-remove-any-left-margin-or-offset-that-was-previously-reserved-for-the-sidebar-on-small-screens",
+      "featureTitle": "On mobile screens, the main content area must occupy the full width of the viewport when the sidebar is closed. Remove any left margin or offset that was previously reserved for the sidebar on small screens.",
+      "files": [
+        "frontend/src/components/AdminLayout.tsx"
+      ],
+      "components": [
+        "authorization@4.0.0",
+        "blob-storage@4.0.0",
+        "core-infrastructure@1.0.2",
+        "shadcn-ui@1.0.0",
+        "build-template-react@1.0.0",
+        "initial-app@1.0.0",
+        "github-export-icp-cli@1.0.0"
+      ],
+      "testIds": [
+        "REQ-2"
+      ],
+      "confidence": "high"
+    },
+    {
+      "featureId": "feature-when-the-mobile-sidebar-drawer-is-open-add-a-semi-transparent-dark-backdrop-overlay-behind-the-drawer-and-on-top-of-the-main-content-tapping-the-backdrop-should-close-the-drawer",
+      "featureTitle": "When the mobile sidebar drawer is open, add a semi-transparent dark backdrop overlay behind the drawer and on top of the main content. Tapping the backdrop should close the drawer.",
+      "files": [
+        "frontend/src/components/AdminLayout.tsx"
+      ],
+      "components": [
+        "authorization@4.0.0",
+        "blob-storage@4.0.0",
+        "core-infrastructure@1.0.2",
+        "shadcn-ui@1.0.0",
+        "build-template-react@1.0.0",
+        "initial-app@1.0.0",
+        "github-export-icp-cli@1.0.0"
+      ],
+      "testIds": [
+        "REQ-3"
       ],
       "confidence": "high"
     }

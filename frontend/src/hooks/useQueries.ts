@@ -1,241 +1,11 @@
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { useActor } from './useActor';
-import type { Product, Customer, Enquiry, AdminDashboard, SalesReport, UserProfile, ProductCategory } from '../backend';
+import type { StockItem, Sale, RevenueOverview, IncomeSummary, UserProfile } from '../backend';
+import { ExternalBlob } from '../backend';
 import { toast } from 'sonner';
 
-// Product Queries
-export function useGetProducts() {
-  const { actor, isFetching } = useActor();
+// ─── User Profile ────────────────────────────────────────────────────────────
 
-  return useQuery<Product[]>({
-    queryKey: ['products'],
-    queryFn: async () => {
-      if (!actor) return [];
-      return actor.getProducts();
-    },
-    enabled: !!actor && !isFetching,
-  });
-}
-
-export function useGetAllProducts() {
-  const { actor, isFetching } = useActor();
-
-  return useQuery<Product[]>({
-    queryKey: ['allProducts'],
-    queryFn: async () => {
-      if (!actor) return [];
-      return actor.getAllProducts();
-    },
-    enabled: !!actor && !isFetching,
-  });
-}
-
-export function useAddProduct() {
-  const { actor } = useActor();
-  const queryClient = useQueryClient();
-
-  return useMutation({
-    mutationFn: async (data: {
-      name: string;
-      category: ProductCategory;
-      price: bigint;
-      quantity: bigint;
-      imageUrl: string | null;
-    }) => {
-      if (!actor) throw new Error('Actor not available');
-      return actor.addProduct(data.name, data.category, data.price, data.quantity, data.imageUrl);
-    },
-    onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: ['allProducts'] });
-      queryClient.invalidateQueries({ queryKey: ['products'] });
-      queryClient.invalidateQueries({ queryKey: ['adminDashboard'] });
-      toast.success('Product added successfully');
-    },
-    onError: (error: Error) => {
-      toast.error(`Failed to add product: ${error.message}`);
-    },
-  });
-}
-
-export function useEditProduct() {
-  const { actor } = useActor();
-  const queryClient = useQueryClient();
-
-  return useMutation({
-    mutationFn: async (data: {
-      id: bigint;
-      name: string;
-      category: ProductCategory;
-      price: bigint;
-      quantity: bigint;
-      imageUrl: string | null;
-    }) => {
-      if (!actor) throw new Error('Actor not available');
-      return actor.editProduct(data.id, data.name, data.category, data.price, data.quantity, data.imageUrl);
-    },
-    onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: ['allProducts'] });
-      queryClient.invalidateQueries({ queryKey: ['products'] });
-      queryClient.invalidateQueries({ queryKey: ['adminDashboard'] });
-      toast.success('Product updated successfully');
-    },
-    onError: (error: Error) => {
-      toast.error(`Failed to update product: ${error.message}`);
-    },
-  });
-}
-
-export function useDeleteProduct() {
-  const { actor } = useActor();
-  const queryClient = useQueryClient();
-
-  return useMutation({
-    mutationFn: async (id: bigint) => {
-      if (!actor) throw new Error('Actor not available');
-      return actor.deleteProduct(id);
-    },
-    onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: ['allProducts'] });
-      queryClient.invalidateQueries({ queryKey: ['products'] });
-      queryClient.invalidateQueries({ queryKey: ['adminDashboard'] });
-      toast.success('Product deleted successfully');
-    },
-    onError: (error: Error) => {
-      toast.error(`Failed to delete product: ${error.message}`);
-    },
-  });
-}
-
-export function useHideProduct() {
-  const { actor } = useActor();
-  const queryClient = useQueryClient();
-
-  return useMutation({
-    mutationFn: async (id: bigint) => {
-      if (!actor) throw new Error('Actor not available');
-      return actor.hideProduct(id);
-    },
-    onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: ['allProducts'] });
-      queryClient.invalidateQueries({ queryKey: ['products'] });
-      toast.success('Product visibility updated');
-    },
-    onError: (error: Error) => {
-      toast.error(`Failed to update product: ${error.message}`);
-    },
-  });
-}
-
-// Customer Queries
-export function useGetCustomers() {
-  const { actor, isFetching } = useActor();
-
-  return useQuery<Customer[]>({
-    queryKey: ['customers'],
-    queryFn: async () => {
-      if (!actor) return [];
-      return actor.getCustomers();
-    },
-    enabled: !!actor && !isFetching,
-  });
-}
-
-export function useUpdateRepeatCustomerStatus() {
-  const { actor } = useActor();
-  const queryClient = useQueryClient();
-
-  return useMutation({
-    mutationFn: async (id: bigint) => {
-      if (!actor) throw new Error('Actor not available');
-      return actor.updateRepeatCustomerStatus(id);
-    },
-    onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: ['customers'] });
-      toast.success('Customer status updated');
-    },
-    onError: (error: Error) => {
-      toast.error(`Failed to update customer: ${error.message}`);
-    },
-  });
-}
-
-// Enquiry Queries
-export function useGetAllEnquiries() {
-  const { actor, isFetching } = useActor();
-
-  return useQuery<Enquiry[]>({
-    queryKey: ['enquiries'],
-    queryFn: async () => {
-      if (!actor) return [];
-      return actor.getAllEnquiries();
-    },
-    enabled: !!actor && !isFetching,
-  });
-}
-
-export function useGetTodaysEnquiries() {
-  const { actor, isFetching } = useActor();
-
-  return useQuery<Enquiry[]>({
-    queryKey: ['todaysEnquiries'],
-    queryFn: async () => {
-      if (!actor) return [];
-      return actor.getTodaysEnquiries();
-    },
-    enabled: !!actor && !isFetching,
-  });
-}
-
-export function useAddEnquiry() {
-  const { actor } = useActor();
-  const queryClient = useQueryClient();
-
-  return useMutation({
-    mutationFn: async (data: { name: string; phone: string; message: string }) => {
-      if (!actor) throw new Error('Actor not available');
-      return actor.addEnquiry(data.name, data.phone, data.message);
-    },
-    onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: ['enquiries'] });
-      queryClient.invalidateQueries({ queryKey: ['todaysEnquiries'] });
-      queryClient.invalidateQueries({ queryKey: ['adminDashboard'] });
-      toast.success('Enquiry submitted successfully! We will contact you soon.');
-    },
-    onError: (error: Error) => {
-      toast.error(`Failed to submit enquiry: ${error.message}`);
-    },
-  });
-}
-
-// Dashboard Query
-export function useGetAdminDashboard() {
-  const { actor, isFetching } = useActor();
-
-  return useQuery<AdminDashboard>({
-    queryKey: ['adminDashboard'],
-    queryFn: async () => {
-      if (!actor) throw new Error('Actor not available');
-      return actor.getAdminDashboard();
-    },
-    enabled: !!actor && !isFetching,
-  });
-}
-
-// Sales Report Query
-export function useGetSalesReport() {
-  const { actor, isFetching } = useActor();
-
-  return useQuery<SalesReport>({
-    queryKey: ['salesReport'],
-    queryFn: async () => {
-      if (!actor) throw new Error('Actor not available');
-      return actor.getMonthlySalesReport();
-    },
-    enabled: !!actor && !isFetching,
-  });
-}
-
-// User Profile Queries
 export function useGetCallerUserProfile() {
   const { actor, isFetching: actorFetching } = useActor();
 
@@ -283,6 +53,226 @@ export function useIsCallerAdmin() {
     queryFn: async () => {
       if (!actor) return false;
       return actor.isCallerAdmin();
+    },
+    enabled: !!actor && !isFetching,
+  });
+}
+
+// ─── Stock Items ─────────────────────────────────────────────────────────────
+
+export function useGetAllStockItems() {
+  const { actor, isFetching } = useActor();
+
+  return useQuery<StockItem[]>({
+    queryKey: ['stockItems'],
+    queryFn: async () => {
+      if (!actor) return [];
+      return actor.getAllStockItems();
+    },
+    enabled: !!actor && !isFetching,
+  });
+}
+
+export function useGetTrendingStockItems() {
+  const { actor, isFetching } = useActor();
+
+  return useQuery<StockItem[]>({
+    queryKey: ['trendingStockItems'],
+    queryFn: async () => {
+      if (!actor) return [];
+      return actor.getTrendingStockItems();
+    },
+    enabled: !!actor && !isFetching,
+  });
+}
+
+export function useGetLowStockItems() {
+  const { actor, isFetching } = useActor();
+
+  return useQuery<StockItem[]>({
+    queryKey: ['lowStockItems'],
+    queryFn: async () => {
+      if (!actor) return [];
+      return actor.getLowStockItems();
+    },
+    enabled: !!actor && !isFetching,
+  });
+}
+
+export function useAddStockItem() {
+  const { actor } = useActor();
+  const queryClient = useQueryClient();
+
+  return useMutation({
+    mutationFn: async (data: {
+      name: string;
+      category: string;
+      quantity: bigint;
+      unitPrice: bigint;
+      lowStockThreshold: bigint;
+      image: ExternalBlob | null;
+    }) => {
+      if (!actor) throw new Error('Actor not available');
+      return actor.addStockItem(
+        data.name,
+        data.category,
+        data.quantity,
+        data.unitPrice,
+        data.lowStockThreshold,
+        data.image,
+      );
+    },
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ['stockItems'] });
+      queryClient.invalidateQueries({ queryKey: ['lowStockItems'] });
+      queryClient.invalidateQueries({ queryKey: ['trendingStockItems'] });
+      toast.success('Stock item added successfully');
+    },
+    onError: (error: Error) => {
+      toast.error(`Failed to add stock item: ${error.message}`);
+    },
+  });
+}
+
+export function useUpdateStockItem() {
+  const { actor } = useActor();
+  const queryClient = useQueryClient();
+
+  return useMutation({
+    mutationFn: async (data: {
+      id: bigint;
+      name: string;
+      category: string;
+      quantity: bigint;
+      unitPrice: bigint;
+      lowStockThreshold: bigint;
+      image: ExternalBlob | null;
+    }) => {
+      if (!actor) throw new Error('Actor not available');
+      return actor.updateStockItem(
+        data.id,
+        data.name,
+        data.category,
+        data.quantity,
+        data.unitPrice,
+        data.lowStockThreshold,
+        data.image,
+      );
+    },
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ['stockItems'] });
+      queryClient.invalidateQueries({ queryKey: ['lowStockItems'] });
+      queryClient.invalidateQueries({ queryKey: ['trendingStockItems'] });
+      toast.success('Stock item updated successfully');
+    },
+    onError: (error: Error) => {
+      toast.error(`Failed to update stock item: ${error.message}`);
+    },
+  });
+}
+
+export function useDeleteStockItem() {
+  const { actor } = useActor();
+  const queryClient = useQueryClient();
+
+  return useMutation({
+    mutationFn: async (id: bigint) => {
+      if (!actor) throw new Error('Actor not available');
+      return actor.deleteStockItem(id);
+    },
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ['stockItems'] });
+      queryClient.invalidateQueries({ queryKey: ['lowStockItems'] });
+      queryClient.invalidateQueries({ queryKey: ['trendingStockItems'] });
+      toast.success('Stock item deleted successfully');
+    },
+    onError: (error: Error) => {
+      toast.error(`Failed to delete stock item: ${error.message}`);
+    },
+  });
+}
+
+export function useMarkTrendingStockItem() {
+  const { actor } = useActor();
+  const queryClient = useQueryClient();
+
+  return useMutation({
+    mutationFn: async (data: { id: bigint; isTrending: boolean }) => {
+      if (!actor) throw new Error('Actor not available');
+      return actor.markTrendingStockItem(data.id, data.isTrending);
+    },
+    onSuccess: (_data, variables) => {
+      queryClient.invalidateQueries({ queryKey: ['stockItems'] });
+      queryClient.invalidateQueries({ queryKey: ['trendingStockItems'] });
+      toast.success(variables.isTrending ? 'Marked as trending' : 'Removed from trending');
+    },
+    onError: (error: Error) => {
+      toast.error(`Failed to update trending status: ${error.message}`);
+    },
+  });
+}
+
+// ─── Sales ───────────────────────────────────────────────────────────────────
+
+export function useGetTodaysSales() {
+  const { actor, isFetching } = useActor();
+
+  return useQuery<Sale[]>({
+    queryKey: ['todaysSales'],
+    queryFn: async () => {
+      if (!actor) return [];
+      return actor.getTodaysSales();
+    },
+    enabled: !!actor && !isFetching,
+  });
+}
+
+export function useAddSale() {
+  const { actor } = useActor();
+  const queryClient = useQueryClient();
+
+  return useMutation({
+    mutationFn: async (data: { stockItemId: bigint; quantity: bigint }) => {
+      if (!actor) throw new Error('Actor not available');
+      return actor.addSale(data.stockItemId, data.quantity);
+    },
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ['stockItems'] });
+      queryClient.invalidateQueries({ queryKey: ['lowStockItems'] });
+      queryClient.invalidateQueries({ queryKey: ['todaysSales'] });
+      queryClient.invalidateQueries({ queryKey: ['revenueOverview'] });
+      queryClient.invalidateQueries({ queryKey: ['incomeSummary'] });
+      toast.success('Sale recorded successfully');
+    },
+    onError: (error: Error) => {
+      toast.error(`Failed to record sale: ${error.message}`);
+    },
+  });
+}
+
+// ─── Revenue & Income ─────────────────────────────────────────────────────────
+
+export function useGetRevenueOverview() {
+  const { actor, isFetching } = useActor();
+
+  return useQuery<RevenueOverview>({
+    queryKey: ['revenueOverview'],
+    queryFn: async () => {
+      if (!actor) throw new Error('Actor not available');
+      return actor.getRevenueOverview();
+    },
+    enabled: !!actor && !isFetching,
+  });
+}
+
+export function useGetIncomeSummary() {
+  const { actor, isFetching } = useActor();
+
+  return useQuery<IncomeSummary>({
+    queryKey: ['incomeSummary'],
+    queryFn: async () => {
+      if (!actor) throw new Error('Actor not available');
+      return actor.getIncomeSummary();
     },
     enabled: !!actor && !isFetching,
   });

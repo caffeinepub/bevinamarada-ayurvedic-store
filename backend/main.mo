@@ -1,141 +1,75 @@
-import Array "mo:core/Array";
 import Map "mo:core/Map";
-import Text "mo:core/Text";
-import Time "mo:core/Time";
-import Nat "mo:core/Nat";
 import List "mo:core/List";
-import Order "mo:core/Order";
+import Iter "mo:core/Iter";
+import Array "mo:core/Array";
 import Runtime "mo:core/Runtime";
-import Principal "mo:core/Principal";
+
+import Time "mo:core/Time";
+import Text "mo:core/Text";
 import Int "mo:core/Int";
+import Nat "mo:core/Nat";
+import Principal "mo:core/Principal";
+import Order "mo:core/Order";
 
 import MixinAuthorization "authorization/MixinAuthorization";
 import AccessControl "authorization/access-control";
-import MixinStorage "blob-storage/Mixin";
 import Storage "blob-storage/Storage";
+import MixinStorage "blob-storage/Mixin";
+
+// Declare persistent data store types (Maps)
 
 actor {
   let accessControlState = AccessControl.initState();
-  include MixinAuthorization(accessControlState);
   include MixinStorage();
-
-  type ProductCategory = {
-    #electronics;
-    #clothing;
-    #food;
-    #furniture;
-    #toys;
-  };
-
-  module ProductCategory {
-    public func compare(a : ProductCategory, b : ProductCategory) : Order.Order {
-      switch (a, b) {
-        case (#electronics, #electronics) { #equal };
-        case (#clothing, #clothing) { #equal };
-        case (#food, #food) { #equal };
-        case (#furniture, #furniture) { #equal };
-        case (#toys, #toys) { #equal };
-        case (#electronics, _) { #less };
-        case (_, #electronics) { #greater };
-        case (#clothing, _) { #less };
-        case (_, #clothing) { #greater };
-        case (#food, _) { #less };
-        case (_, #food) { #greater };
-        case (#furniture, _) { #less };
-        case (_, #furniture) { #greater };
-      };
-    }
-  };
-
-  public type Product = {
-    id : Nat;
-    name : Text;
-    category : ProductCategory;
-    price : Nat;
-    quantity : Nat;
-    inStock : Bool;
-    isHidden : Bool;
-    imageUrl : ?Text;
-  };
-
-  module Product {
-    public func compare(product1 : Product, product2 : Product) : Order.Order {
-      Nat.compare(product1.id, product2.id);
-    };
-  };
-
-  public type Customer = {
-    id : Nat;
-    name : Text;
-    phone : Text;
-    isRepeatCustomer : Bool;
-  };
-
-  module Customer {
-    public func compareByName(customer1 : Customer, customer2 : Customer) : Order.Order {
-      Text.compare(customer1.name, customer2.name);
-    };
-  };
-
-  public type SalesOrder = {
-    id : Nat;
-    customerId : Nat;
-    productId : Nat;
-    quantity : Nat;
-    status : Text;
-    createdAt : Time.Time;
-  };
-
-  module SalesOrder {
-    public func compareByCreatedAt(order1 : SalesOrder, order2 : SalesOrder) : Order.Order {
-      Int.compare(order1.createdAt, order2.createdAt);
-    };
-  };
-
-  public type Enquiry = {
-    id : Nat;
-    name : Text;
-    phone : Text;
-    message : Text;
-    createdAt : Time.Time;
-  };
-
-  public type SalesReport = {
-    totalSales : Nat;
-    dailySales : Nat;
-    monthlySales : Nat;
-    productWiseSales : [(Nat, Nat)];
-  };
-
-  public type AdminDashboard = {
-    todaysIncome : Nat;
-    monthlyIncome : Nat;
-    totalIncome : Nat;
-    totalProducts : Nat;
-    outOfStockProducts : Nat;
-    totalEnquiries : Nat;
-  };
+  include MixinAuthorization(accessControlState);
 
   public type UserProfile = {
     name : Text;
-    role : Text;
   };
 
-  let products = Map.empty<Nat, Product>();
-  let customers = Map.empty<Nat, Customer>();
-  let salesOrders = Map.empty<Nat, SalesOrder>();
-  let enquiries = Map.empty<Nat, Enquiry>();
+  type StockItem = {
+    id : Nat;
+    name : Text;
+    category : Text;
+    quantity : Nat;
+    unitPrice : Nat;
+    lowStockThreshold : Nat;
+    isLowStock : Bool;
+    isTrending : Bool;
+    image : ?Storage.ExternalBlob;
+  };
+
+  type Sale = {
+    id : Nat;
+    stockItemId : Nat;
+    quantity : Nat;
+    totalPrice : Nat;
+    timestamp : Int;
+  };
+
+  type RevenueOverview = {
+    totalRevenue : Nat;
+    monthlyRevenue : Nat;
+    productBreakdown : [(Nat, Nat)];
+  };
+
+  type IncomeSummary = {
+    totalIncome : Nat;
+    monthlyIncome : Nat;
+    todaysIncome : Nat;
+  };
+
   let userProfiles = Map.empty<Principal, UserProfile>();
+  let stockItems = Map.empty<Nat, StockItem>();
+  let sales = Map.empty<Nat, Sale>();
 
-  var productIdCounter = 0;
-  var customerIdCounter = 0;
-  var orderIdCounter = 0;
-  var enquiryIdCounter = 0;
+  var nextStockItemId = 1;
+  var nextSaleId = 1;
 
-  // --- User Profile Management ---
+  // User Profile Management
   public query ({ caller }) func getCallerUserProfile() : async ?UserProfile {
     if (not (AccessControl.hasPermission(accessControlState, caller, #user))) {
-      Runtime.trap("Unauthorized: Only users can view profiles");
+      Runtime.trap("Unauthorized: Only users can get profiles");
     };
     userProfiles.get(caller);
   };
@@ -154,293 +88,206 @@ actor {
     userProfiles.add(caller, profile);
   };
 
-  // --- Product Management (Admin Only) ---
-  public shared ({ caller }) func addProduct(name : Text, category : ProductCategory, price : Nat, quantity : Nat, imageUrl : ?Text) : async Nat {
-    if (not (AccessControl.isAdmin(accessControlState, caller))) {
-      Runtime.trap("Unauthorized: Only admins can add products");
+  // Stock Management
+  public shared ({ caller }) func addStockItem(name : Text, category : Text, quantity : Nat, unitPrice : Nat, lowStockThreshold : Nat, image : ?Storage.ExternalBlob) : async Nat {
+    if (not (AccessControl.hasPermission(accessControlState, caller, #admin))) {
+      Runtime.trap("Access denied: Only owners/admins can access this functionality");
     };
-    let id = generateProductId();
-    let product : Product = {
-      id;
+
+    let item : StockItem = {
+      id = nextStockItemId;
       name;
       category;
-      price;
       quantity;
-      inStock = quantity > 0;
-      isHidden = false;
-      imageUrl;
+      unitPrice;
+      lowStockThreshold;
+      isLowStock = quantity <= lowStockThreshold;
+      isTrending = false;
+      image;
     };
-    products.add(id, product);
-    productIdCounter += 1;
-    id;
+
+    stockItems.add(item.id, item);
+    nextStockItemId += 1;
+    item.id;
   };
 
-  public shared ({ caller }) func editProduct(id : Nat, name : Text, category : ProductCategory, price : Nat, quantity : Nat, imageUrl : ?Text) : async () {
-    if (not (AccessControl.isAdmin(accessControlState, caller))) {
-      Runtime.trap("Unauthorized: Only admins can edit products");
+  public shared ({ caller }) func updateStockItem(id : Nat, name : Text, category : Text, quantity : Nat, unitPrice : Nat, lowStockThreshold : Nat, image : ?Storage.ExternalBlob) : async () {
+    if (not (AccessControl.hasPermission(accessControlState, caller, #admin))) {
+      Runtime.trap("Access denied: Only owners/admins can access this functionality");
     };
-    let product = getProductById(id);
-    let updatedProduct : Product = {
-      id;
-      name;
-      category;
-      price;
-      quantity;
-      inStock = quantity > 0;
-      isHidden = product.isHidden;
-      imageUrl;
-    };
-    products.add(id, updatedProduct);
-  };
 
-  public shared ({ caller }) func deleteProduct(id : Nat) : async () {
-    if (not (AccessControl.isAdmin(accessControlState, caller))) {
-      Runtime.trap("Unauthorized: Only admins can delete products");
-    };
-    if (not products.containsKey(id)) {
-      Runtime.trap("Product not found");
-    };
-    products.remove(id);
-  };
-
-  public shared ({ caller }) func hideProduct(id : Nat) : async () {
-    if (not (AccessControl.isAdmin(accessControlState, caller))) {
-      Runtime.trap("Unauthorized: Only admins can hide products");
-    };
-    let product = getProductById(id);
-    let updatedProduct : Product = {
-      id = product.id;
-      name = product.name;
-      category = product.category;
-      price = product.price;
-      quantity = product.quantity;
-      inStock = product.inStock;
-      isHidden = true;
-      imageUrl = product.imageUrl;
-    };
-    products.add(id, updatedProduct);
-  };
-
-  // --- Product Queries (Public) ---
-  public query func getProducts() : async [Product] {
-    products.values().toArray().filter(
-      func(product) {
-        not product.isHidden and product.inStock;
-      }
-    );
-  };
-
-  public query ({ caller }) func getAllProducts() : async [Product] {
-    if (not (AccessControl.isAdmin(accessControlState, caller))) {
-      Runtime.trap("Unauthorized: Only admins can view all products");
-    };
-    products.values().toArray();
-  };
-
-  public query func getProduct(id : Nat) : async ?Product {
-    switch (products.get(id)) {
-      case (?product) {
-        if (product.isHidden) {
-          null;
-        } else {
-          ?product;
+    switch (stockItems.get(id)) {
+      case (null) { Runtime.trap("Stock item not found") };
+      case (?existing) {
+        let updated : StockItem = {
+          id;
+          name;
+          category;
+          quantity;
+          unitPrice;
+          lowStockThreshold;
+          isLowStock = quantity <= lowStockThreshold;
+          isTrending = existing.isTrending;
+          image;
         };
+        stockItems.add(id, updated);
       };
-      case (null) { null };
     };
   };
 
-  // --- Customer Management (Admin Only) ---
-  public shared ({ caller }) func addCustomer(name : Text, phone : Text) : async Nat {
-    if (not (AccessControl.isAdmin(accessControlState, caller))) {
-      Runtime.trap("Unauthorized: Only admins can add customers");
+  public shared ({ caller }) func deleteStockItem(id : Nat) : async () {
+    if (not (AccessControl.hasPermission(accessControlState, caller, #admin))) {
+      Runtime.trap("Access denied: Only owners/admins can access this functionality");
     };
-    let id = generateCustomerId();
-    let customer : Customer = {
-      id;
-      name;
-      phone;
-      isRepeatCustomer = false;
+
+    if (not stockItems.containsKey(id)) {
+      Runtime.trap("Stock item not found");
     };
-    customers.add(id, customer);
-    customerIdCounter += 1;
-    id;
+    stockItems.remove(id);
   };
 
-  public shared ({ caller }) func updateRepeatCustomerStatus(id : Nat) : async () {
-    if (not (AccessControl.isAdmin(accessControlState, caller))) {
-      Runtime.trap("Unauthorized: Only admins can update customer status");
-    };
-    let customer = getCustomerById(id);
-    let updatedCustomer : Customer = {
-      id = customer.id;
-      name = customer.name;
-      phone = customer.phone;
-      isRepeatCustomer = true;
-    };
-    customers.add(id, updatedCustomer);
-  };
-
-  public query ({ caller }) func getCustomers() : async [Customer] {
-    if (not (AccessControl.isAdmin(accessControlState, caller))) {
-      Runtime.trap("Unauthorized: Only admins can view customers");
-    };
-    customers.values().toArray();
-  };
-
-  // --- Enquiry Handling ---
-  public shared ({ caller }) func addEnquiry(name : Text, phone : Text, message : Text) : async Nat {
-    let id = generateEnquiryId();
-    let enquiry : Enquiry = {
-      id;
-      name;
-      phone;
-      message;
-      createdAt = Time.now();
-    };
-    enquiries.add(id, enquiry);
-    enquiryIdCounter += 1;
-    id;
-  };
-
-  public query ({ caller }) func getTodaysEnquiries() : async [Enquiry] {
-    if (not (AccessControl.isAdmin(accessControlState, caller))) {
-      Runtime.trap("Unauthorized: Only admins can view enquiries");
-    };
-    let today = Time.now();
-    let todaysEnquiries = enquiries.values().toArray().filter(
-      func(enquiry) {
-        Time.now() - enquiry.createdAt < 86400000000000;
-      }
-    );
-    todaysEnquiries;
-  };
-
-  public query ({ caller }) func getAllEnquiries() : async [Enquiry] {
-    if (not (AccessControl.isAdmin(accessControlState, caller))) {
-      Runtime.trap("Unauthorized: Only admins can view enquiries");
-    };
-    enquiries.values().toArray();
-  };
-
-  // --- Reporting ---
-  public query ({ caller }) func getMonthlySalesReport() : async SalesReport {
-    if (not (AccessControl.isAdmin(accessControlState, caller))) {
-      Runtime.trap("Unauthorized: Only admins can view sales reports");
-    };
-    let lastMonthOrders = salesOrders.values().toArray().filter(
-      func(order) {
-        Time.now() - order.createdAt < 2592000000000000;
-      }
-    );
-    let monthlySales = lastMonthOrders.size();
-    let totalSales = salesOrders.size();
-
-    let productWiseSales : [(Nat, Nat)] = products.toArray().map(
-      func((productId, _)) {
-        let salesCount = salesOrders.values().toArray().filter(
-          func(order) {
-            order.productId == productId;
-          }
-        ).size();
-        (productId, salesCount);
-      }
-    );
-    {
-      totalSales;
-      dailySales = 0;
-      monthlySales;
-      productWiseSales;
-    };
-  };
-
-  public query ({ caller }) func getAdminDashboard() : async AdminDashboard {
-    if (not (AccessControl.isAdmin(accessControlState, caller))) {
-      Runtime.trap("Unauthorized: Only admins can view dashboard");
+  public shared ({ caller }) func markTrendingStockItem(id : Nat, isTrending : Bool) : async () {
+    if (not (AccessControl.hasPermission(accessControlState, caller, #admin))) {
+      Runtime.trap("Access denied: Only owners/admins can access this functionality");
     };
 
-    let todaysOrders = salesOrders.values().toArray().filter(
-      func(order) {
-        Time.now() - order.createdAt < 86400000000000;
-      }
-    );
-
-    let monthlyOrders = salesOrders.values().toArray().filter(
-      func(order) {
-        Time.now() - order.createdAt < 2592000000000000;
-      }
-    );
-
-    let todaysIncome = todaysOrders.foldLeft(
-      0,
-      func(acc : Nat, order : SalesOrder) : Nat {
-        switch (products.get(order.productId)) {
-          case (?product) { acc + (product.price * order.quantity) };
-          case (null) { acc };
+    switch (stockItems.get(id)) {
+      case (null) { Runtime.trap("Stock item not found") };
+      case (?item) {
+        let updated : StockItem = {
+          id = item.id;
+          name = item.name;
+          category = item.category;
+          quantity = item.quantity;
+          unitPrice = item.unitPrice;
+          lowStockThreshold = item.lowStockThreshold;
+          isLowStock = item.isLowStock;
+          isTrending;
+          image = item.image;
         };
-      }
-    );
+        stockItems.add(id, updated);
+      };
+    };
+  };
 
-    let monthlyIncome = monthlyOrders.foldLeft(
-      0,
-      func(acc : Nat, order : SalesOrder) : Nat {
-        switch (products.get(order.productId)) {
-          case (?product) { acc + (product.price * order.quantity) };
-          case (null) { acc };
+  // Sales Management
+  public shared ({ caller }) func addSale(stockItemId : Nat, quantity : Nat) : async Nat {
+    if (not (AccessControl.hasPermission(accessControlState, caller, #admin))) {
+      Runtime.trap("Access denied: Only owners/admins can access this functionality");
+    };
+
+    switch (stockItems.get(stockItemId)) {
+      case (null) { Runtime.trap("Stock item not found") };
+      case (?item) {
+        if (quantity > item.quantity) {
+          Runtime.trap("Insufficient stock quantity");
         };
-      }
-    );
 
-    let totalIncome = salesOrders.values().toArray().foldLeft(
-      0,
-      func(acc : Nat, order : SalesOrder) : Nat {
-        switch (products.get(order.productId)) {
-          case (?product) { acc + (product.price * order.quantity) };
-          case (null) { acc };
+        let sale : Sale = {
+          id = nextSaleId;
+          stockItemId;
+          quantity;
+          totalPrice = item.unitPrice * quantity;
+          timestamp = Time.now();
         };
-      }
-    );
 
-    let outOfStockProducts = products.values().toArray().filter(
-      func(product) {
-        not product.inStock;
-      }
-    ).size();
+        let updatedItem : StockItem = {
+          id = item.id;
+          name = item.name;
+          category = item.category;
+          quantity = item.quantity - quantity;
+          unitPrice = item.unitPrice;
+          lowStockThreshold = item.lowStockThreshold;
+          isLowStock = (item.quantity - quantity) <= item.lowStockThreshold;
+          isTrending = item.isTrending;
+          image = item.image;
+        };
+
+        stockItems.add(item.id, updatedItem);
+        sales.add(sale.id, sale);
+        nextSaleId += 1;
+        sale.id;
+      };
+    };
+  };
+
+  // Queries
+  public query ({ caller }) func getAllStockItems() : async [StockItem] {
+    if (not (AccessControl.hasPermission(accessControlState, caller, #admin))) {
+      Runtime.trap("Access denied: Only owners/admins can access this functionality");
+    };
+    stockItems.values().toArray();
+  };
+
+  public query ({ caller }) func getTrendingStockItems() : async [StockItem] {
+    if (not (AccessControl.hasPermission(accessControlState, caller, #admin))) {
+      Runtime.trap("Access denied: Only owners/admins can access this functionality");
+    };
+
+    let trending = stockItems.values().toArray().filter(func(item) { item.isTrending });
+    trending;
+  };
+
+  public query ({ caller }) func getLowStockItems() : async [StockItem] {
+    if (not (AccessControl.hasPermission(accessControlState, caller, #admin))) {
+      Runtime.trap("Access denied: Only owners/admins can access this functionality");
+    };
+
+    let lowStock = stockItems.values().toArray().filter(func(item) { item.isLowStock });
+    lowStock;
+  };
+
+  public query ({ caller }) func getTodaysSales() : async [Sale] {
+    if (not (AccessControl.hasPermission(accessControlState, caller, #admin))) {
+      Runtime.trap("Access denied: Only owners/admins can access this functionality");
+    };
+
+    let now = Time.now();
+    let todaysSales = sales.values().toArray().filter(func(sale) { now - sale.timestamp <= 86400000000000 });
+    todaysSales;
+  };
+
+  public query ({ caller }) func getRevenueOverview() : async RevenueOverview {
+    if (not (AccessControl.hasPermission(accessControlState, caller, #admin))) {
+      Runtime.trap("Access denied: Only owners/admins can access this functionality");
+    };
+
+    let now = Time.now();
+    let monthlySales = sales.values().toArray().filter(func(sale) { now - sale.timestamp <= 2592000000000000 });
+
+    let productBreakdownList = List.empty<(Nat, Nat)>();
+    for ((productId, _) in stockItems.entries()) {
+      let salesCount = sales.values().toArray().filter(func(sale) { sale.stockItemId == productId }).size();
+      productBreakdownList.add((productId, salesCount));
+    };
+
+    let totalRevenue = sales.values().toArray().foldLeft(0, func(acc, sale) { acc + sale.totalPrice });
+    let monthlyRevenue = monthlySales.foldLeft(0, func(acc, sale) { acc + sale.totalPrice });
 
     {
-      todaysIncome;
-      monthlyIncome;
+      totalRevenue;
+      monthlyRevenue;
+      productBreakdown = productBreakdownList.toArray();
+    };
+  };
+
+  public query ({ caller }) func getIncomeSummary() : async IncomeSummary {
+    if (not (AccessControl.hasPermission(accessControlState, caller, #admin))) {
+      Runtime.trap("Access denied: Only owners/admins can access this functionality");
+    };
+
+    let now = Time.now();
+    let todaysSales = sales.values().toArray().filter(func(sale) { now - sale.timestamp <= 86400000000000 });
+    let monthlySales = sales.values().toArray().filter(func(sale) { now - sale.timestamp <= 2592000000000000 });
+
+    let totalIncome = sales.values().toArray().foldLeft(0, func(acc, sale) { acc + sale.totalPrice });
+    let monthlyIncome = monthlySales.foldLeft(0, func(acc, sale) { acc + sale.totalPrice });
+    let todaysIncome = todaysSales.foldLeft(0, func(acc, sale) { acc + sale.totalPrice });
+
+    {
       totalIncome;
-      totalProducts = products.size();
-      outOfStockProducts;
-      totalEnquiries = enquiries.size();
-    };
-  };
-
-  // Internal helper functions
-  func generateProductId() : Nat {
-    productIdCounter + 1;
-  };
-
-  func generateCustomerId() : Nat {
-    customerIdCounter + 1;
-  };
-
-  func generateEnquiryId() : Nat {
-    enquiryIdCounter + 1;
-  };
-
-  func getProductById(id : Nat) : Product {
-    switch (products.get(id)) {
-      case (?product) { product };
-      case (null) { Runtime.trap("Product not found") };
-    };
-  };
-
-  func getCustomerById(id : Nat) : Customer {
-    switch (customers.get(id)) {
-      case (?customer) { customer };
-      case (null) { Runtime.trap("Customer not found") };
+      monthlyIncome;
+      todaysIncome;
     };
   };
 };
