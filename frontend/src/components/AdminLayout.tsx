@@ -1,299 +1,197 @@
 import { useState } from 'react';
-import { Link, Outlet, useNavigate } from '@tanstack/react-router';
+import { Outlet, Link, useNavigate, useRouterState } from '@tanstack/react-router';
 import {
   LayoutDashboard,
   Package,
+  TrendingUp,
+  DollarSign,
   Users,
   MessageSquare,
   BarChart3,
-  User,
-  LogOut,
+  ShoppingCart,
+  FileText,
   Menu,
   X,
-  TrendingUp,
-  Warehouse,
-  ChevronDown,
-  ShieldOff,
+  LogOut,
+  Zap,
+  Home,
+  ChevronRight,
 } from 'lucide-react';
-import { useInternetIdentity } from '../hooks/useInternetIdentity';
-import { useGetCallerUserProfile } from '../hooks/useQueries';
-import { useQueryClient } from '@tanstack/react-query';
-import TrialStatusBanner from './TrialStatusBanner';
 
 const navItems = [
-  { path: '/admin', label: 'Dashboard', icon: LayoutDashboard },
-  { path: '/admin/stock', label: 'Stock', icon: Warehouse },
-  { path: '/admin/products', label: 'Products', icon: Package },
+  { path: '/admin/owner-dashboard', label: 'Dashboard', icon: LayoutDashboard },
+  { path: '/admin/stock', label: 'Stock Management', icon: Package },
+  { path: '/admin/products', label: 'Products', icon: ShoppingCart },
+  { path: '/admin/sales', label: 'Sales', icon: TrendingUp },
+  { path: '/admin/revenue', label: 'Revenue', icon: DollarSign },
+  { path: '/admin/income', label: 'Income', icon: BarChart3 },
   { path: '/admin/customers', label: 'Customers', icon: Users },
   { path: '/admin/enquiries', label: 'Enquiries', icon: MessageSquare },
-  { path: '/admin/sales-reports', label: 'Sales Reports', icon: BarChart3 },
+  { path: '/admin/trending', label: 'Trending', icon: TrendingUp },
+  { path: '/admin/reports', label: 'Reports', icon: FileText },
 ];
 
+function handleLogout(navigate: ReturnType<typeof useNavigate>) {
+  sessionStorage.removeItem('admin-session');
+  sessionStorage.removeItem('adminSessionActive');
+  localStorage.removeItem('admin-session');
+  localStorage.removeItem('adminSessionActive');
+  navigate({ to: '/admin-login' });
+}
+
 export default function AdminLayout() {
-  const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
-  const [profileDropdownOpen, setProfileDropdownOpen] = useState(false);
-  const { clear, identity } = useInternetIdentity();
-  const { data: userProfile } = useGetCallerUserProfile();
-  const queryClient = useQueryClient();
+  const [mobileOpen, setMobileOpen] = useState(false);
   const navigate = useNavigate();
+  const routerState = useRouterState();
+  const currentPath = routerState.location.pathname;
 
-  const handleLogout = async () => {
-    await clear();
-    queryClient.clear();
-    navigate({ to: '/' });
-  };
-
-  const handleAdminPortalLogout = () => {
-    sessionStorage.removeItem('adminSessionActive');
-    navigate({ to: '/admin-login' });
-  };
-
-  const currentPath = window.location.pathname;
+  const isActive = (path: string) => currentPath === path || currentPath.startsWith(path + '/');
 
   return (
-    <div className="min-h-screen bg-gray-50 flex">
+    <div className="min-h-screen bg-neon-black flex">
       {/* Desktop Sidebar */}
-      <aside className="hidden lg:flex flex-col w-64 bg-gradient-to-b from-forest-900 via-forest-800 to-sage-900 text-white shadow-2xl">
+      <aside className="hidden lg:flex flex-col w-64 admin-sidebar fixed inset-y-0 left-0 z-30">
         {/* Logo */}
-        <div className="p-6 border-b border-forest-700/50">
-          <Link to="/" className="flex items-center gap-3">
-            <div className="w-10 h-10 rounded-xl bg-gradient-to-br from-saffron-400 to-gold-500 flex items-center justify-center shadow-lg">
-              <img src="/assets/generated/neem-leaf-logo.dim_256x256.png" alt="Logo" className="w-7 h-7 object-contain" />
-            </div>
-            <div>
-              <p className="font-bold text-sm leading-tight text-white font-display">Bevinamarada</p>
-              <p className="text-xs text-forest-300">Ayurvedic Store</p>
-            </div>
-          </Link>
+        <div className="flex items-center gap-3 px-6 py-5 border-b border-neon-border">
+          <div className="w-8 h-8 rounded-md border border-neon-green flex items-center justify-center neon-glow-sm">
+            <Zap className="w-4 h-4 text-neon-green" />
+          </div>
+          <div>
+            <p className="font-orbitron text-xs font-bold text-neon-green neon-text-sm">ADMIN PORTAL</p>
+            <p className="text-xs text-gray-600 font-mono">Bevinamarada</p>
+          </div>
         </div>
 
         {/* Navigation */}
-        <nav className="flex-1 p-4 space-y-1">
+        <nav className="flex-1 px-3 py-4 overflow-y-auto space-y-1">
           {navItems.map((item) => {
             const Icon = item.icon;
-            const isActive = currentPath === item.path;
+            const active = isActive(item.path);
             return (
               <Link
                 key={item.path}
                 to={item.path}
-                className={`flex items-center gap-3 px-4 py-3 rounded-xl transition-all duration-200 group ${
-                  isActive
-                    ? 'bg-gradient-to-r from-saffron-500/30 to-gold-500/20 text-saffron-300 border border-saffron-500/30 shadow-lg'
-                    : 'text-forest-300 hover:bg-forest-700/50 hover:text-white'
+                className={`flex items-center gap-3 px-3 py-2.5 rounded-md text-sm font-rajdhani font-medium transition-all duration-200 ${
+                  active
+                    ? 'text-neon-green bg-neon-green/10 border-l-2 border-neon-green pl-[10px]'
+                    : 'text-gray-500 hover:text-neon-green hover:bg-neon-green/5 border-l-2 border-transparent'
                 }`}
               >
-                <Icon className={`w-5 h-5 ${isActive ? 'text-saffron-400' : 'text-forest-400 group-hover:text-white'}`} />
-                <span className="font-medium text-sm">{item.label}</span>
-                {isActive && <div className="ml-auto w-1.5 h-1.5 rounded-full bg-saffron-400" />}
+                <Icon className={`w-4 h-4 flex-shrink-0 ${active ? 'text-neon-green' : ''}`} />
+                <span>{item.label}</span>
+                {active && <ChevronRight className="w-3 h-3 ml-auto text-neon-green" />}
               </Link>
             );
           })}
         </nav>
 
-        {/* Profile Section */}
-        <div className="p-4 border-t border-forest-700/50">
-          <div className="flex items-center gap-3 px-3 py-2 rounded-xl bg-forest-800/50">
-            <div className="w-8 h-8 rounded-full bg-gradient-to-br from-saffron-400 to-gold-500 flex items-center justify-center text-white text-sm font-bold">
-              {userProfile?.name?.charAt(0)?.toUpperCase() || 'A'}
-            </div>
-            <div className="flex-1 min-w-0">
-              <p className="text-sm font-medium text-white truncate">{userProfile?.name || 'Admin'}</p>
-              <p className="text-xs text-forest-400">Administrator</p>
-            </div>
-          </div>
-          <div className="mt-2 space-y-1">
-            <Link
-              to="/admin/profile"
-              className="flex items-center gap-2 px-3 py-2 text-forest-300 hover:text-white hover:bg-forest-700/50 rounded-lg transition-colors text-sm"
-            >
-              <User className="w-4 h-4" />
-              Profile
-            </Link>
-            <button
-              onClick={handleLogout}
-              className="w-full flex items-center gap-2 px-3 py-2 text-forest-300 hover:text-red-400 hover:bg-red-500/10 rounded-lg transition-colors text-sm"
-            >
-              <LogOut className="w-4 h-4" />
-              Logout
-            </button>
-            <button
-              onClick={handleAdminPortalLogout}
-              className="w-full flex items-center gap-2 px-3 py-2 text-forest-300 hover:text-amber-400 hover:bg-amber-500/10 rounded-lg transition-colors text-sm"
-            >
-              <ShieldOff className="w-4 h-4" />
-              Exit Admin Portal
-            </button>
-          </div>
+        {/* Footer */}
+        <div className="px-3 py-4 border-t border-neon-border space-y-2">
+          <Link
+            to="/"
+            className="flex items-center gap-3 px-3 py-2.5 rounded-md text-sm text-gray-500 hover:text-neon-green hover:bg-neon-green/5 transition-all duration-200 font-rajdhani"
+          >
+            <Home className="w-4 h-4" />
+            <span>Back to Store</span>
+          </Link>
+          <button
+            onClick={() => handleLogout(navigate)}
+            className="w-full flex items-center gap-3 px-3 py-2.5 rounded-md text-sm text-red-500 hover:text-red-400 hover:bg-red-500/10 transition-all duration-200 font-rajdhani"
+          >
+            <LogOut className="w-4 h-4" />
+            <span>Logout</span>
+          </button>
         </div>
       </aside>
 
-      {/* Main Content */}
-      <div className="flex-1 flex flex-col min-w-0">
-        {/* Top Header */}
-        <header className="bg-white border-b border-gray-200 px-4 lg:px-6 py-3 flex items-center justify-between shadow-sm sticky top-0 z-40">
-          <div className="flex items-center gap-3">
-            <button
-              onClick={() => setMobileMenuOpen(true)}
-              className="lg:hidden p-2 rounded-lg hover:bg-gray-100 transition-colors"
-            >
-              <Menu className="w-5 h-5 text-gray-600" />
-            </button>
-            <div className="hidden lg:block">
-              <h2 className="text-sm font-semibold text-gray-800">
-                {navItems.find(n => n.path === currentPath)?.label || 'Dashboard'}
-              </h2>
-            </div>
-            <div className="lg:hidden flex items-center gap-2">
-              <div className="w-7 h-7 rounded-lg bg-gradient-to-br from-saffron-400 to-gold-500 flex items-center justify-center">
-                <img src="/assets/generated/neem-leaf-logo.dim_256x256.png" alt="Logo" className="w-5 h-5 object-contain" />
-              </div>
-              <span className="font-bold text-forest-800 text-sm font-display">Bevinamarada</span>
-            </div>
+      {/* Mobile Header */}
+      <div className="lg:hidden fixed top-0 left-0 right-0 z-40 flex items-center justify-between px-4 py-3 bg-neon-black border-b border-neon-border">
+        <div className="flex items-center gap-2">
+          <div className="w-7 h-7 rounded border border-neon-green flex items-center justify-center neon-glow-sm">
+            <Zap className="w-3.5 h-3.5 text-neon-green" />
           </div>
-
-          <div className="flex items-center gap-3">
-            <Link
-              to="/admin/trending"
-              className="hidden sm:flex items-center gap-1.5 px-3 py-1.5 bg-amber-50 text-amber-700 rounded-lg text-xs font-medium hover:bg-amber-100 transition-colors border border-amber-200"
-            >
-              <TrendingUp className="w-3.5 h-3.5" />
-              Trending
-            </Link>
-
-            {/* Profile Dropdown */}
-            <div className="relative">
-              <button
-                onClick={() => setProfileDropdownOpen(!profileDropdownOpen)}
-                className="flex items-center gap-2 px-3 py-1.5 rounded-lg hover:bg-gray-100 transition-colors"
-              >
-                <div className="w-7 h-7 rounded-full bg-gradient-to-br from-saffron-400 to-gold-500 flex items-center justify-center text-white text-xs font-bold">
-                  {userProfile?.name?.charAt(0)?.toUpperCase() || 'A'}
-                </div>
-                <span className="hidden sm:block text-sm font-medium text-gray-700">{userProfile?.name || 'Admin'}</span>
-                <ChevronDown className="w-4 h-4 text-gray-500" />
-              </button>
-
-              {profileDropdownOpen && (
-                <>
-                  <div
-                    className="fixed inset-0 z-10"
-                    onClick={() => setProfileDropdownOpen(false)}
-                  />
-                  <div className="absolute right-0 top-full mt-1 w-56 bg-white rounded-xl shadow-lg border border-gray-200 py-1 z-20">
-                    <Link
-                      to="/admin/profile"
-                      className="flex items-center gap-2 px-4 py-2 text-sm text-gray-700 hover:bg-gray-50 transition-colors"
-                      onClick={() => setProfileDropdownOpen(false)}
-                    >
-                      <User className="w-4 h-4" />
-                      Profile
-                    </Link>
-                    <button
-                      onClick={() => { setProfileDropdownOpen(false); handleLogout(); }}
-                      className="w-full flex items-center gap-2 px-4 py-2 text-sm text-red-600 hover:bg-red-50 transition-colors"
-                    >
-                      <LogOut className="w-4 h-4" />
-                      Logout
-                    </button>
-                    <div className="border-t border-gray-100 my-1" />
-                    <button
-                      onClick={() => { setProfileDropdownOpen(false); handleAdminPortalLogout(); }}
-                      className="w-full flex items-center gap-2 px-4 py-2 text-sm text-amber-700 hover:bg-amber-50 transition-colors"
-                    >
-                      <ShieldOff className="w-4 h-4" />
-                      Exit Admin Portal
-                    </button>
-                  </div>
-                </>
-              )}
-            </div>
-          </div>
-        </header>
-
-        {/* Trial Status Banner */}
-        <TrialStatusBanner />
-
-        {/* Page Content */}
-        <main className="flex-1 overflow-auto">
-          <Outlet />
-        </main>
+          <span className="font-orbitron text-xs font-bold text-neon-green">ADMIN PORTAL</span>
+        </div>
+        <button
+          onClick={() => setMobileOpen(true)}
+          className="p-2 text-gray-400 hover:text-neon-green transition-colors"
+        >
+          <Menu className="w-5 h-5" />
+        </button>
       </div>
 
-      {/* Mobile Menu Overlay */}
-      {mobileMenuOpen && (
-        <>
+      {/* Mobile Drawer */}
+      {mobileOpen && (
+        <div className="lg:hidden fixed inset-0 z-50 flex">
           <div
-            className="fixed inset-0 bg-black/50 z-40 lg:hidden"
-            onClick={() => setMobileMenuOpen(false)}
+            className="absolute inset-0 bg-black/80 backdrop-blur-sm"
+            onClick={() => setMobileOpen(false)}
           />
-          <div className="fixed inset-y-0 left-0 w-72 bg-gradient-to-b from-forest-900 via-forest-800 to-sage-900 text-white shadow-2xl z-50 lg:hidden flex flex-col">
-            <div className="p-4 border-b border-forest-700/50 flex items-center justify-between">
-              <div className="flex items-center gap-3">
-                <div className="w-9 h-9 rounded-xl bg-gradient-to-br from-saffron-400 to-gold-500 flex items-center justify-center">
-                  <img src="/assets/generated/neem-leaf-logo.dim_256x256.png" alt="Logo" className="w-6 h-6 object-contain" />
-                </div>
-                <div>
-                  <p className="font-bold text-sm text-white font-display">Bevinamarada</p>
-                  <p className="text-xs text-forest-300">Ayurvedic Store</p>
-                </div>
+          <div className="relative w-72 bg-neon-black border-r border-neon-border flex flex-col h-full">
+            {/* Drawer Header */}
+            <div className="flex items-center justify-between px-5 py-4 border-b border-neon-border">
+              <div className="flex items-center gap-2">
+                <Zap className="w-5 h-5 text-neon-green" />
+                <span className="font-orbitron text-sm font-bold text-neon-green">ADMIN PORTAL</span>
               </div>
               <button
-                onClick={() => setMobileMenuOpen(false)}
-                className="p-2 rounded-lg hover:bg-forest-700/50 transition-colors"
+                onClick={() => setMobileOpen(false)}
+                className="p-1 text-gray-500 hover:text-neon-green transition-colors"
               >
-                <X className="w-5 h-5 text-forest-300" />
+                <X className="w-5 h-5" />
               </button>
             </div>
 
-            <nav className="flex-1 p-4 space-y-1 overflow-y-auto">
+            {/* Drawer Nav */}
+            <nav className="flex-1 px-3 py-4 overflow-y-auto space-y-1">
               {navItems.map((item) => {
                 const Icon = item.icon;
-                const isActive = currentPath === item.path;
+                const active = isActive(item.path);
                 return (
                   <Link
                     key={item.path}
                     to={item.path}
-                    onClick={() => setMobileMenuOpen(false)}
-                    className={`flex items-center gap-3 px-4 py-3 rounded-xl transition-all duration-200 ${
-                      isActive
-                        ? 'bg-gradient-to-r from-saffron-500/30 to-gold-500/20 text-saffron-300 border border-saffron-500/30'
-                        : 'text-forest-300 hover:bg-forest-700/50 hover:text-white'
+                    onClick={() => setMobileOpen(false)}
+                    className={`flex items-center gap-3 px-3 py-2.5 rounded-md text-sm font-rajdhani font-medium transition-all duration-200 ${
+                      active
+                        ? 'text-neon-green bg-neon-green/10 border-l-2 border-neon-green pl-[10px]'
+                        : 'text-gray-500 hover:text-neon-green hover:bg-neon-green/5 border-l-2 border-transparent'
                     }`}
                   >
-                    <Icon className={`w-5 h-5 ${isActive ? 'text-saffron-400' : 'text-forest-400'}`} />
-                    <span className="font-medium text-sm">{item.label}</span>
+                    <Icon className={`w-4 h-4 flex-shrink-0 ${active ? 'text-neon-green' : ''}`} />
+                    <span>{item.label}</span>
                   </Link>
                 );
               })}
             </nav>
 
-            <div className="p-4 border-t border-forest-700/50 space-y-1">
+            {/* Drawer Footer */}
+            <div className="px-3 py-4 border-t border-neon-border space-y-2">
               <Link
-                to="/admin/profile"
-                onClick={() => setMobileMenuOpen(false)}
-                className="flex items-center gap-2 px-3 py-2 text-forest-300 hover:text-white hover:bg-forest-700/50 rounded-lg transition-colors text-sm"
+                to="/"
+                onClick={() => setMobileOpen(false)}
+                className="flex items-center gap-3 px-3 py-2.5 rounded-md text-sm text-gray-500 hover:text-neon-green hover:bg-neon-green/5 transition-all duration-200 font-rajdhani"
               >
-                <User className="w-4 h-4" />
-                Profile
+                <Home className="w-4 h-4" />
+                <span>Back to Store</span>
               </Link>
               <button
-                onClick={() => { setMobileMenuOpen(false); handleLogout(); }}
-                className="w-full flex items-center gap-2 px-3 py-2 text-forest-300 hover:text-red-400 hover:bg-red-500/10 rounded-lg transition-colors text-sm"
+                onClick={() => handleLogout(navigate)}
+                className="w-full flex items-center gap-3 px-3 py-2.5 rounded-md text-sm text-red-500 hover:text-red-400 hover:bg-red-500/10 transition-all duration-200 font-rajdhani"
               >
                 <LogOut className="w-4 h-4" />
-                Logout
-              </button>
-              <button
-                onClick={() => { setMobileMenuOpen(false); handleAdminPortalLogout(); }}
-                className="w-full flex items-center gap-2 px-3 py-2 text-forest-300 hover:text-amber-400 hover:bg-amber-500/10 rounded-lg transition-colors text-sm"
-              >
-                <ShieldOff className="w-4 h-4" />
-                Exit Admin Portal
+                <span>Logout</span>
               </button>
             </div>
           </div>
-        </>
+        </div>
       )}
+
+      {/* Main Content */}
+      <main className="flex-1 lg:ml-64 min-h-screen">
+        <div className="lg:hidden h-14" /> {/* Mobile header spacer */}
+        <Outlet />
+      </main>
     </div>
   );
 }

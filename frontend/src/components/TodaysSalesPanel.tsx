@@ -1,78 +1,107 @@
+import { ShoppingCart, DollarSign, Package } from 'lucide-react';
 import { useGetTodaysSales, useGetAllStockItems } from '../hooks/useQueries';
-import { ShoppingCart, TrendingUp, Package } from 'lucide-react';
-import { Skeleton } from '@/components/ui/skeleton';
 
 export default function TodaysSalesPanel() {
-  const { data: todaysSales, isLoading: salesLoading } = useGetTodaysSales();
-  const { data: stockItems, isLoading: stockLoading } = useGetAllStockItems();
+  const { data: sales = [], isLoading } = useGetTodaysSales();
+  const { data: stockItems = [] } = useGetAllStockItems();
 
-  const isLoading = salesLoading || stockLoading;
+  const totalRevenue = sales.reduce((sum, sale) => sum + Number(sale.totalPrice), 0);
+  const totalUnits = sales.reduce((sum, sale) => sum + Number(sale.quantity), 0);
 
-  const totalRevenue = todaysSales?.reduce((sum, sale) => sum + Number(sale.totalPrice), 0) ?? 0;
-  const totalUnits = todaysSales?.reduce((sum, sale) => sum + Number(sale.quantity), 0) ?? 0;
-
-  const getItemName = (stockItemId: bigint) => {
-    return stockItems?.find(item => item.id === stockItemId)?.name ?? `Item #${stockItemId}`;
+  const getProductName = (id: bigint) => {
+    const item = stockItems.find((s) => s.id === id);
+    return item?.name ?? `Product #${id}`;
   };
 
   if (isLoading) {
     return (
-      <div className="space-y-3">
-        <Skeleton className="h-20 w-full rounded-xl" />
-        <Skeleton className="h-20 w-full rounded-xl" />
-        <Skeleton className="h-32 w-full rounded-xl" />
+      <div className="space-y-4">
+        <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
+          {[1, 2, 3].map((i) => (
+            <div key={i} className="bg-neon-surface border border-neon-green/20 rounded-xl p-5 animate-pulse">
+              <div className="h-4 bg-neon-green/10 rounded mb-3 w-24" />
+              <div className="h-8 bg-neon-green/10 rounded w-32" />
+            </div>
+          ))}
+        </div>
       </div>
     );
   }
 
   return (
-    <div className="space-y-4">
+    <div className="space-y-6">
       {/* Summary Cards */}
-      <div className="grid grid-cols-2 gap-3">
-        <div className="bg-gradient-to-br from-forest-500 to-sage-600 rounded-xl p-4 text-white">
-          <div className="flex items-center gap-2 mb-1">
-            <TrendingUp className="w-4 h-4 opacity-80" />
-            <span className="text-xs opacity-80">Revenue</span>
+      <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
+        <div className="bg-neon-surface border border-neon-green/30 rounded-xl p-5 shadow-neon-sm animate-pulse-glow">
+          <div className="flex items-center gap-2 mb-3">
+            <div className="w-8 h-8 rounded-lg bg-neon-green/10 border border-neon-green/20 flex items-center justify-center">
+              <DollarSign className="w-4 h-4 text-neon-green" />
+            </div>
+            <span className="text-neon-dim font-mono text-xs uppercase tracking-wider">Today's Revenue</span>
           </div>
-          <p className="text-xl font-bold">₹{totalRevenue.toLocaleString('en-IN')}</p>
+          <div className="text-2xl font-bold text-neon-green font-mono neon-text-glow">
+            ₹{totalRevenue.toLocaleString('en-IN')}
+          </div>
         </div>
-        <div className="bg-gradient-to-br from-saffron-500 to-gold-500 rounded-xl p-4 text-white">
-          <div className="flex items-center gap-2 mb-1">
-            <ShoppingCart className="w-4 h-4 opacity-80" />
-            <span className="text-xs opacity-80">Units Sold</span>
+        <div className="bg-neon-surface border border-neon-green/20 rounded-xl p-5">
+          <div className="flex items-center gap-2 mb-3">
+            <div className="w-8 h-8 rounded-lg bg-neon-green/10 border border-neon-green/20 flex items-center justify-center">
+              <ShoppingCart className="w-4 h-4 text-neon-green" />
+            </div>
+            <span className="text-neon-dim font-mono text-xs uppercase tracking-wider">Transactions</span>
           </div>
-          <p className="text-xl font-bold">{totalUnits}</p>
+          <div className="text-2xl font-bold text-white font-mono">{sales.length}</div>
+        </div>
+        <div className="bg-neon-surface border border-neon-green/20 rounded-xl p-5">
+          <div className="flex items-center gap-2 mb-3">
+            <div className="w-8 h-8 rounded-lg bg-neon-green/10 border border-neon-green/20 flex items-center justify-center">
+              <Package className="w-4 h-4 text-neon-green" />
+            </div>
+            <span className="text-neon-dim font-mono text-xs uppercase tracking-wider">Units Sold</span>
+          </div>
+          <div className="text-2xl font-bold text-white font-mono">{totalUnits}</div>
         </div>
       </div>
 
-      {/* Transactions */}
-      {todaysSales && todaysSales.length > 0 ? (
-        <div className="space-y-2">
-          <h4 className="text-sm font-semibold text-forest-700">Today's Transactions</h4>
-          <div className="space-y-2 max-h-48 overflow-y-auto">
-            {todaysSales.map((sale) => (
-              <div
-                key={sale.id.toString()}
-                className="flex items-center gap-3 p-3 bg-forest-50 rounded-xl border border-forest-100"
-              >
-                <div className="w-8 h-8 rounded-lg bg-forest-100 flex items-center justify-center flex-shrink-0">
-                  <Package className="w-4 h-4 text-forest-600" />
-                </div>
-                <div className="flex-1 min-w-0">
-                  <p className="text-sm font-medium text-forest-800 truncate">{getItemName(sale.stockItemId)}</p>
-                  <p className="text-xs text-forest-500">Qty: {sale.quantity.toString()}</p>
-                </div>
-                <p className="text-sm font-bold text-forest-700">₹{Number(sale.totalPrice).toLocaleString('en-IN')}</p>
-              </div>
-            ))}
+      {/* Sales Table */}
+      <div className="bg-neon-surface border border-neon-green/20 rounded-xl overflow-hidden">
+        <div className="px-4 py-3 border-b border-neon-green/20">
+          <h3 className="text-neon-green font-mono font-semibold text-sm">Transactions</h3>
+        </div>
+        {sales.length === 0 ? (
+          <div className="p-8 text-center">
+            <ShoppingCart className="w-12 h-12 text-neon-dim/30 mx-auto mb-3" />
+            <p className="text-neon-dim font-mono text-sm">No sales today</p>
           </div>
-        </div>
-      ) : (
-        <div className="text-center py-6 text-forest-400">
-          <ShoppingCart className="w-8 h-8 mx-auto mb-2 opacity-50" />
-          <p className="text-sm">No sales today yet</p>
-        </div>
-      )}
+        ) : (
+          <div className="overflow-x-auto">
+            <table className="w-full">
+              <thead>
+                <tr className="border-b border-neon-green/10">
+                  <th className="text-left px-4 py-3 text-neon-green font-mono text-xs uppercase tracking-wider">Sale ID</th>
+                  <th className="text-left px-4 py-3 text-neon-green font-mono text-xs uppercase tracking-wider">Product</th>
+                  <th className="text-left px-4 py-3 text-neon-green font-mono text-xs uppercase tracking-wider">Qty</th>
+                  <th className="text-left px-4 py-3 text-neon-green font-mono text-xs uppercase tracking-wider">Total</th>
+                  <th className="text-left px-4 py-3 text-neon-green font-mono text-xs uppercase tracking-wider">Time</th>
+                </tr>
+              </thead>
+              <tbody>
+                {sales.map((sale, idx) => (
+                  <tr key={String(sale.id)} className={`border-b border-neon-green/10 hover:bg-neon-green/5 transition-colors ${idx % 2 === 0 ? '' : 'bg-neon-black/30'}`}>
+                    <td className="px-4 py-3 text-neon-dim font-mono text-sm">#{String(sale.id)}</td>
+                    <td className="px-4 py-3 text-white font-mono text-sm">{getProductName(sale.stockItemId)}</td>
+                    <td className="px-4 py-3 text-white font-mono text-sm">{String(sale.quantity)}</td>
+                    <td className="px-4 py-3 text-neon-green font-mono text-sm">₹{Number(sale.totalPrice).toLocaleString('en-IN')}</td>
+                    <td className="px-4 py-3 text-neon-dim font-mono text-sm">
+                      {new Date(Number(sale.timestamp) / 1_000_000).toLocaleTimeString()}
+                    </td>
+                  </tr>
+                ))}
+              </tbody>
+            </table>
+          </div>
+        )}
+      </div>
     </div>
   );
 }

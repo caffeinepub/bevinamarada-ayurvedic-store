@@ -1,157 +1,88 @@
-import React, { useState } from 'react';
-import {
-  Package,
-  Plus,
-  Search,
-  Edit,
-  Trash2,
-  TrendingUp,
-  AlertTriangle,
-  ShoppingCart,
-  Filter,
-  Calendar,
-} from 'lucide-react';
-import {
-  useGetAllStockItems,
-  useGetLowStockItems,
-  useGetExpiringStockItems,
-  useGetExpiredStockItems,
-  useDeleteStockItem,
-  useMarkTrending,
-  useAddSale,
-} from '../hooks/useQueries';
+import { useState } from 'react';
+import { Link } from '@tanstack/react-router';
+import { Plus, Search, Package, AlertTriangle, TrendingUp, Edit, Trash2, ShoppingCart, ArrowLeft } from 'lucide-react';
+import { useGetAllStockItems, useDeleteStockItem, useAddSale, useMarkTrending } from '../hooks/useQueries';
+import { StockItem } from '../backend';
 import StockItemForm from '../components/StockItemForm';
-import { Skeleton } from '@/components/ui/skeleton';
-import type { StockItem } from '../backend';
 
-const formatINR = (amount: bigint | number) => {
-  const num = typeof amount === 'bigint' ? Number(amount) : amount;
-  return new Intl.NumberFormat('en-IN', { style: 'currency', currency: 'INR', maximumFractionDigits: 0 }).format(num);
-};
-
-type FilterTab = 'all' | 'low' | 'out' | 'expiring' | 'expired';
+type FilterTab = 'all' | 'low-stock' | 'trending' | 'expiring';
 
 export default function StockManagement() {
-  const [activeFilter, setActiveFilter] = useState<FilterTab>('all');
   const [search, setSearch] = useState('');
-  const [editItem, setEditItem] = useState<StockItem | null>(null);
+  const [activeTab, setActiveTab] = useState<FilterTab>('all');
   const [formOpen, setFormOpen] = useState(false);
-  const [saleItem, setSaleItem] = useState<StockItem | null>(null);
-  const [saleQty, setSaleQty] = useState(1);
-  const [deleteConfirm, setDeleteConfirm] = useState<StockItem | null>(null);
+  const [editItem, setEditItem] = useState<StockItem | undefined>(undefined);
 
-  const { data: allItems = [], isLoading } = useGetAllStockItems();
-  const { data: lowItems = [] } = useGetLowStockItems();
-  const { data: expiringItems = [] } = useGetExpiringStockItems();
-  const { data: expiredItems = [] } = useGetExpiredStockItems();
+  const { data: stockItems = [], isLoading } = useGetAllStockItems();
+  const deleteItem = useDeleteStockItem();
+  const addSale = useAddSale();
+  const markTrending = useMarkTrending();
 
-  const deleteMutation = useDeleteStockItem();
-  const markTrendingMutation = useMarkTrending();
-  const addSaleMutation = useAddSale();
+  const now = Date.now() * 1_000_000;
+  const thirtyDaysNanos = 30 * 24 * 60 * 60 * 1_000_000_000;
 
-  const outOfStockItems = allItems.filter((i) => Number(i.quantity) === 0);
-
-  const getFilteredItems = (): StockItem[] => {
-    let items: StockItem[] = [];
-    switch (activeFilter) {
-      case 'all': items = allItems; break;
-      case 'low': items = lowItems; break;
-      case 'out': items = outOfStockItems; break;
-      case 'expiring': items = expiringItems; break;
-      case 'expired': items = expiredItems; break;
+  const filtered = stockItems.filter((item) => {
+    const matchesSearch = item.name.toLowerCase().includes(search.toLowerCase()) ||
+      item.category.toLowerCase().includes(search.toLowerCase());
+    if (!matchesSearch) return false;
+    if (activeTab === 'low-stock') return item.isLowStock;
+    if (activeTab === 'trending') return item.isTrending;
+    if (activeTab === 'expiring') {
+      if (!item.expiryDate) return false;
+      const expiry = Number(item.expiryDate);
+      return expiry > now && expiry - now <= thirtyDaysNanos;
     }
-    if (search.trim()) {
-      const q = search.toLowerCase();
-      items = items.filter((i) => i.name.toLowerCase().includes(q) || i.category.toLowerCase().includes(q));
-    }
-    return items;
-  };
+    return true;
+  });
 
-  const filteredItems = getFilteredItems();
-
-  const filterTabs = [
-    { id: 'all' as FilterTab, label: 'All', count: allItems.length, color: 'text-saffron bg-saffron-light' },
-    { id: 'low' as FilterTab, label: 'Low Stock', count: lowItems.length, color: 'text-gold bg-gold-light' },
-    { id: 'out' as FilterTab, label: 'Out of Stock', count: outOfStockItems.length, color: 'text-coral bg-coral-light' },
-    { id: 'expiring' as FilterTab, label: 'Expiring', count: expiringItems.length, color: 'text-teal bg-teal-light' },
-    { id: 'expired' as FilterTab, label: 'Expired', count: expiredItems.length, color: 'text-destructive bg-destructive/10' },
+  const tabs: { key: FilterTab; label: string; count: number }[] = [
+    { key: 'all', label: 'All', count: stockItems.length },
+    { key: 'low-stock', label: 'Low Stock', count: stockItems.filter(i => i.isLowStock).length },
+    { key: 'trending', label: 'Trending', count: stockItems.filter(i => i.isTrending).length },
+    { key: 'expiring', label: 'Expiring', count: stockItems.filter(i => {
+      if (!i.expiryDate) return false;
+      const expiry = Number(i.expiryDate);
+      return expiry > now && expiry - now <= thirtyDaysNanos;
+    }).length },
   ];
 
-  const getExpiryStatus = (item: StockItem) => {
-    if (!item.expiryDate) return null;
-    const nowMs = Date.now();
-    const expiryMs = Number(item.expiryDate) / 1_000_000;
-    if (expiryMs <= nowMs) return { label: 'Expired', cls: 'badge-coral' };
-    const days = Math.floor((expiryMs - nowMs) / (24 * 60 * 60 * 1000));
-    if (days <= 30) return { label: `${days}d left`, cls: 'badge-gold' };
-    return { label: new Date(expiryMs).toLocaleDateString('en-IN'), cls: 'badge-teal' };
-  };
-
-  const handleDelete = async () => {
-    if (!deleteConfirm) return;
-    await deleteMutation.mutateAsync(deleteConfirm.id);
-    setDeleteConfirm(null);
-  };
-
-  const handleSale = async () => {
-    if (!saleItem) return;
-    await addSaleMutation.mutateAsync({ stockItemId: saleItem.id, quantity: BigInt(saleQty) });
-    setSaleItem(null);
-    setSaleQty(1);
-  };
-
-  const handleOpenAdd = () => {
-    setEditItem(null);
-    setFormOpen(true);
-  };
-
-  const handleOpenEdit = (item: StockItem) => {
-    setEditItem(item);
-    setFormOpen(true);
-  };
-
-  const handleFormClose = (open: boolean) => {
-    setFormOpen(open);
-    if (!open) setEditItem(null);
-  };
-
   return (
-    <div className="space-y-6 animate-fade-in-up">
+    <div className="min-h-screen bg-neon-black p-6 lg:p-8">
       {/* Header */}
-      <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
+      <div className="flex items-center justify-between mb-6">
         <div>
-          <h1 className="text-3xl font-bold text-foreground flex items-center gap-3">
-            <div className="w-10 h-10 rounded-xl gradient-teal flex items-center justify-center shadow-teal">
-              <Package size={20} className="text-white" />
-            </div>
-            Stock Management
-          </h1>
-          <p className="text-muted-foreground mt-1">Manage your inventory and products</p>
+          <div className="flex items-center gap-2 mb-1">
+            <Link to="/admin" className="text-gray-500 hover:text-neon-green transition-colors">
+              <ArrowLeft className="w-4 h-4" />
+            </Link>
+            <Package className="w-5 h-5 text-neon-green" />
+            <h1 className="font-orbitron text-xl font-bold text-white">STOCK MANAGEMENT</h1>
+          </div>
+          <p className="text-gray-500 font-mono text-xs">{stockItems.length} items in inventory</p>
         </div>
         <button
-          onClick={handleOpenAdd}
-          className="flex items-center gap-2 px-5 py-2.5 rounded-xl gradient-saffron text-white font-semibold shadow-saffron hover:opacity-90 transition-opacity"
+          onClick={() => { setEditItem(undefined); setFormOpen(true); }}
+          className="flex items-center gap-2 px-4 py-2 neon-btn-solid rounded-md font-orbitron text-xs font-bold tracking-wider"
         >
-          <Plus size={18} />
-          Add Product
+          <Plus className="w-4 h-4" />
+          ADD ITEM
         </button>
       </div>
 
-      {/* Filter Tabs */}
-      <div className="flex flex-wrap gap-2">
-        {filterTabs.map((tab) => (
+      {/* Tabs */}
+      <div className="flex gap-2 mb-4 overflow-x-auto pb-1">
+        {tabs.map((tab) => (
           <button
-            key={tab.id}
-            onClick={() => setActiveFilter(tab.id)}
-            className={`flex items-center gap-2 px-4 py-2 rounded-xl text-sm font-semibold transition-all duration-150 border ${
-              activeFilter === tab.id
-                ? `${tab.color} border-current shadow-sm`
-                : 'bg-card text-muted-foreground border-border hover:bg-muted'
+            key={tab.key}
+            onClick={() => setActiveTab(tab.key)}
+            className={`flex items-center gap-1.5 px-4 py-2 rounded-md text-xs font-mono font-medium whitespace-nowrap transition-all duration-200 ${
+              activeTab === tab.key
+                ? 'bg-neon-green/10 text-neon-green border border-neon-green/50'
+                : 'text-gray-500 border border-transparent hover:text-neon-green hover:border-neon-green/20'
             }`}
           >
-            <Filter size={13} />
             {tab.label}
-            <span className="text-xs px-1.5 py-0.5 rounded-full font-bold bg-black/10">
+            <span className={`px-1.5 py-0.5 rounded text-xs ${activeTab === tab.key ? 'bg-neon-green/20 text-neon-green' : 'bg-gray-800 text-gray-500'}`}>
               {tab.count}
             </span>
           </button>
@@ -159,243 +90,129 @@ export default function StockManagement() {
       </div>
 
       {/* Search */}
-      <div className="relative">
-        <Search size={16} className="absolute left-3.5 top-1/2 -translate-y-1/2 text-muted-foreground" />
+      <div className="relative mb-6">
+        <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-gray-500" />
         <input
           type="text"
           placeholder="Search products..."
           value={search}
           onChange={(e) => setSearch(e.target.value)}
-          className="w-full pl-10 pr-4 py-2.5 rounded-xl border border-border bg-card text-foreground placeholder:text-muted-foreground focus:outline-none focus:ring-2 focus:ring-saffron/30 focus:border-saffron transition-colors"
+          className="w-full pl-10 pr-4 py-2.5 neon-input rounded-md font-mono text-sm"
         />
       </div>
 
       {/* Table */}
-      <div className="admin-card overflow-hidden">
-        <div className="overflow-x-auto">
-          {isLoading ? (
-            <div className="p-6 space-y-3">
-              {[...Array(5)].map((_, i) => (
-                <Skeleton key={i} className="h-14 w-full rounded-xl" />
-              ))}
-            </div>
-          ) : filteredItems.length === 0 ? (
-            <div className="text-center py-16">
-              <Package size={48} className="mx-auto text-muted-foreground/40 mb-3" />
-              <p className="text-muted-foreground font-medium">No products found</p>
-              <p className="text-muted-foreground/60 text-sm mt-1">
-                {search ? 'Try a different search term' : 'Add your first product to get started'}
-              </p>
-            </div>
-          ) : (
-            <table className="admin-table">
-              <thead>
-                <tr>
-                  <th>Product</th>
-                  <th>Category</th>
-                  <th>Price</th>
-                  <th>Stock</th>
-                  <th>Expiry</th>
-                  <th>Status</th>
-                  <th>Actions</th>
-                </tr>
-              </thead>
-              <tbody>
-                {filteredItems.map((item) => {
-                  const expiry = getExpiryStatus(item);
-                  return (
-                    <tr key={String(item.id)}>
-                      <td>
-                        <div className="flex items-center gap-3">
-                          {item.image ? (
-                            <img
-                              src={item.image.getDirectURL()}
-                              alt={item.name}
-                              className="w-9 h-9 rounded-lg object-cover border border-border"
-                            />
-                          ) : (
-                            <div className="w-9 h-9 rounded-lg gradient-saffron flex items-center justify-center">
-                              <Package size={14} className="text-white" />
-                            </div>
-                          )}
-                          <div>
-                            <p className="font-semibold text-foreground text-sm">{item.name}</p>
-                            {item.isTrending && (
-                              <span className="badge-gold text-xs">
-                                <TrendingUp size={10} /> Trending
-                              </span>
-                            )}
-                          </div>
-                        </div>
-                      </td>
-                      <td>
-                        <span className="badge-teal">{item.category}</span>
-                      </td>
-                      <td className="font-semibold text-teal">{formatINR(item.unitPrice)}</td>
-                      <td>
-                        <span
-                          className={
-                            Number(item.quantity) === 0
-                              ? 'badge-coral'
-                              : item.isLowStock
-                              ? 'badge-gold'
-                              : 'badge-success'
-                          }
-                        >
-                          {Number(item.quantity)} units
-                        </span>
-                      </td>
-                      <td>
-                        {expiry ? (
-                          <span className={expiry.cls}>
-                            <Calendar size={11} />
-                            {expiry.label}
-                          </span>
-                        ) : (
-                          <span className="text-muted-foreground text-xs">—</span>
-                        )}
-                      </td>
-                      <td>
-                        <div className="flex items-center gap-1.5">
-                          {item.isLowStock && Number(item.quantity) > 0 && (
-                            <span className="badge-gold">
-                              <AlertTriangle size={10} /> Low
-                            </span>
-                          )}
-                          {Number(item.quantity) === 0 && (
-                            <span className="badge-coral">Out</span>
-                          )}
-                          {!item.isLowStock && Number(item.quantity) > 0 && (
-                            <span className="badge-success">In Stock</span>
-                          )}
-                        </div>
-                      </td>
-                      <td>
-                        <div className="flex items-center gap-1.5">
-                          <button
-                            onClick={() => setSaleItem(item)}
-                            disabled={Number(item.quantity) === 0}
-                            className="p-1.5 rounded-lg bg-teal-light text-teal hover:bg-teal hover:text-white transition-colors disabled:opacity-40 disabled:cursor-not-allowed"
-                            title="Record Sale"
-                          >
-                            <ShoppingCart size={14} />
-                          </button>
-                          <button
-                            onClick={() => markTrendingMutation.mutate({ id: item.id, isTrending: !item.isTrending })}
-                            className={`p-1.5 rounded-lg transition-colors ${
-                              item.isTrending
-                                ? 'bg-gold text-white hover:opacity-80'
-                                : 'bg-gold-light text-gold hover:bg-gold hover:text-white'
-                            }`}
-                            title={item.isTrending ? 'Remove Trending' : 'Mark Trending'}
-                          >
-                            <TrendingUp size={14} />
-                          </button>
-                          <button
-                            onClick={() => handleOpenEdit(item)}
-                            className="p-1.5 rounded-lg bg-saffron-light text-saffron hover:bg-saffron hover:text-white transition-colors"
-                            title="Edit"
-                          >
-                            <Edit size={14} />
-                          </button>
-                          <button
-                            onClick={() => setDeleteConfirm(item)}
-                            className="p-1.5 rounded-lg bg-destructive/10 text-destructive hover:bg-destructive hover:text-white transition-colors"
-                            title="Delete"
-                          >
-                            <Trash2 size={14} />
-                          </button>
-                        </div>
-                      </td>
-                    </tr>
-                  );
-                })}
-              </tbody>
-            </table>
-          )}
+      {isLoading ? (
+        <div className="space-y-3">
+          {[...Array(5)].map((_, i) => (
+            <div key={i} className="h-14 rounded-lg bg-neon-surface animate-pulse" />
+          ))}
         </div>
-      </div>
+      ) : filtered.length === 0 ? (
+        <div className="text-center py-16">
+          <Package className="w-12 h-12 text-gray-700 mx-auto mb-3" />
+          <p className="text-gray-500 font-mono text-sm">No items found</p>
+        </div>
+      ) : (
+        <div className="overflow-x-auto">
+          <table className="w-full">
+            <thead>
+              <tr className="border-b border-neon-border">
+                <th className="text-left py-3 px-4 text-xs font-mono text-gray-500 uppercase tracking-widest">Product</th>
+                <th className="text-left py-3 px-4 text-xs font-mono text-gray-500 uppercase tracking-widest hidden sm:table-cell">Category</th>
+                <th className="text-right py-3 px-4 text-xs font-mono text-gray-500 uppercase tracking-widest">Qty</th>
+                <th className="text-right py-3 px-4 text-xs font-mono text-gray-500 uppercase tracking-widest hidden md:table-cell">Price</th>
+                <th className="text-center py-3 px-4 text-xs font-mono text-gray-500 uppercase tracking-widest">Status</th>
+                <th className="text-right py-3 px-4 text-xs font-mono text-gray-500 uppercase tracking-widest">Actions</th>
+              </tr>
+            </thead>
+            <tbody>
+              {filtered.map((item) => (
+                <tr key={item.id.toString()} className="border-b border-neon-border/30 hover:bg-neon-green/3 transition-colors group">
+                  <td className="py-3 px-4">
+                    <p className="font-rajdhani font-semibold text-white text-sm group-hover:text-neon-green transition-colors">{item.name}</p>
+                  </td>
+                  <td className="py-3 px-4 hidden sm:table-cell">
+                    <span className="text-xs font-mono text-gray-500 px-2 py-0.5 rounded border border-neon-border">{item.category}</span>
+                  </td>
+                  <td className="py-3 px-4 text-right">
+                    <span className={`font-mono text-sm font-bold ${item.isLowStock ? 'text-yellow-400' : 'text-neon-green'}`}>
+                      {item.quantity.toString()}
+                    </span>
+                  </td>
+                  <td className="py-3 px-4 text-right hidden md:table-cell">
+                    <span className="font-mono text-sm text-gray-300">₹{Number(item.unitPrice).toLocaleString('en-IN')}</span>
+                  </td>
+                  <td className="py-3 px-4 text-center">
+                    <div className="flex items-center justify-center gap-1.5">
+                      {item.isLowStock && (
+                        <span className="inline-flex items-center gap-1 px-2 py-0.5 rounded text-xs font-mono bg-yellow-500/10 text-yellow-400 border border-yellow-500/30">
+                          <AlertTriangle className="w-3 h-3" />
+                          Low
+                        </span>
+                      )}
+                      {item.isTrending && (
+                        <span className="inline-flex items-center gap-1 px-2 py-0.5 rounded text-xs font-mono bg-neon-green/10 text-neon-green border border-neon-green/30">
+                          <TrendingUp className="w-3 h-3" />
+                          Hot
+                        </span>
+                      )}
+                      {!item.isLowStock && !item.isTrending && (
+                        <span className="text-xs font-mono text-gray-600">—</span>
+                      )}
+                    </div>
+                  </td>
+                  <td className="py-3 px-4">
+                    <div className="flex items-center justify-end gap-1">
+                      <button
+                        onClick={() => addSale.mutate({ stockItemId: item.id, quantity: 1n })}
+                        disabled={addSale.isPending || Number(item.quantity) === 0}
+                        title="Record Sale"
+                        className="p-1.5 text-gray-500 hover:text-neon-green hover:bg-neon-green/10 rounded transition-all disabled:opacity-30"
+                      >
+                        <ShoppingCart className="w-3.5 h-3.5" />
+                      </button>
+                      <button
+                        onClick={() => markTrending.mutate({ id: item.id, isTrending: !item.isTrending })}
+                        disabled={markTrending.isPending}
+                        title={item.isTrending ? 'Remove Trending' : 'Mark Trending'}
+                        className={`p-1.5 rounded transition-all ${item.isTrending ? 'text-neon-green hover:bg-neon-green/10' : 'text-gray-500 hover:text-neon-green hover:bg-neon-green/10'}`}
+                      >
+                        <TrendingUp className="w-3.5 h-3.5" />
+                      </button>
+                      <button
+                        onClick={() => { setEditItem(item); setFormOpen(true); }}
+                        title="Edit"
+                        className="p-1.5 text-gray-500 hover:text-neon-green hover:bg-neon-green/10 rounded transition-all"
+                      >
+                        <Edit className="w-3.5 h-3.5" />
+                      </button>
+                      <button
+                        onClick={() => {
+                          if (confirm(`Delete "${item.name}"?`)) {
+                            deleteItem.mutate(item.id);
+                          }
+                        }}
+                        disabled={deleteItem.isPending}
+                        title="Delete"
+                        className="p-1.5 text-gray-500 hover:text-red-400 hover:bg-red-500/10 rounded transition-all disabled:opacity-30"
+                      >
+                        <Trash2 className="w-3.5 h-3.5" />
+                      </button>
+                    </div>
+                  </td>
+                </tr>
+              ))}
+            </tbody>
+          </table>
+        </div>
+      )}
 
-      {/* Add/Edit Form — uses the existing StockItemForm with open/onOpenChange/editItem props */}
       <StockItemForm
         open={formOpen}
-        onOpenChange={handleFormClose}
+        onOpenChange={(open) => { setFormOpen(open); if (!open) setEditItem(undefined); }}
         editItem={editItem}
       />
-
-      {/* Sale Modal */}
-      {saleItem && (
-        <div className="fixed inset-0 bg-black/60 z-50 flex items-center justify-center p-4">
-          <div className="bg-card rounded-2xl shadow-card-hover w-full max-w-sm p-6 animate-scale-in">
-            <h3 className="text-xl font-bold text-foreground mb-1">Record Sale</h3>
-            <p className="text-muted-foreground text-sm mb-5">{saleItem.name}</p>
-            <div className="space-y-4">
-              <div>
-                <label className="text-sm font-medium text-foreground block mb-1.5">Quantity</label>
-                <input
-                  type="number"
-                  min={1}
-                  max={Number(saleItem.quantity)}
-                  value={saleQty}
-                  onChange={(e) => setSaleQty(Number(e.target.value))}
-                  className="w-full px-3 py-2.5 rounded-xl border border-border bg-background focus:outline-none focus:ring-2 focus:ring-teal/30 focus:border-teal"
-                />
-                <p className="text-xs text-muted-foreground mt-1">Available: {Number(saleItem.quantity)}</p>
-              </div>
-              <div className="bg-teal-light rounded-xl p-3">
-                <p className="text-sm text-teal font-semibold">
-                  Total: {formatINR(Number(saleItem.unitPrice) * saleQty)}
-                </p>
-              </div>
-            </div>
-            <div className="flex gap-3 mt-6">
-              <button
-                onClick={() => { setSaleItem(null); setSaleQty(1); }}
-                className="flex-1 px-4 py-2.5 rounded-xl border border-border text-foreground hover:bg-muted transition-colors font-medium"
-              >
-                Cancel
-              </button>
-              <button
-                onClick={handleSale}
-                disabled={addSaleMutation.isPending || saleQty < 1 || saleQty > Number(saleItem.quantity)}
-                className="flex-1 px-4 py-2.5 rounded-xl gradient-teal text-white font-semibold shadow-teal hover:opacity-90 transition-opacity disabled:opacity-50"
-              >
-                {addSaleMutation.isPending ? 'Recording...' : 'Confirm Sale'}
-              </button>
-            </div>
-          </div>
-        </div>
-      )}
-
-      {/* Delete Confirm Modal */}
-      {deleteConfirm && (
-        <div className="fixed inset-0 bg-black/60 z-50 flex items-center justify-center p-4">
-          <div className="bg-card rounded-2xl shadow-card-hover w-full max-w-sm p-6 animate-scale-in">
-            <div className="w-12 h-12 rounded-xl bg-destructive/10 flex items-center justify-center mb-4">
-              <Trash2 size={22} className="text-destructive" />
-            </div>
-            <h3 className="text-xl font-bold text-foreground mb-1">Delete Product</h3>
-            <p className="text-muted-foreground text-sm mb-6">
-              Are you sure you want to delete <strong>{deleteConfirm.name}</strong>? This action cannot be undone.
-            </p>
-            <div className="flex gap-3">
-              <button
-                onClick={() => setDeleteConfirm(null)}
-                className="flex-1 px-4 py-2.5 rounded-xl border border-border text-foreground hover:bg-muted transition-colors font-medium"
-              >
-                Cancel
-              </button>
-              <button
-                onClick={handleDelete}
-                disabled={deleteMutation.isPending}
-                className="flex-1 px-4 py-2.5 rounded-xl bg-destructive text-white font-semibold hover:bg-destructive/90 transition-colors disabled:opacity-50"
-              >
-                {deleteMutation.isPending ? 'Deleting...' : 'Delete'}
-              </button>
-            </div>
-          </div>
-        </div>
-      )}
     </div>
   );
 }

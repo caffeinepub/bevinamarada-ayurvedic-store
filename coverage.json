@@ -1,48 +1,83 @@
 {
   "kind": "coverage_report",
   "version": "1.0",
-  "generatedAt": "2026-02-25T12:42:39.465Z",
+  "generatedAt": "2026-02-25T14:45:26.500Z",
   "sources": {
     "buildRequest": true,
     "implementationPlan": true
   },
   "requirements": {
-    "total": 3,
-    "implemented": 3,
+    "total": 2,
+    "implemented": 2,
     "items": [
       {
         "id": "REQ-1",
-        "summary": "Optimize the AdminGuard component to reduce loading time after login. Eliminate unnecessary sequential async operations by parallelizing the Internet Identity authentication check, actor initialization, and profile/role fetches using Promise.all where possible. Add loading skeleton or spinner feedback so the UI is responsive immediately while data loads in the background rather than showing a blank screen.",
+        "summary": "Ensure the admin portal is fully accessible and visible. The route /admin-login must render the AdminLogin page, and after successful login with credentials (admin/admin123), the user must be redirected to /owner-dashboard. All admin routes (/owner-dashboard, /admin/stock, /admin/sales, /admin/revenue, /admin/customers, /admin/enquiries, /admin/income, /admin/trending, /admin/products, /admin/reports) must be protected by AdminGuard and render correctly inside AdminLayout with the full sidebar navigation. Verify that AdminGuard correctly reads sessionStorage keys 'admin-session' and 'adminSessionActive' and does not redirect authenticated users away.",
         "status": "implemented",
         "plannedFiles": [
-          "frontend/src/components/AdminGuard.tsx"
+          "frontend/src/App.tsx",
+          "frontend/src/components/AdminGuard.tsx",
+          "frontend/src/pages/AdminLogin.tsx",
+          "frontend/src/components/AdminLayout.tsx"
         ],
         "matchedFiles": [
-          "frontend/src/components/AdminGuard.tsx"
+          "frontend/src/App.tsx",
+          "frontend/src/components/AdminGuard.tsx",
+          "frontend/src/pages/AdminLogin.tsx",
+          "frontend/src/components/AdminLayout.tsx"
         ]
       },
       {
         "id": "REQ-2",
-        "summary": "Optimize the OwnerDashboard and AdminDashboard pages to use stale-while-revalidate caching via React Query (set appropriate staleTime and cacheTime on queries in useQueries.ts) so that repeated visits to the admin panel do not trigger full refetches every time, reducing perceived load time.",
+        "summary": "Apply and enforce a neon dark black-and-green theme consistently across the entire application — both the admin portal and public-facing pages. The theme must use a near-black background (e.g., #0a0a0a or #0d0d0d), bright neon green accents (e.g., #00ff88 or #39ff14), dark card surfaces, and glowing neon light effects on key interactive elements (buttons, nav links, cards, headings). Update frontend/src/index.css CSS custom properties and frontend/tailwind.config.js color tokens so the neon palette is applied globally. Ensure all pages (Home, Products, About, Contact, AdminLogin, AdminDashboard, OwnerDashboard, StockManagement, SalesPage, etc.) reflect this theme with no remnants of conflicting or default light/blue themes.",
         "status": "implemented",
         "plannedFiles": [
-          "frontend/src/hooks/useQueries.ts",
+          "frontend/src/index.css",
+          "frontend/tailwind.config.js",
+          "frontend/src/pages/AdminLogin.tsx",
           "frontend/src/pages/OwnerDashboard.tsx",
-          "frontend/src/pages/AdminDashboard.tsx"
+          "frontend/src/pages/StockManagement.tsx",
+          "frontend/src/pages/SalesPage.tsx",
+          "frontend/src/pages/RevenuePage.tsx",
+          "frontend/src/pages/CustomerManagement.tsx",
+          "frontend/src/pages/EnquiryManagement.tsx",
+          "frontend/src/pages/IncomePage.tsx",
+          "frontend/src/pages/TrendingPage.tsx",
+          "frontend/src/pages/ProductManagement.tsx",
+          "frontend/src/pages/SalesReports.tsx",
+          "frontend/src/pages/AdminDashboard.tsx",
+          "frontend/src/pages/Home.tsx",
+          "frontend/src/pages/Products.tsx",
+          "frontend/src/pages/AboutUs.tsx",
+          "frontend/src/pages/Contact.tsx",
+          "frontend/src/components/AdminLayout.tsx",
+          "frontend/src/components/PublicLayout.tsx",
+          "frontend/src/components/TrendingProducts.tsx",
+          "frontend/src/components/TrendingStocksPanel.tsx",
+          "frontend/src/components/TodaysSalesPanel.tsx",
+          "frontend/src/components/RevenueOverview.tsx",
+          "frontend/src/components/IncomeTracking.tsx",
+          "frontend/src/components/LowStockWarning.tsx",
+          "frontend/src/components/StockItemForm.tsx",
+          "frontend/src/components/ProfileSetupModal.tsx"
         ],
         "matchedFiles": [
-          "frontend/src/hooks/useQueries.ts"
-        ]
-      },
-      {
-        "id": "REQ-3",
-        "summary": "Update the store location in the Contact page (frontend/src/pages/Contact.tsx) to use the new Google Maps link: https://maps.app.goo.gl/T6HCLQMn9kQqAW8x6?g_st=aw. Replace the existing embedded Google Maps iframe src and any hardcoded map links with this new location URL. Use the embeddable version of this map link for the iframe and the direct link for any 'Get Directions' or 'View on Map' anchor tags.",
-        "status": "implemented",
-        "plannedFiles": [
-          "frontend/src/pages/Contact.tsx"
-        ],
-        "matchedFiles": [
-          "frontend/src/pages/Contact.tsx"
+          "frontend/src/index.css",
+          "frontend/tailwind.config.js",
+          "frontend/src/pages/AdminLogin.tsx",
+          "frontend/src/pages/OwnerDashboard.tsx",
+          "frontend/src/pages/StockManagement.tsx",
+          "frontend/src/pages/SalesPage.tsx",
+          "frontend/src/pages/RevenuePage.tsx",
+          "frontend/src/pages/CustomerManagement.tsx",
+          "frontend/src/pages/EnquiryManagement.tsx",
+          "frontend/src/pages/IncomePage.tsx",
+          "frontend/src/pages/TrendingPage.tsx",
+          "frontend/src/pages/ProductManagement.tsx",
+          "frontend/src/pages/AdminDashboard.tsx",
+          "frontend/src/pages/Home.tsx",
+          "frontend/src/components/AdminLayout.tsx",
+          "frontend/src/components/PublicLayout.tsx"
         ]
       }
     ]
@@ -50,11 +85,25 @@
   "changedFiles": [
     "build-request.json",
     "feature_evidence.json",
-    "frontend-file-summaries.txt",
     "frontend-implementation-plan.json",
+    "frontend/src/App.tsx",
     "frontend/src/components/AdminGuard.tsx",
-    "frontend/src/hooks/useQueries.ts",
-    "frontend/src/pages/Contact.tsx",
+    "frontend/src/components/AdminLayout.tsx",
+    "frontend/src/components/PublicLayout.tsx",
+    "frontend/src/index.css",
+    "frontend/src/pages/AdminDashboard.tsx",
+    "frontend/src/pages/AdminLogin.tsx",
+    "frontend/src/pages/CustomerManagement.tsx",
+    "frontend/src/pages/EnquiryManagement.tsx",
+    "frontend/src/pages/Home.tsx",
+    "frontend/src/pages/IncomePage.tsx",
+    "frontend/src/pages/OwnerDashboard.tsx",
+    "frontend/src/pages/ProductManagement.tsx",
+    "frontend/src/pages/RevenuePage.tsx",
+    "frontend/src/pages/SalesPage.tsx",
+    "frontend/src/pages/StockManagement.tsx",
+    "frontend/src/pages/TrendingPage.tsx",
+    "frontend/tailwind.config.js",
     "project_state.json",
     "scratch/component-selection.json",
     "spec.md",

@@ -1,39 +1,47 @@
-import { QueryClient, QueryClientProvider } from '@tanstack/react-query';
-import { RouterProvider, createRouter, createRoute, createRootRoute, Outlet } from '@tanstack/react-router';
-import { ThemeProvider } from 'next-themes';
+import { RouterProvider, createRouter, createRoute, createRootRoute, Outlet, redirect } from '@tanstack/react-router';
 import PublicLayout from './components/PublicLayout';
 import AdminLayout from './components/AdminLayout';
 import AdminGuard from './components/AdminGuard';
-import AdminLogin from './pages/AdminLogin';
 import Home from './pages/Home';
+import Products from './pages/Products';
 import AboutUs from './pages/AboutUs';
 import Contact from './pages/Contact';
+import AdminLogin from './pages/AdminLogin';
 import OwnerDashboard from './pages/OwnerDashboard';
 import StockManagement from './pages/StockManagement';
-import CustomerManagement from './pages/CustomerManagement';
-import SalesReports from './pages/SalesReports';
-import ProfilePage from './pages/ProfilePage';
-import TrendingPage from './pages/TrendingPage';
 import SalesPage from './pages/SalesPage';
 import RevenuePage from './pages/RevenuePage';
+import CustomerManagement from './pages/CustomerManagement';
+import EnquiryManagement from './pages/EnquiryManagement';
 import IncomePage from './pages/IncomePage';
+import TrendingPage from './pages/TrendingPage';
+import ProductManagement from './pages/ProductManagement';
+import SalesReports from './pages/SalesReports';
+import AdminDashboard from './pages/AdminDashboard';
 
-const queryClient = new QueryClient();
-
+// Root route
 const rootRoute = createRootRoute({
   component: () => <Outlet />,
 });
 
+// Public layout route
 const publicLayoutRoute = createRoute({
   getParentRoute: () => rootRoute,
-  id: 'public',
+  id: 'public-layout',
   component: PublicLayout,
 });
 
+// Public pages
 const homeRoute = createRoute({
   getParentRoute: () => publicLayoutRoute,
   path: '/',
   component: Home,
+});
+
+const productsRoute = createRoute({
+  getParentRoute: () => publicLayoutRoute,
+  path: '/products',
+  component: Products,
 });
 
 const aboutRoute = createRoute({
@@ -48,93 +56,116 @@ const contactRoute = createRoute({
   component: Contact,
 });
 
-// Standalone admin login route (no guard, no layout)
+// Admin login - standalone (no layout)
 const adminLoginRoute = createRoute({
   getParentRoute: () => rootRoute,
   path: '/admin-login',
   component: AdminLogin,
 });
 
+// Admin guard route
 const adminGuardRoute = createRoute({
   getParentRoute: () => rootRoute,
   id: 'admin-guard',
   component: AdminGuard,
 });
 
+// Admin layout route (nested under guard)
 const adminLayoutRoute = createRoute({
   getParentRoute: () => adminGuardRoute,
   id: 'admin-layout',
   component: AdminLayout,
 });
 
-const adminIndexRoute = createRoute({
+// Admin pages
+const adminDashboardRoute = createRoute({
   getParentRoute: () => adminLayoutRoute,
   path: '/admin',
+  component: AdminDashboard,
+});
+
+const ownerDashboardRoute = createRoute({
+  getParentRoute: () => adminLayoutRoute,
+  path: '/admin/owner-dashboard',
   component: OwnerDashboard,
 });
 
-const adminStockRoute = createRoute({
+const stockManagementRoute = createRoute({
   getParentRoute: () => adminLayoutRoute,
   path: '/admin/stock',
   component: StockManagement,
 });
 
-const adminCustomersRoute = createRoute({
-  getParentRoute: () => adminLayoutRoute,
-  path: '/admin/customers',
-  component: CustomerManagement,
-});
-
-const adminSalesReportsRoute = createRoute({
-  getParentRoute: () => adminLayoutRoute,
-  path: '/admin/sales-reports',
-  component: SalesReports,
-});
-
-const adminProfileRoute = createRoute({
-  getParentRoute: () => adminLayoutRoute,
-  path: '/admin/profile',
-  component: ProfilePage,
-});
-
-const adminTrendingRoute = createRoute({
-  getParentRoute: () => adminLayoutRoute,
-  path: '/admin/trending',
-  component: TrendingPage,
-});
-
-const adminSalesRoute = createRoute({
+const salesRoute = createRoute({
   getParentRoute: () => adminLayoutRoute,
   path: '/admin/sales',
   component: SalesPage,
 });
 
-const adminRevenueRoute = createRoute({
+const revenueRoute = createRoute({
   getParentRoute: () => adminLayoutRoute,
   path: '/admin/revenue',
   component: RevenuePage,
 });
 
-const adminIncomeRoute = createRoute({
+const customersRoute = createRoute({
+  getParentRoute: () => adminLayoutRoute,
+  path: '/admin/customers',
+  component: CustomerManagement,
+});
+
+const enquiriesRoute = createRoute({
+  getParentRoute: () => adminLayoutRoute,
+  path: '/admin/enquiries',
+  component: EnquiryManagement,
+});
+
+const incomeRoute = createRoute({
   getParentRoute: () => adminLayoutRoute,
   path: '/admin/income',
   component: IncomePage,
 });
 
+const trendingRoute = createRoute({
+  getParentRoute: () => adminLayoutRoute,
+  path: '/admin/trending',
+  component: TrendingPage,
+});
+
+const productsAdminRoute = createRoute({
+  getParentRoute: () => adminLayoutRoute,
+  path: '/admin/products',
+  component: ProductManagement,
+});
+
+const reportsRoute = createRoute({
+  getParentRoute: () => adminLayoutRoute,
+  path: '/admin/reports',
+  component: SalesReports,
+});
+
+// Route tree
 const routeTree = rootRoute.addChildren([
-  publicLayoutRoute.addChildren([homeRoute, aboutRoute, contactRoute]),
+  publicLayoutRoute.addChildren([
+    homeRoute,
+    productsRoute,
+    aboutRoute,
+    contactRoute,
+  ]),
   adminLoginRoute,
   adminGuardRoute.addChildren([
     adminLayoutRoute.addChildren([
-      adminIndexRoute,
-      adminStockRoute,
-      adminCustomersRoute,
-      adminSalesReportsRoute,
-      adminProfileRoute,
-      adminTrendingRoute,
-      adminSalesRoute,
-      adminRevenueRoute,
-      adminIncomeRoute,
+      adminDashboardRoute,
+      ownerDashboardRoute,
+      stockManagementRoute,
+      salesRoute,
+      revenueRoute,
+      customersRoute,
+      enquiriesRoute,
+      incomeRoute,
+      trendingRoute,
+      productsAdminRoute,
+      reportsRoute,
     ]),
   ]),
 ]);
@@ -148,11 +179,5 @@ declare module '@tanstack/react-router' {
 }
 
 export default function App() {
-  return (
-    <ThemeProvider attribute="class" defaultTheme="light" enableSystem={false}>
-      <QueryClientProvider client={queryClient}>
-        <RouterProvider router={router} />
-      </QueryClientProvider>
-    </ThemeProvider>
-  );
+  return <RouterProvider router={router} />;
 }

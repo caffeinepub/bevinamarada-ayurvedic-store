@@ -1,36 +1,18 @@
-import React from 'react';
 import { Link } from '@tanstack/react-router';
-import { ArrowLeft, BarChart2 } from 'lucide-react';
+import { ArrowLeft, DollarSign } from 'lucide-react';
 import RevenueOverview from '../components/RevenueOverview';
 
 export default function RevenuePage() {
   return (
-    <div className="min-h-screen bg-background p-6">
-      <div className="mb-6 animate-fade-in-up">
-        <Link
-          to="/admin"
-          className="inline-flex items-center gap-2 text-primary font-bold text-sm hover:text-primary/80 transition-colors mb-4"
-        >
+    <div className="min-h-screen bg-neon-black p-6 lg:p-8">
+      <div className="flex items-center gap-3 mb-6">
+        <Link to="/admin" className="text-gray-500 hover:text-neon-green transition-colors">
           <ArrowLeft className="w-4 h-4" />
-          Back to Dashboard
         </Link>
-        <div className="flex items-center gap-3">
-          <div className="w-10 h-10 rounded-xl bg-primary/10 flex items-center justify-center">
-            <BarChart2 className="w-5 h-5 text-primary" />
-          </div>
-          <div>
-            <h1 className="font-display text-3xl font-extrabold text-foreground">
-              Revenue Overview
-            </h1>
-            <p className="text-muted-foreground font-semibold text-sm mt-0.5">
-              Total and monthly revenue breakdown
-            </p>
-          </div>
-        </div>
+        <DollarSign className="w-5 h-5 text-neon-green" />
+        <h1 className="font-orbitron text-xl font-bold text-white">REVENUE OVERVIEW</h1>
       </div>
-      <div className="animate-fade-in-up" style={{ animationDelay: '100ms' }}>
-        <RevenueOverview />
-      </div>
+      <RevenueOverview />
     </div>
   );
 }

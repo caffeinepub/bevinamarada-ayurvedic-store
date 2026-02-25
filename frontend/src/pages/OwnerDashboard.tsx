@@ -1,291 +1,116 @@
-import React from 'react';
 import { Link } from '@tanstack/react-router';
 import {
   Package,
   TrendingUp,
-  ShoppingCart,
   DollarSign,
-  PieChart,
-  BarChart3,
-  AlertTriangle,
-  ArrowRight,
   Users,
+  MessageSquare,
+  BarChart3,
+  ShoppingCart,
+  FileText,
+  AlertTriangle,
+  Zap,
+  ArrowRight,
 } from 'lucide-react';
-import {
-  useGetAllStockItems,
-  useGetLowStockItems,
-  useGetTodaysSales,
-  useGetSalesReports,
-} from '../hooks/useQueries';
-import { Skeleton } from '@/components/ui/skeleton';
+import { useGetAllStockItems, useGetTodaysSales, useGetSalesReports, useGetLowStockItems } from '../hooks/useQueries';
 
-const formatINR = (amount: bigint | number) => {
-  const num = typeof amount === 'bigint' ? Number(amount) : amount;
-  return new Intl.NumberFormat('en-IN', {
-    style: 'currency',
-    currency: 'INR',
-    maximumFractionDigits: 0,
-  }).format(num);
-};
-
-type ValidAdminPath =
-  | '/admin'
-  | '/admin/stock'
-  | '/admin/customers'
-  | '/admin/sales'
-  | '/admin/revenue'
-  | '/admin/income'
-  | '/admin/trending'
-  | '/admin/sales-reports'
-  | '/admin/profile';
-
-interface MetricCardProps {
-  title: string;
-  value: string | number;
-  subtitle?: string;
-  icon: React.ReactNode;
-  gradientClass: string;
-  shadowClass: string;
-  linkTo: ValidAdminPath;
-  isLoading?: boolean;
-  delay?: number;
-}
-
-function MetricCard({
-  title,
-  value,
-  subtitle,
-  icon,
-  gradientClass,
-  shadowClass,
-  linkTo,
-  isLoading,
-  delay = 0,
-}: MetricCardProps) {
-  return (
-    <Link
-      to={linkTo}
-      className="admin-card p-5 flex flex-col gap-4 cursor-pointer group"
-      style={{ animationDelay: `${delay}ms` }}
-    >
-      <div className="flex items-start justify-between">
-        <div
-          className={`w-12 h-12 rounded-xl ${gradientClass} flex items-center justify-center ${shadowClass}`}
-        >
-          {icon}
-        </div>
-        <ArrowRight
-          size={16}
-          className="text-muted-foreground group-hover:text-foreground group-hover:translate-x-1 transition-all"
-        />
-      </div>
-      <div>
-        <p className="text-muted-foreground text-sm font-medium">{title}</p>
-        {isLoading ? (
-          <Skeleton className="h-8 w-28 mt-1" />
-        ) : (
-          <p className="text-2xl font-bold text-foreground mt-0.5">{value}</p>
-        )}
-        {subtitle && <p className="text-xs text-muted-foreground mt-1">{subtitle}</p>}
-      </div>
-    </Link>
-  );
-}
+const quickLinks = [
+  { path: '/admin/stock', label: 'Stock Management', icon: Package, desc: 'Manage inventory' },
+  { path: '/admin/products', label: 'Products', icon: ShoppingCart, desc: 'Product catalog' },
+  { path: '/admin/sales', label: "Today's Sales", icon: TrendingUp, desc: 'Daily transactions' },
+  { path: '/admin/revenue', label: 'Revenue', icon: DollarSign, desc: 'Revenue overview' },
+  { path: '/admin/income', label: 'Income', icon: BarChart3, desc: 'Income tracking' },
+  { path: '/admin/customers', label: 'Customers', icon: Users, desc: 'Customer management' },
+  { path: '/admin/enquiries', label: 'Enquiries', icon: MessageSquare, desc: 'Customer enquiries' },
+  { path: '/admin/trending', label: 'Trending', icon: TrendingUp, desc: 'Trending products' },
+  { path: '/admin/reports', label: 'Reports', icon: FileText, desc: 'Sales reports' },
+];
 
 export default function OwnerDashboard() {
-  const { data: stockItems = [], isLoading: stockLoading } = useGetAllStockItems();
-  const { data: lowStockItems = [], isLoading: lowStockLoading } = useGetLowStockItems();
-  const { data: todaysSales = [], isLoading: salesLoading } = useGetTodaysSales();
-  const { data: reports, isLoading: reportsLoading } = useGetSalesReports();
+  const { data: stockItems = [] } = useGetAllStockItems();
+  const { data: todaysSales = [] } = useGetTodaysSales();
+  const { data: salesReports } = useGetSalesReports();
+  const { data: lowStockItems = [] } = useGetLowStockItems();
 
   const todaysRevenue = todaysSales.reduce((sum, s) => sum + Number(s.totalPrice), 0);
-  const trendingCount = stockItems.filter((s) => s.isTrending).length;
+  const totalRevenue = salesReports ? Number(salesReports.totalRevenue) : 0;
+
+  const metrics = [
+    { label: 'Total Products', value: stockItems.length.toString(), icon: Package, color: 'text-neon-green' },
+    { label: "Today's Sales", value: todaysSales.length.toString(), icon: TrendingUp, color: 'text-neon-green' },
+    { label: "Today's Revenue", value: `₹${todaysRevenue.toLocaleString('en-IN')}`, icon: DollarSign, color: 'text-neon-green' },
+    { label: 'Total Revenue', value: `₹${totalRevenue.toLocaleString('en-IN')}`, icon: BarChart3, color: 'text-neon-green' },
+    { label: 'Low Stock Items', value: lowStockItems.length.toString(), icon: AlertTriangle, color: lowStockItems.length > 0 ? 'text-yellow-400' : 'text-neon-green' },
+    { label: 'Total Sales', value: salesReports ? salesReports.totalSales.toString() : '0', icon: ShoppingCart, color: 'text-neon-green' },
+  ];
 
   return (
-    <div className="space-y-8 animate-fade-in-up p-6">
-      {/* Welcome Banner */}
-      <div className="gradient-hero rounded-2xl p-6 text-white shadow-lg">
-        <div className="flex items-center justify-between">
+    <div className="min-h-screen bg-neon-black p-6 lg:p-8">
+      {/* Header */}
+      <div className="mb-8">
+        <div className="flex items-center gap-3 mb-2">
+          <Zap className="w-6 h-6 text-neon-green animate-pulse-glow" />
+          <h1 className="font-orbitron text-2xl font-bold text-white">OWNER DASHBOARD</h1>
+        </div>
+        <p className="text-gray-500 font-mono text-sm">Welcome back, Admin. Here's your store overview.</p>
+      </div>
+
+      {/* Low Stock Alert */}
+      {lowStockItems.length > 0 && (
+        <div className="mb-6 p-4 rounded-lg border border-yellow-500/30 bg-yellow-500/5 flex items-start gap-3">
+          <AlertTriangle className="w-5 h-5 text-yellow-400 flex-shrink-0 mt-0.5" />
           <div>
-            <h1 className="text-2xl font-bold">Welcome back! 👋</h1>
-            <p className="text-white/70 mt-1 text-sm">
-              Here's what's happening at your store today.
-            </p>
-          </div>
-          <div className="hidden sm:block">
-            <p className="text-white/60 text-sm">
-              {new Date().toLocaleDateString('en-IN', {
-                weekday: 'long',
-                year: 'numeric',
-                month: 'long',
-                day: 'numeric',
-              })}
-            </p>
-          </div>
-        </div>
-      </div>
-
-      {/* Metric Cards */}
-      <div>
-        <h2 className="text-xl font-bold text-foreground mb-4">Overview</h2>
-        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
-          <MetricCard
-            title="Total Products"
-            value={stockItems.length}
-            subtitle={`${lowStockItems.length} low stock`}
-            icon={<Package size={22} className="text-white" />}
-            gradientClass="gradient-saffron"
-            shadowClass="shadow-saffron"
-            linkTo="/admin/stock"
-            isLoading={stockLoading}
-            delay={0}
-          />
-          <MetricCard
-            title="Today's Revenue"
-            value={formatINR(todaysRevenue)}
-            subtitle={`${todaysSales.length} transactions`}
-            icon={<ShoppingCart size={22} className="text-white" />}
-            gradientClass="gradient-teal"
-            shadowClass="shadow-teal"
-            linkTo="/admin/sales"
-            isLoading={salesLoading}
-            delay={50}
-          />
-          <MetricCard
-            title="Total Revenue"
-            value={formatINR(reports?.totalRevenue ?? 0n)}
-            subtitle={`${Number(reports?.totalSales ?? 0n)} total sales`}
-            icon={<DollarSign size={22} className="text-white" />}
-            gradientClass="gradient-coral"
-            shadowClass="shadow-coral"
-            linkTo="/admin/income"
-            isLoading={reportsLoading}
-            delay={100}
-          />
-          <MetricCard
-            title="Trending Products"
-            value={trendingCount}
-            subtitle="Currently trending"
-            icon={<TrendingUp size={22} className="text-white" />}
-            gradientClass="gradient-gold"
-            shadowClass="shadow-gold"
-            linkTo="/admin/trending"
-            isLoading={stockLoading}
-            delay={150}
-          />
-          <MetricCard
-            title="Revenue Overview"
-            value={formatINR(reports?.totalRevenue ?? 0n)}
-            subtitle="All-time revenue"
-            icon={<PieChart size={22} className="text-white" />}
-            gradientClass="gradient-violet"
-            shadowClass=""
-            linkTo="/admin/revenue"
-            isLoading={reportsLoading}
-            delay={200}
-          />
-          <MetricCard
-            title="Sales Reports"
-            value={`${Number(reports?.totalSales ?? 0n)} Sales`}
-            subtitle="View detailed reports"
-            icon={<BarChart3 size={22} className="text-white" />}
-            gradientClass="gradient-coral"
-            shadowClass="shadow-coral"
-            linkTo="/admin/sales-reports"
-            isLoading={reportsLoading}
-            delay={250}
-          />
-        </div>
-      </div>
-
-      {/* Low Stock Alerts */}
-      {!lowStockLoading && lowStockItems.length > 0 && (
-        <div className="admin-card overflow-hidden">
-          <div className="gradient-coral px-6 py-4 flex items-center justify-between">
-            <div className="flex items-center gap-2 text-white">
-              <AlertTriangle size={18} />
-              <h2 className="font-bold text-lg">Low Stock Alerts</h2>
-            </div>
-            <span className="bg-white/20 text-white text-xs font-bold px-2.5 py-1 rounded-full">
-              {lowStockItems.length} items
-            </span>
-          </div>
-          <div className="p-4 space-y-2">
-            {lowStockItems.slice(0, 5).map((item) => (
-              <div
-                key={String(item.id)}
-                className="flex items-center justify-between p-3 rounded-xl bg-coral-light border border-coral/20"
-              >
-                <div className="flex items-center gap-3">
-                  <div className="w-8 h-8 rounded-lg gradient-coral flex items-center justify-center">
-                    <Package size={14} className="text-white" />
-                  </div>
-                  <div>
-                    <p className="font-semibold text-sm text-foreground">{item.name}</p>
-                    <p className="text-xs text-muted-foreground">{item.category}</p>
-                  </div>
-                </div>
-                <div className="text-right">
-                  <p className="text-coral font-bold text-sm">{Number(item.quantity)} left</p>
-                  <p className="text-xs text-muted-foreground">Min: {Number(item.lowStockThreshold)}</p>
-                </div>
-              </div>
-            ))}
-            {lowStockItems.length > 5 && (
-              <Link
-                to="/admin/stock"
-                className="flex items-center justify-center gap-2 py-2 text-sm text-coral font-medium hover:underline"
-              >
-                View all {lowStockItems.length} low stock items <ArrowRight size={14} />
+            <p className="text-yellow-400 font-orbitron text-sm font-bold">LOW STOCK ALERT</p>
+            <p className="text-gray-400 text-sm font-mono mt-1">
+              {lowStockItems.length} item{lowStockItems.length > 1 ? 's' : ''} running low.{' '}
+              <Link to="/admin/stock" className="text-neon-green hover:underline">
+                Manage stock →
               </Link>
-            )}
+            </p>
           </div>
         </div>
       )}
 
-      {/* Quick Actions */}
-      <div className="admin-card overflow-hidden">
-        <div className="gradient-teal px-6 py-4">
-          <h2 className="font-bold text-lg text-white">Quick Actions</h2>
-        </div>
-        <div className="p-4 grid grid-cols-2 sm:grid-cols-4 gap-3">
-          {(
-            [
-              {
-                label: 'Add Stock',
-                icon: <Package size={18} />,
-                to: '/admin/stock' as ValidAdminPath,
-                color: 'gradient-saffron shadow-saffron',
-              },
-              {
-                label: 'Customers',
-                icon: <Users size={18} />,
-                to: '/admin/customers' as ValidAdminPath,
-                color: 'gradient-teal shadow-teal',
-              },
-              {
-                label: 'Sales',
-                icon: <ShoppingCart size={18} />,
-                to: '/admin/sales' as ValidAdminPath,
-                color: 'gradient-coral shadow-coral',
-              },
-              {
-                label: 'Reports',
-                icon: <BarChart3 size={18} />,
-                to: '/admin/sales-reports' as ValidAdminPath,
-                color: 'gradient-gold shadow-gold',
-              },
-            ] as { label: string; icon: React.ReactNode; to: ValidAdminPath; color: string }[]
-          ).map((action) => (
-            <Link
-              key={action.to}
-              to={action.to}
-              className={`flex flex-col items-center gap-2 p-4 rounded-xl ${action.color} text-white font-semibold text-sm hover:opacity-90 transition-opacity`}
-            >
-              {action.icon}
-              {action.label}
-            </Link>
-          ))}
+      {/* Metrics Grid */}
+      <div className="grid grid-cols-2 lg:grid-cols-3 gap-4 mb-8">
+        {metrics.map((metric) => {
+          const Icon = metric.icon;
+          return (
+            <div key={metric.label} className="neon-card rounded-lg p-5 group hover:border-neon-green/40 transition-all duration-300">
+              <div className="flex items-start justify-between mb-3">
+                <Icon className={`w-5 h-5 ${metric.color}`} />
+                <div className="w-1.5 h-1.5 rounded-full bg-neon-green animate-pulse" />
+              </div>
+              <p className={`font-orbitron text-xl font-black ${metric.color} mb-1`}>{metric.value}</p>
+              <p className="text-gray-500 text-xs font-mono">{metric.label}</p>
+            </div>
+          );
+        })}
+      </div>
+
+      {/* Quick Links */}
+      <div>
+        <h2 className="font-orbitron text-sm font-bold text-gray-400 tracking-widest mb-4">QUICK ACCESS</h2>
+        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-3">
+          {quickLinks.map((link) => {
+            const Icon = link.icon;
+            return (
+              <Link
+                key={link.path}
+                to={link.path}
+                className="neon-card rounded-lg p-4 flex items-center gap-4 group hover:border-neon-green/50 transition-all duration-300"
+              >
+                <div className="w-10 h-10 rounded-md border border-neon-green/20 bg-neon-green/5 flex items-center justify-center group-hover:border-neon-green/50 group-hover:bg-neon-green/10 transition-all duration-300">
+                  <Icon className="w-5 h-5 text-neon-green" />
+                </div>
+                <div className="flex-1 min-w-0">
+                  <p className="font-rajdhani font-semibold text-white text-sm group-hover:text-neon-green transition-colors">{link.label}</p>
+                  <p className="text-gray-600 text-xs font-mono">{link.desc}</p>
+                </div>
+                <ArrowRight className="w-4 h-4 text-gray-600 group-hover:text-neon-green group-hover:translate-x-1 transition-all duration-300" />
+              </Link>
+            );
+          })}
         </div>
       </div>
     </div>

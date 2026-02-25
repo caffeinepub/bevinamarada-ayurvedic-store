@@ -1,75 +1,60 @@
 {
   "kind": "build_request",
-  "title": "Fix slow admin panel loading and update store location",
+  "title": "Fix Admin Portal Visibility and Apply Neon Dark Black-and-Green Theme",
   "projectName": "Bevinamarada Ayurvedic Store",
   "priority": "high",
   "requirements": [
     {
       "id": "REQ-1",
-      "text": "Optimize the AdminGuard component to reduce loading time after login. Eliminate unnecessary sequential async operations by parallelizing the Internet Identity authentication check, actor initialization, and profile/role fetches using Promise.all where possible. Add loading skeleton or spinner feedback so the UI is responsive immediately while data loads in the background rather than showing a blank screen.",
+      "text": "Ensure the admin portal is fully accessible and visible. The route /admin-login must render the AdminLogin page, and after successful login with credentials (admin/admin123), the user must be redirected to /owner-dashboard. All admin routes (/owner-dashboard, /admin/stock, /admin/sales, /admin/revenue, /admin/customers, /admin/enquiries, /admin/income, /admin/trending, /admin/products, /admin/reports) must be protected by AdminGuard and render correctly inside AdminLayout with the full sidebar navigation. Verify that AdminGuard correctly reads sessionStorage keys 'admin-session' and 'adminSessionActive' and does not redirect authenticated users away.",
       "target": "frontend",
       "source": {
         "messageIds": [
-          "msg-1"
+          "msg-4"
         ],
         "quotes": [
-          "It's too loding after login Admin control. Fix it and make faster loding."
+          "Still admin portal not added."
         ]
       },
       "acceptanceCriteria": [
-        "The admin panel becomes interactive (shows layout/skeleton) within 1–2 seconds of successful login instead of hanging on a blank screen.",
-        "Authentication, actor creation, and profile queries are run in parallel where dependencies allow.",
-        "A loading spinner or skeleton is visible immediately after login while data is being fetched.",
-        "No regression in admin route protection — unauthenticated users are still redirected to /admin-login."
+        "Navigating to /admin-login renders the login form",
+        "Logging in with admin/admin123 redirects to /owner-dashboard",
+        "All admin sub-routes render their respective pages without redirecting to login when session is active",
+        "AdminLayout sidebar is visible on all admin pages with links to all modules",
+        "AdminGuard redirects unauthenticated users to /admin-login"
       ]
     },
     {
       "id": "REQ-2",
-      "text": "Optimize the OwnerDashboard and AdminDashboard pages to use stale-while-revalidate caching via React Query (set appropriate staleTime and cacheTime on queries in useQueries.ts) so that repeated visits to the admin panel do not trigger full refetches every time, reducing perceived load time.",
+      "text": "Apply and enforce a neon dark black-and-green theme consistently across the entire application — both the admin portal and public-facing pages. The theme must use a near-black background (e.g., #0a0a0a or #0d0d0d), bright neon green accents (e.g., #00ff88 or #39ff14), dark card surfaces, and glowing neon light effects on key interactive elements (buttons, nav links, cards, headings). Update frontend/src/index.css CSS custom properties and frontend/tailwind.config.js color tokens so the neon palette is applied globally. Ensure all pages (Home, Products, About, Contact, AdminLogin, AdminDashboard, OwnerDashboard, StockManagement, SalesPage, etc.) reflect this theme with no remnants of conflicting or default light/blue themes.",
       "target": "frontend",
       "source": {
         "messageIds": [
-          "msg-1"
+          "msg-4"
         ],
         "quotes": [
-          "Fix it and make faster loding."
+          "themes not change."
         ]
       },
       "acceptanceCriteria": [
-        "React Query hooks for stock items, sales data, and trial status have a staleTime of at least 30 seconds.",
-        "Navigating back to the dashboard after visiting a sub-page does not trigger a full loading spinner — cached data is shown immediately.",
-        "Background refetches still occur to keep data fresh."
-      ]
-    },
-    {
-      "id": "REQ-3",
-      "text": "Update the store location in the Contact page (frontend/src/pages/Contact.tsx) to use the new Google Maps link: https://maps.app.goo.gl/T6HCLQMn9kQqAW8x6?g_st=aw. Replace the existing embedded Google Maps iframe src and any hardcoded map links with this new location URL. Use the embeddable version of this map link for the iframe and the direct link for any 'Get Directions' or 'View on Map' anchor tags.",
-      "target": "frontend",
-      "source": {
-        "messageIds": [
-          "msg-1"
-        ],
-        "quotes": [
-          "edit store location (https://maps.app.goo.gl/T6HCLQMn9kQqAW8x6?g_st=aw)"
-        ]
-      },
-      "acceptanceCriteria": [
-        "The embedded Google Maps iframe on the Contact page points to the new location https://maps.app.goo.gl/T6HCLQMn9kQqAW8x6.",
-        "Any 'Get Directions' or external map link on the Contact page uses the new URL.",
-        "The map renders correctly in the iframe without broken content or CORS errors."
+        "Application background is near-black on all pages",
+        "Neon green is used consistently for accents, buttons, links, and highlights across admin and public pages",
+        "Cards and panels have dark surfaces with visible neon glow or border effects",
+        "No default light or blue theme remnants are visible anywhere",
+        "Tailwind config neon color tokens are correctly defined and referenced in components",
+        "CSS custom properties in index.css reflect the neon dark palette for both light and dark mode tokens"
       ]
     }
   ],
   "constraints": [
-    "Do not change hardcoded admin credentials or session logic in AdminLogin.tsx.",
-    "Do not modify any files under frontend/src/hooks/useInternetIdentity.ts, frontend/src/hooks/useActor.ts, frontend/src/main.tsx, or frontend/src/components/ui.",
-    "Backend data model and Motoko actor must not be changed."
+    "Do not modify files under frontend/src/hooks/useInternetIdentity.ts, frontend/src/hooks/useActor.ts, frontend/src/main.tsx, or frontend/src/components/ui",
+    "Admin login credentials must remain hardcoded as admin/admin123",
+    "Session persistence must use sessionStorage keys 'admin-session' and 'adminSessionActive'"
   ],
   "nonGoals": [
-    "Adding server-side caching or backend performance changes.",
-    "Redesigning the admin UI layout or visual theme.",
-    "Changing the authentication mechanism (Internet Identity stays as-is).",
-    "Adding real-time data sync or WebSocket support."
+    "Adding new admin features or pages beyond what already exists",
+    "Changing the backend Motoko actor logic",
+    "Integrating real authentication or Internet Identity for admin login"
   ],
   "imageRequirements": {
     "required": [],

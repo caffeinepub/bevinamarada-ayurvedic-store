@@ -1,64 +1,192 @@
 {
   "kind": "implementation_plan",
   "version": "1.0",
-  "title": "Optimize admin panel loading and update store location",
+  "title": "Fix Admin Portal Visibility and Apply Neon Dark Black-and-Green Theme",
   "requirements": [
     {
       "id": "REQ-1",
-      "summary": "Optimize AdminGuard component to reduce loading time after login by parallelizing authentication checks and adding loading feedback",
+      "summary": "Ensure the admin portal is fully accessible and visible with correct routing, authentication guard logic, and session handling",
       "acceptanceCriteria": [
-        "The admin panel becomes interactive (shows layout/skeleton) within 1–2 seconds of successful login instead of hanging on a blank screen.",
-        "Authentication, actor creation, and profile queries are run in parallel where dependencies allow.",
-        "A loading spinner or skeleton is visible immediately after login while data is being fetched.",
-        "No regression in admin route protection — unauthenticated users are still redirected to /admin-login."
+        "Navigating to /admin-login renders the login form",
+        "Logging in with admin/admin123 redirects to /owner-dashboard",
+        "All admin sub-routes render their respective pages without redirecting to login when session is active",
+        "AdminLayout sidebar is visible on all admin pages with links to all modules",
+        "AdminGuard redirects unauthenticated users to /admin-login"
       ],
       "file_operations": [
         {
+          "path": "frontend/src/App.tsx",
+          "operation": "modify",
+          "description": "Review and verify that all admin routes are correctly registered: /admin-login as standalone, and all admin sub-routes (/owner-dashboard, /admin/stock, /admin/sales, /admin/revenue, /admin/customers, /admin/enquiries, /admin/income, /admin/trending, /admin/products, /admin/reports) are nested under AdminGuard and AdminLayout. Ensure no route definitions are missing or misconfigured that would prevent admin pages from rendering."
+        },
+        {
           "path": "frontend/src/components/AdminGuard.tsx",
           "operation": "modify",
-          "description": "Refactor AdminGuard to parallelize independent async operations using Promise.all. Currently, the component performs sequential checks (session validation, Internet Identity auth, actor initialization, profile fetch, admin check). Parallelize the profile fetch and admin role check since both depend only on the actor being ready. Add an immediate loading skeleton/spinner UI that displays while authentication and data fetching occur in the background, preventing the blank screen issue. Ensure the session check and redirect logic remain intact to protect admin routes from unauthenticated access."
+          "description": "Fix the authentication guard logic to correctly read both 'admin-session' and 'adminSessionActive' keys from sessionStorage. Ensure that when both keys are present and valid, the guard renders the Outlet without redirecting. When either key is missing or invalid, redirect to /admin-login. Add proper checks to prevent infinite redirect loops for authenticated users."
+        },
+        {
+          "path": "frontend/src/pages/AdminLogin.tsx",
+          "operation": "modify",
+          "description": "Verify that on successful login with admin/admin123, both 'admin-session' and 'adminSessionActive' are set in sessionStorage (and localStorage if 'remember me' is checked) before navigating to /owner-dashboard. Ensure the redirect logic uses the router's navigate function correctly."
+        },
+        {
+          "path": "frontend/src/components/AdminLayout.tsx",
+          "operation": "modify",
+          "description": "Ensure the sidebar navigation renders all required admin route links: Owner Dashboard, Stock Management, Sales, Revenue, Customers, Enquiries, Income, Trending, Products, and Reports. Verify the sidebar is visible on both desktop and mobile, and that the logout handler clears both 'admin-session' and 'adminSessionActive' from sessionStorage/localStorage before navigating to /admin-login."
         }
       ]
     },
     {
       "id": "REQ-2",
-      "summary": "Optimize OwnerDashboard and AdminDashboard pages with stale-while-revalidate caching to reduce repeated refetches",
+      "summary": "Apply and enforce a neon dark black-and-green theme consistently across all pages using CSS custom properties and Tailwind config tokens",
       "acceptanceCriteria": [
-        "React Query hooks for stock items, sales data, and trial status have a staleTime of at least 30 seconds.",
-        "Navigating back to the dashboard after visiting a sub-page does not trigger a full loading spinner — cached data is shown immediately.",
-        "Background refetches still occur to keep data fresh."
+        "Application background is near-black on all pages",
+        "Neon green is used consistently for accents, buttons, links, and highlights across admin and public pages",
+        "Cards and panels have dark surfaces with visible neon glow or border effects",
+        "No default light or blue theme remnants are visible anywhere",
+        "Tailwind config neon color tokens are correctly defined and referenced in components",
+        "CSS custom properties in index.css reflect the neon dark palette for both light and dark mode tokens"
       ],
       "file_operations": [
         {
-          "path": "frontend/src/hooks/useQueries.ts",
+          "path": "frontend/src/index.css",
           "operation": "modify",
-          "description": "Add stale-while-revalidate caching configuration to all React Query hooks used by OwnerDashboard and AdminDashboard. Set staleTime to 30 seconds (30000ms) and cacheTime to 5 minutes (300000ms) for queries including useGetAllStockItems, useGetLowStockItems, useGetTrendingStockItems, useGetTodaysSales, useGetSalesReports, and useGetTrialStatus. This ensures that repeated visits to the dashboard show cached data immediately while background refetches keep data fresh, reducing perceived load time."
+          "description": "Update all CSS custom properties to enforce the neon dark theme. Set background tokens to near-black (#0a0a0a or #0d0d0d), foreground to light gray or white, primary/accent colors to bright neon green (#00ff88 or #39ff14), card/popover backgrounds to dark surfaces (e.g., #1a1a1a), and border colors to muted dark tones with optional neon highlights. Apply these tokens to both :root and .dark selectors to ensure consistency. Remove or override any conflicting light or blue theme values."
+        },
+        {
+          "path": "frontend/tailwind.config.js",
+          "operation": "modify",
+          "description": "Define or update neon dark color tokens in the extend.colors section: set 'neon' or 'primary' to bright neon green shades (#00ff88, #39ff14, with hover/active variants), 'background' to near-black (#0a0a0a, #0d0d0d), 'foreground' to white or light gray, 'card' to dark surface (#1a1a1a), and 'border' to muted dark with optional neon accents. Ensure these tokens replace any default light or blue color definitions and are globally available for use in all components."
+        },
+        {
+          "path": "frontend/src/pages/AdminLogin.tsx",
+          "operation": "modify",
+          "description": "Apply neon dark theme styling to the admin login page: use near-black background, neon green for the submit button and focus states, dark card surface for the login form container, and ensure all text is light-colored for readability. Remove any light or blue theme remnants."
         },
         {
           "path": "frontend/src/pages/OwnerDashboard.tsx",
           "operation": "modify",
-          "description": "Verify that the OwnerDashboard properly displays cached data from React Query hooks when navigating back from sub-pages. Ensure loading states only show when data is truly being fetched for the first time or when cache has expired, not on every navigation. The updated staleTime configuration in useQueries.ts will handle the caching behavior automatically."
+          "description": "Apply neon dark theme to the owner dashboard: use near-black page background, dark card surfaces for stat cards, neon green accents on borders or icons, and light text. Ensure all clickable cards have neon glow or hover effects."
+        },
+        {
+          "path": "frontend/src/pages/StockManagement.tsx",
+          "operation": "modify",
+          "description": "Apply neon dark theme to the stock management page: use near-black background, dark surfaces for tables and forms, neon green for action buttons (Add, Edit, Delete), and neon borders or glow effects on interactive elements. Ensure text is light-colored."
+        },
+        {
+          "path": "frontend/src/pages/SalesPage.tsx",
+          "operation": "modify",
+          "description": "Apply neon dark theme to the sales page: use near-black background, dark card surfaces for today's sales panel, neon green accents on headings and key metrics, and light text throughout."
+        },
+        {
+          "path": "frontend/src/pages/RevenuePage.tsx",
+          "operation": "modify",
+          "description": "Apply neon dark theme to the revenue page: use near-black background, dark surfaces for revenue cards and tables, neon green for highlights and borders, and light text."
+        },
+        {
+          "path": "frontend/src/pages/CustomerManagement.tsx",
+          "operation": "modify",
+          "description": "Apply neon dark theme to the customer management page: use near-black background, dark surfaces for customer cards and forms, neon green accents on tabs and action buttons, and light text."
+        },
+        {
+          "path": "frontend/src/pages/EnquiryManagement.tsx",
+          "operation": "modify",
+          "description": "Apply neon dark theme to the enquiry management page: use near-black background, dark table surfaces, neon green for tab highlights and active states, and light text."
+        },
+        {
+          "path": "frontend/src/pages/IncomePage.tsx",
+          "operation": "modify",
+          "description": "Apply neon dark theme to the income page: use near-black background, dark card surfaces for income cards, neon green accents on headings and key figures, and light text."
+        },
+        {
+          "path": "frontend/src/pages/TrendingPage.tsx",
+          "operation": "modify",
+          "description": "Apply neon dark theme to the trending page: use near-black background, dark product card surfaces, neon green borders or glow effects on trending items, and light text."
+        },
+        {
+          "path": "frontend/src/pages/ProductManagement.tsx",
+          "operation": "modify",
+          "description": "Apply neon dark theme to the product management page: use near-black background, dark table and form surfaces, neon green for action buttons and toggles, and light text."
+        },
+        {
+          "path": "frontend/src/pages/SalesReports.tsx",
+          "operation": "modify",
+          "description": "Apply neon dark theme to the sales reports page: use near-black background, dark surfaces for summary cards and report tables, neon green accents on tabs and export buttons, and light text."
         },
         {
           "path": "frontend/src/pages/AdminDashboard.tsx",
           "operation": "modify",
-          "description": "Verify that the AdminDashboard properly displays cached data from React Query hooks when navigating back from sub-pages. Ensure the dashboard cards remain interactive and show cached data immediately. The updated staleTime configuration in useQueries.ts will handle the caching behavior automatically."
-        }
-      ]
-    },
-    {
-      "id": "REQ-3",
-      "summary": "Update the store location on the Contact page to use the new Google Maps link",
-      "acceptanceCriteria": [
-        "The embedded Google Maps iframe on the Contact page points to the new location https://maps.app.goo.gl/T6HCLQMn9kQqAW8x6.",
-        "Any 'Get Directions' or external map link on the Contact page uses the new URL.",
-        "The map renders correctly in the iframe without broken content or CORS errors."
-      ],
-      "file_operations": [
+          "description": "Apply neon dark theme to the admin dashboard: use near-black background, dark navigation card surfaces, neon green borders or glow effects on hover, and light text for all card labels and icons."
+        },
+        {
+          "path": "frontend/src/pages/Home.tsx",
+          "operation": "modify",
+          "description": "Apply neon dark theme to the home page: use near-black background, neon green accents on hero headings and CTAs, dark surfaces for trust indicator cards, and light text. Ensure the hero section uses neon glow effects on key elements."
+        },
+        {
+          "path": "frontend/src/pages/Products.tsx",
+          "operation": "modify",
+          "description": "Apply neon dark theme to the products page: use near-black background, neon green accents on placeholder text or links, and light text."
+        },
+        {
+          "path": "frontend/src/pages/AboutUs.tsx",
+          "operation": "modify",
+          "description": "Apply neon dark theme to the About Us page: use near-black background, dark card surfaces for the story section and core values grid, neon green accents on icons or headings, and light text throughout."
+        },
         {
           "path": "frontend/src/pages/Contact.tsx",
           "operation": "modify",
-          "description": "Replace the existing Google Maps iframe src with the embeddable version of the new location URL https://maps.app.goo.gl/T6HCLQMn9kQqAW8x6. Convert the shortened Google Maps link to the proper embed format by constructing an iframe-compatible URL (e.g., https://www.google.com/maps/embed?pb=... or using the Place ID from the short link). Update any 'Get Directions' or 'View on Map' anchor tags to use the direct link https://maps.app.goo.gl/T6HCLQMn9kQqAW8x6?g_st=aw. Ensure the iframe renders without CORS errors and displays the correct store location."
+          "description": "Apply neon dark theme to the contact page: use near-black background, dark form surface, neon green for submit button and focus states, and light text. Ensure the map section integrates with the dark theme."
+        },
+        {
+          "path": "frontend/src/components/AdminLayout.tsx",
+          "operation": "modify",
+          "description": "Apply neon dark theme to the admin layout sidebar: use near-black or very dark background for the sidebar, neon green for active/hover link states, dark surfaces for the mobile menu overlay, and light text for all navigation links. Add subtle neon glow effects to active navigation items."
+        },
+        {
+          "path": "frontend/src/components/PublicLayout.tsx",
+          "operation": "modify",
+          "description": "Apply neon dark theme to the public layout header: use near-black header background, neon green for logo or brand name, neon accents on nav links with glow on hover, and light text. Ensure the mobile menu overlay also uses the dark neon theme."
+        },
+        {
+          "path": "frontend/src/components/TrendingProducts.tsx",
+          "operation": "modify",
+          "description": "Apply neon dark theme to the trending products section: use dark card surfaces for product cards, neon green borders or glow effects on hover, light text for product names and prices, and neon accents on the enquiry link."
+        },
+        {
+          "path": "frontend/src/components/TrendingStocksPanel.tsx",
+          "operation": "modify",
+          "description": "Apply neon dark theme to the trending stocks panel: use dark card surfaces, neon green accents on borders or labels, and light text for product details."
+        },
+        {
+          "path": "frontend/src/components/TodaysSalesPanel.tsx",
+          "operation": "modify",
+          "description": "Apply neon dark theme to the today's sales panel: use dark surfaces for stat cards and transaction table, neon green accents on key metrics and headings, and light text throughout."
+        },
+        {
+          "path": "frontend/src/components/RevenueOverview.tsx",
+          "operation": "modify",
+          "description": "Apply neon dark theme to the revenue overview: use dark card surfaces, neon green accents on revenue figures and borders, and light text for all labels and table content."
+        },
+        {
+          "path": "frontend/src/components/IncomeTracking.tsx",
+          "operation": "modify",
+          "description": "Apply neon dark theme to the income tracking component: use dark card surfaces for income cards, neon green accents on headings and key figures, and light text for all content."
+        },
+        {
+          "path": "frontend/src/components/LowStockWarning.tsx",
+          "operation": "modify",
+          "description": "Apply neon dark theme to the low stock warning banner: use a dark alert background with neon green border or icon, light text for the warning message, and neon green for the action link."
+        },
+        {
+          "path": "frontend/src/components/StockItemForm.tsx",
+          "operation": "modify",
+          "description": "Apply neon dark theme to the stock item form dialog: use dark dialog background, dark input field surfaces, neon green for submit button and focus states, light text for labels and placeholders, and neon border accents."
+        },
+        {
+          "path": "frontend/src/components/ProfileSetupModal.tsx",
+          "operation": "modify",
+          "description": "Apply neon dark theme to the profile setup modal: use dark modal background, dark input field surface, neon green for the submit button, light text for headings and labels, and neon border on focus states."
         }
       ]
     }

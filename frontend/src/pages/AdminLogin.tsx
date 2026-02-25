@@ -1,195 +1,168 @@
-import { useState, useEffect } from 'react';
+import { useState } from 'react';
 import { useNavigate } from '@tanstack/react-router';
-import { Eye, EyeOff, Loader2, ShieldCheck } from 'lucide-react';
+import { Eye, EyeOff, Lock, User, Zap } from 'lucide-react';
 
-const ADMIN_USERNAME = 'baslxr';
-const ADMIN_PASSWORD = 'bas12345';
-
-const LS_USERNAME_KEY = 'adminSavedUsername';
-const LS_PASSWORD_KEY = 'adminSavedPassword';
-const LS_REMEMBER_KEY = 'adminRememberMe';
+const ADMIN_USERNAME = 'admin';
+const ADMIN_PASSWORD = 'admin123';
 
 export default function AdminLogin() {
   const navigate = useNavigate();
-
   const [username, setUsername] = useState('');
   const [password, setPassword] = useState('');
-  const [rememberMe, setRememberMe] = useState(false);
   const [showPassword, setShowPassword] = useState(false);
+  const [rememberMe, setRememberMe] = useState(false);
   const [error, setError] = useState('');
   const [isLoading, setIsLoading] = useState(false);
 
-  // Pre-fill from localStorage on mount
-  useEffect(() => {
-    const savedRemember = localStorage.getItem(LS_REMEMBER_KEY) === 'true';
-    if (savedRemember) {
-      const savedUsername = localStorage.getItem(LS_USERNAME_KEY) || '';
-      const savedPassword = localStorage.getItem(LS_PASSWORD_KEY) || '';
-      setUsername(savedUsername);
-      setPassword(savedPassword);
-      setRememberMe(true);
-    }
-  }, []);
-
-  // If already logged in via session, redirect
-  useEffect(() => {
-    if (sessionStorage.getItem('adminSessionActive') === 'true') {
-      navigate({ to: '/admin' });
-    }
-  }, [navigate]);
-
-  const handleSubmit = async (e: React.FormEvent) => {
+  const handleLogin = (e: React.FormEvent) => {
     e.preventDefault();
     setError('');
     setIsLoading(true);
 
-    // Simulate a brief loading state for UX
-    await new Promise((resolve) => setTimeout(resolve, 400));
+    setTimeout(() => {
+      if (username === ADMIN_USERNAME && password === ADMIN_PASSWORD) {
+        // Set session in sessionStorage always
+        sessionStorage.setItem('admin-session', 'active');
+        sessionStorage.setItem('adminSessionActive', 'true');
 
-    if (username === ADMIN_USERNAME && password === ADMIN_PASSWORD) {
-      // Set session
-      sessionStorage.setItem('adminSessionActive', 'true');
+        // Also set in localStorage if remember me is checked
+        if (rememberMe) {
+          localStorage.setItem('admin-session', 'active');
+          localStorage.setItem('adminSessionActive', 'true');
+        }
 
-      // Handle remember me
-      if (rememberMe) {
-        localStorage.setItem(LS_USERNAME_KEY, username);
-        localStorage.setItem(LS_PASSWORD_KEY, password);
-        localStorage.setItem(LS_REMEMBER_KEY, 'true');
+        navigate({ to: '/admin/owner-dashboard' });
       } else {
-        localStorage.removeItem(LS_USERNAME_KEY);
-        localStorage.removeItem(LS_PASSWORD_KEY);
-        localStorage.removeItem(LS_REMEMBER_KEY);
+        setError('Invalid credentials. Use admin / admin123');
+        setIsLoading(false);
       }
-
-      navigate({ to: '/admin' });
-    } else {
-      setError('Invalid username or password. Please try again.');
-      setIsLoading(false);
-    }
+    }, 500);
   };
 
   return (
-    <div className="min-h-screen flex items-center justify-center bg-gradient-to-br from-forest-50 via-sage-50 to-forest-100 px-4">
-      <div className="w-full max-w-md">
-        {/* Card */}
-        <div className="bg-white rounded-2xl shadow-xl border border-forest-100 overflow-hidden">
-          {/* Header */}
-          <div className="bg-gradient-to-r from-forest-800 to-sage-800 px-8 py-8 text-center">
-            <div className="w-16 h-16 mx-auto mb-4 rounded-2xl bg-gradient-to-br from-saffron-400 to-gold-500 flex items-center justify-center shadow-lg">
-              <img
-                src="/assets/generated/neem-leaf-logo.dim_256x256.png"
-                alt="Logo"
-                className="w-10 h-10 object-contain"
-              />
-            </div>
-            <h1 className="text-2xl font-bold text-white font-display">Admin Portal</h1>
-            <p className="text-forest-300 text-sm mt-1">Bevinamarada Ayurvedic Store</p>
+    <div className="min-h-screen bg-neon-black flex items-center justify-center relative overflow-hidden bg-grid-neon">
+      {/* Ambient glow effects */}
+      <div className="absolute top-1/4 left-1/4 w-96 h-96 bg-neon-green opacity-5 rounded-full blur-3xl pointer-events-none" />
+      <div className="absolute bottom-1/4 right-1/4 w-64 h-64 bg-neon-green opacity-5 rounded-full blur-3xl pointer-events-none" />
+
+      <div className="relative z-10 w-full max-w-md px-4">
+        {/* Header */}
+        <div className="text-center mb-8">
+          <div className="inline-flex items-center justify-center w-16 h-16 rounded-full border-2 border-neon-green neon-glow mb-4 animate-pulse-glow">
+            <Zap className="w-8 h-8 text-neon-green" />
           </div>
+          <h1 className="font-orbitron text-2xl font-bold text-neon-green neon-text-glow mb-1">
+            ADMIN PORTAL
+          </h1>
+          <p className="text-gray-500 font-mono text-sm">Bevinamarada Ayurvedic Store</p>
+        </div>
 
-          {/* Form */}
-          <div className="px-8 py-8">
-            <div className="flex items-center gap-2 mb-6">
-              <ShieldCheck className="w-5 h-5 text-forest-600" />
-              <h2 className="text-lg font-semibold text-forest-800">Sign in to continue</h2>
-            </div>
+        {/* Login Card */}
+        <div className="neon-card rounded-lg p-8">
+          <h2 className="font-orbitron text-lg font-semibold text-white mb-6 text-center">
+            SECURE ACCESS
+          </h2>
 
-            <form onSubmit={handleSubmit} className="space-y-5">
-              {/* Username */}
-              <div>
-                <label
-                  htmlFor="username"
-                  className="block text-sm font-medium text-forest-700 mb-1.5"
-                >
-                  Username
-                </label>
+          <form onSubmit={handleLogin} className="space-y-5">
+            {/* Username */}
+            <div>
+              <label className="block text-xs font-mono text-gray-400 mb-2 uppercase tracking-widest">
+                Username
+              </label>
+              <div className="relative">
+                <User className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-gray-500" />
                 <input
-                  id="username"
                   type="text"
-                  autoComplete="username"
                   value={username}
                   onChange={(e) => setUsername(e.target.value)}
-                  placeholder="Enter your username"
+                  className="w-full pl-10 pr-4 py-3 neon-input rounded-md font-mono text-sm"
+                  placeholder="Enter username"
                   required
-                  className="w-full px-4 py-2.5 rounded-xl border border-forest-200 bg-forest-50/50 text-forest-900 placeholder-forest-400 focus:outline-none focus:ring-2 focus:ring-forest-500 focus:border-transparent transition-all"
+                  autoComplete="username"
                 />
               </div>
+            </div>
 
-              {/* Password */}
-              <div>
-                <label
-                  htmlFor="password"
-                  className="block text-sm font-medium text-forest-700 mb-1.5"
-                >
-                  Password
-                </label>
-                <div className="relative">
-                  <input
-                    id="password"
-                    type={showPassword ? 'text' : 'password'}
-                    autoComplete="current-password"
-                    value={password}
-                    onChange={(e) => setPassword(e.target.value)}
-                    placeholder="Enter your password"
-                    required
-                    className="w-full px-4 py-2.5 pr-11 rounded-xl border border-forest-200 bg-forest-50/50 text-forest-900 placeholder-forest-400 focus:outline-none focus:ring-2 focus:ring-forest-500 focus:border-transparent transition-all"
-                  />
-                  <button
-                    type="button"
-                    onClick={() => setShowPassword(!showPassword)}
-                    className="absolute right-3 top-1/2 -translate-y-1/2 text-forest-400 hover:text-forest-600 transition-colors"
-                    tabIndex={-1}
-                  >
-                    {showPassword ? <EyeOff className="w-4 h-4" /> : <Eye className="w-4 h-4" />}
-                  </button>
-                </div>
-              </div>
-
-              {/* Remember Me */}
-              <div className="flex items-center gap-2.5">
+            {/* Password */}
+            <div>
+              <label className="block text-xs font-mono text-gray-400 mb-2 uppercase tracking-widest">
+                Password
+              </label>
+              <div className="relative">
+                <Lock className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-gray-500" />
                 <input
-                  id="rememberMe"
-                  type="checkbox"
-                  checked={rememberMe}
-                  onChange={(e) => setRememberMe(e.target.checked)}
-                  className="w-4 h-4 rounded border-forest-300 text-forest-600 focus:ring-forest-500 cursor-pointer accent-forest-600"
+                  type={showPassword ? 'text' : 'password'}
+                  value={password}
+                  onChange={(e) => setPassword(e.target.value)}
+                  className="w-full pl-10 pr-12 py-3 neon-input rounded-md font-mono text-sm"
+                  placeholder="Enter password"
+                  required
+                  autoComplete="current-password"
                 />
-                <label
-                  htmlFor="rememberMe"
-                  className="text-sm text-forest-600 cursor-pointer select-none"
+                <button
+                  type="button"
+                  onClick={() => setShowPassword(!showPassword)}
+                  className="absolute right-3 top-1/2 -translate-y-1/2 text-gray-500 hover:text-neon-green transition-colors"
                 >
-                  Remember username &amp; password
-                </label>
+                  {showPassword ? <EyeOff className="w-4 h-4" /> : <Eye className="w-4 h-4" />}
+                </button>
               </div>
+            </div>
 
-              {/* Error */}
-              {error && (
-                <div className="px-4 py-3 rounded-xl bg-red-50 border border-red-200 text-red-700 text-sm">
-                  {error}
-                </div>
+            {/* Remember Me */}
+            <div className="flex items-center gap-3">
+              <input
+                type="checkbox"
+                id="rememberMe"
+                checked={rememberMe}
+                onChange={(e) => setRememberMe(e.target.checked)}
+                className="w-4 h-4 accent-neon-green cursor-pointer"
+              />
+              <label htmlFor="rememberMe" className="text-sm text-gray-400 cursor-pointer font-mono">
+                Remember me
+              </label>
+            </div>
+
+            {/* Error */}
+            {error && (
+              <div className="p-3 rounded-md border border-red-500/50 bg-red-500/10">
+                <p className="text-red-400 text-sm font-mono">{error}</p>
+              </div>
+            )}
+
+            {/* Submit */}
+            <button
+              type="submit"
+              disabled={isLoading}
+              className="w-full py-3 neon-btn-solid rounded-md font-orbitron text-sm font-bold tracking-widest uppercase disabled:opacity-50 disabled:cursor-not-allowed"
+            >
+              {isLoading ? (
+                <span className="flex items-center justify-center gap-2">
+                  <span className="w-4 h-4 border-2 border-neon-black border-t-transparent rounded-full animate-spin" />
+                  AUTHENTICATING...
+                </span>
+              ) : (
+                'ACCESS PORTAL'
               )}
+            </button>
+          </form>
 
-              {/* Submit */}
-              <button
-                type="submit"
-                disabled={isLoading}
-                className="w-full py-3 px-6 bg-gradient-to-r from-forest-600 to-sage-600 text-white rounded-xl font-semibold hover:from-forest-700 hover:to-sage-700 transition-all duration-200 shadow-md hover:shadow-lg disabled:opacity-60 flex items-center justify-center gap-2"
-              >
-                {isLoading ? (
-                  <>
-                    <Loader2 className="w-5 h-5 animate-spin" />
-                    Signing in...
-                  </>
-                ) : (
-                  'Sign In'
-                )}
-              </button>
-            </form>
+          <div className="mt-6 pt-4 border-t border-neon-border">
+            <p className="text-center text-xs text-gray-600 font-mono">
+              Credentials: admin / admin123
+            </p>
           </div>
         </div>
 
-        <p className="text-center text-xs text-forest-500 mt-4">
-          &copy; {new Date().getFullYear()} Bevinamarada Ayurvedic Store
-        </p>
+        {/* Back to site */}
+        <div className="text-center mt-6">
+          <a
+            href="/"
+            className="text-sm text-gray-500 hover:text-neon-green transition-colors font-mono"
+          >
+            ← Back to Store
+          </a>
+        </div>
       </div>
     </div>
   );

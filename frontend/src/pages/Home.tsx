@@ -1,106 +1,157 @@
 import { Link } from '@tanstack/react-router';
-import { Leaf, Shield, Award, Phone, ArrowRight, Sparkles } from 'lucide-react';
+import { Leaf, Shield, Award, Phone, Zap, ArrowRight, Star } from 'lucide-react';
 import TrendingProducts from '../components/TrendingProducts';
 
 export default function Home() {
   return (
-    <div className="min-h-screen">
+    <div className="bg-neon-black text-white">
       {/* Hero Section */}
-      <section className="relative overflow-hidden bg-gradient-to-br from-forest-800 via-forest-700 to-sage-800 text-white">
-        <div
-          className="absolute inset-0 opacity-20"
-          style={{
-            backgroundImage: 'url(/assets/generated/herbal-background.dim_1920x1080.png)',
-            backgroundSize: 'cover',
-            backgroundPosition: 'center',
-          }}
-        />
-        <div className="relative max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-20 lg:py-28">
-          <div className="max-w-2xl">
-            <div className="flex items-center gap-2 mb-4">
-              <Sparkles className="w-5 h-5 text-saffron-300" />
-              <span className="text-saffron-300 font-medium text-sm">Authentic Ayurvedic Wellness</span>
-            </div>
-            <h1 className="text-4xl lg:text-6xl font-bold mb-6 leading-tight font-display">
-              Nature's Healing
-              <span className="block text-saffron-300">Wisdom</span>
-            </h1>
-            <p className="text-lg text-forest-200 mb-8 leading-relaxed">
-              Discover the ancient power of Ayurveda with our carefully curated collection of
-              authentic herbs, oils, and natural remedies from Bevinamarada.
-            </p>
-            <div className="flex flex-wrap gap-4">
-              <Link
-                to="/contact"
-                className="inline-flex items-center gap-2 px-6 py-3 bg-saffron-500 hover:bg-saffron-600 text-white rounded-xl font-semibold transition-all duration-200 shadow-lg hover:shadow-xl"
-              >
-                Enquire Now
-                <ArrowRight className="w-4 h-4" />
-              </Link>
-              <Link
-                to="/about"
-                className="inline-flex items-center gap-2 px-6 py-3 bg-white/10 hover:bg-white/20 text-white rounded-xl font-semibold transition-all duration-200 border border-white/20"
-              >
-                Learn More
-              </Link>
-            </div>
+      <section className="relative min-h-[85vh] flex items-center justify-center overflow-hidden bg-grid-neon">
+        {/* Background glow */}
+        <div className="absolute top-1/3 left-1/2 -translate-x-1/2 -translate-y-1/2 w-[600px] h-[600px] bg-neon-green opacity-5 rounded-full blur-3xl pointer-events-none" />
+        <div className="absolute bottom-0 left-0 w-64 h-64 bg-neon-green opacity-3 rounded-full blur-3xl pointer-events-none" />
+
+        <div className="relative z-10 max-w-5xl mx-auto px-4 sm:px-6 lg:px-8 text-center">
+          {/* Badge */}
+          <div className="inline-flex items-center gap-2 px-4 py-1.5 rounded-full border border-neon-green/30 bg-neon-green/5 mb-6">
+            <Leaf className="w-3.5 h-3.5 text-neon-green" />
+            <span className="text-xs font-mono text-neon-green tracking-widest">PURE AYURVEDIC WELLNESS</span>
+          </div>
+
+          {/* Heading */}
+          <h1 className="font-orbitron text-4xl sm:text-5xl lg:text-6xl font-black mb-6 leading-tight">
+            <span className="text-white">BEVINAMARADA</span>
+            <br />
+            <span className="gradient-text-neon neon-text-glow">AYURVEDIC STORE</span>
+          </h1>
+
+          <p className="text-gray-400 text-lg sm:text-xl max-w-2xl mx-auto mb-8 font-rajdhani leading-relaxed">
+            Discover the ancient wisdom of Ayurveda. Premium herbal products crafted with nature's finest ingredients for your holistic wellness journey.
+          </p>
+
+          {/* CTAs */}
+          <div className="flex flex-col sm:flex-row gap-4 justify-center">
+            <Link
+              to="/products"
+              className="inline-flex items-center gap-2 px-8 py-3.5 neon-btn-solid rounded-md font-orbitron text-sm font-bold tracking-wider"
+            >
+              EXPLORE PRODUCTS
+              <ArrowRight className="w-4 h-4" />
+            </Link>
+            <Link
+              to="/contact"
+              className="inline-flex items-center gap-2 px-8 py-3.5 neon-btn rounded-md font-orbitron text-sm font-bold tracking-wider"
+            >
+              CONTACT US
+            </Link>
+          </div>
+
+          {/* Stats */}
+          <div className="mt-16 grid grid-cols-3 gap-6 max-w-lg mx-auto">
+            {[
+              { value: '500+', label: 'Products' },
+              { value: '10K+', label: 'Customers' },
+              { value: '15+', label: 'Years' },
+            ].map((stat) => (
+              <div key={stat.label} className="text-center">
+                <p className="font-orbitron text-2xl font-black text-neon-green neon-text-sm">{stat.value}</p>
+                <p className="text-xs text-gray-500 font-mono mt-1">{stat.label}</p>
+              </div>
+            ))}
+          </div>
+        </div>
+
+        {/* Scroll indicator */}
+        <div className="absolute bottom-8 left-1/2 -translate-x-1/2 flex flex-col items-center gap-2 animate-bounce">
+          <div className="w-px h-8 bg-gradient-to-b from-neon-green to-transparent" />
+          <div className="w-1.5 h-1.5 rounded-full bg-neon-green" />
+        </div>
+      </section>
+
+      {/* Trust Indicators */}
+      <section className="py-16 border-y border-neon-border">
+        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+          <div className="grid grid-cols-1 sm:grid-cols-3 gap-6">
+            {[
+              {
+                icon: Shield,
+                title: 'Certified Quality',
+                desc: 'All products are certified and tested for purity and potency.',
+              },
+              {
+                icon: Leaf,
+                title: '100% Natural',
+                desc: 'Sourced from the finest natural ingredients with no harmful additives.',
+              },
+              {
+                icon: Award,
+                title: 'Expert Formulations',
+                desc: 'Crafted by experienced Ayurvedic practitioners and herbalists.',
+              },
+            ].map((item) => {
+              const Icon = item.icon;
+              return (
+                <div key={item.title} className="neon-card rounded-lg p-6 text-center group hover:neon-glow-sm transition-all duration-300">
+                  <div className="inline-flex items-center justify-center w-12 h-12 rounded-full border border-neon-green/30 bg-neon-green/5 mb-4 group-hover:border-neon-green transition-colors">
+                    <Icon className="w-6 h-6 text-neon-green" />
+                  </div>
+                  <h3 className="font-orbitron text-sm font-bold text-white mb-2">{item.title}</h3>
+                  <p className="text-gray-500 text-sm font-rajdhani leading-relaxed">{item.desc}</p>
+                </div>
+              );
+            })}
           </div>
         </div>
       </section>
 
       {/* Trending Products */}
-      <TrendingProducts />
-
-      {/* Trust Indicators */}
-      <section className="py-16 bg-forest-50">
+      <section className="py-16">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-          <div className="grid grid-cols-1 md:grid-cols-3 gap-8">
-            <div className="text-center">
-              <div className="w-16 h-16 mx-auto mb-4 rounded-2xl bg-gradient-to-br from-forest-500 to-sage-600 flex items-center justify-center shadow-lg">
-                <Leaf className="w-8 h-8 text-white" />
-              </div>
-              <h3 className="text-lg font-bold text-forest-800 mb-2 font-display">100% Natural</h3>
-              <p className="text-forest-600 text-sm">All products sourced from certified organic farms and traditional Ayurvedic practitioners.</p>
+          <div className="text-center mb-10">
+            <div className="inline-flex items-center gap-2 px-3 py-1 rounded-full border border-neon-green/30 bg-neon-green/5 mb-4">
+              <Star className="w-3 h-3 text-neon-green" />
+              <span className="text-xs font-mono text-neon-green tracking-widest">POPULAR NOW</span>
             </div>
-            <div className="text-center">
-              <div className="w-16 h-16 mx-auto mb-4 rounded-2xl bg-gradient-to-br from-saffron-500 to-gold-500 flex items-center justify-center shadow-lg">
-                <Shield className="w-8 h-8 text-white" />
-              </div>
-              <h3 className="text-lg font-bold text-forest-800 mb-2 font-display">Quality Assured</h3>
-              <p className="text-forest-600 text-sm">Every product undergoes rigorous quality checks to ensure purity and potency.</p>
-            </div>
-            <div className="text-center">
-              <div className="w-16 h-16 mx-auto mb-4 rounded-2xl bg-gradient-to-br from-teal-500 to-forest-600 flex items-center justify-center shadow-lg">
-                <Award className="w-8 h-8 text-white" />
-              </div>
-              <h3 className="text-lg font-bold text-forest-800 mb-2 font-display">Expert Guidance</h3>
-              <p className="text-forest-600 text-sm">Our Ayurvedic experts are available to guide you to the right products for your needs.</p>
-            </div>
+            <h2 className="font-orbitron text-2xl sm:text-3xl font-bold text-white mb-3">
+              TRENDING PRODUCTS
+            </h2>
+            <p className="text-gray-500 font-rajdhani max-w-xl mx-auto">
+              Our most sought-after Ayurvedic remedies and wellness products.
+            </p>
           </div>
+          <TrendingProducts />
         </div>
       </section>
 
       {/* CTA Section */}
-      <section className="py-16 bg-gradient-to-br from-forest-800 to-sage-800 text-white">
-        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 text-center">
-          <h2 className="text-3xl font-bold mb-4 font-display">Ready to Start Your Wellness Journey?</h2>
-          <p className="text-forest-200 mb-8 max-w-xl mx-auto">
-            Contact us today to learn more about our products and how Ayurveda can transform your health.
-          </p>
-          <div className="flex flex-wrap gap-4 justify-center">
-            <Link
-              to="/contact"
-              className="inline-flex items-center gap-2 px-8 py-3 bg-saffron-500 hover:bg-saffron-600 text-white rounded-xl font-semibold transition-all duration-200 shadow-lg"
-            >
-              <Phone className="w-4 h-4" />
-              Contact Us
-            </Link>
-            <Link
-              to="/about"
-              className="inline-flex items-center gap-2 px-8 py-3 bg-white/10 hover:bg-white/20 text-white rounded-xl font-semibold transition-all duration-200 border border-white/20"
-            >
-              Our Story
-            </Link>
+      <section className="py-16 border-t border-neon-border">
+        <div className="max-w-4xl mx-auto px-4 sm:px-6 lg:px-8 text-center">
+          <div className="neon-card rounded-xl p-10 relative overflow-hidden">
+            <div className="absolute inset-0 bg-grid-neon opacity-50" />
+            <div className="relative z-10">
+              <Zap className="w-10 h-10 text-neon-green mx-auto mb-4 animate-pulse-glow" />
+              <h2 className="font-orbitron text-2xl sm:text-3xl font-bold text-white mb-4">
+                START YOUR WELLNESS JOURNEY
+              </h2>
+              <p className="text-gray-400 font-rajdhani text-lg mb-8 max-w-xl mx-auto">
+                Connect with our Ayurvedic experts and discover the perfect products for your health goals.
+              </p>
+              <div className="flex flex-col sm:flex-row gap-4 justify-center">
+                <Link
+                  to="/contact"
+                  className="inline-flex items-center gap-2 px-8 py-3.5 neon-btn-solid rounded-md font-orbitron text-sm font-bold tracking-wider"
+                >
+                  <Phone className="w-4 h-4" />
+                  GET IN TOUCH
+                </Link>
+                <Link
+                  to="/about"
+                  className="inline-flex items-center gap-2 px-8 py-3.5 neon-btn rounded-md font-orbitron text-sm font-bold tracking-wider"
+                >
+                  LEARN MORE
+                </Link>
+              </div>
+            </div>
           </div>
         </div>
       </section>
