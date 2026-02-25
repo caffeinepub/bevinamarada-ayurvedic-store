@@ -41,7 +41,7 @@ export default {
         success: 'oklch(var(--success) / <alpha-value>)',
         warning: 'oklch(var(--warning) / <alpha-value>)',
         info: 'oklch(var(--info) / <alpha-value>)',
-        // Vibrant palette — defined with <alpha-value> so opacity modifiers work (e.g. bg-saffron/15)
+        // Vibrant palette
         saffron: {
           DEFAULT: 'oklch(0.65 0.22 40 / <alpha-value>)',
           light: 'oklch(0.92 0.08 55 / <alpha-value>)',
@@ -61,6 +61,31 @@ export default {
         violet: {
           DEFAULT: 'oklch(0.55 0.2 290 / <alpha-value>)',
           light: 'oklch(0.93 0.06 290 / <alpha-value>)',
+        },
+        // Forest/sage palette for public layout
+        forest: {
+          50: 'oklch(0.97 0.02 145)',
+          100: 'oklch(0.93 0.04 145)',
+          200: 'oklch(0.86 0.07 145)',
+          300: 'oklch(0.76 0.1 145)',
+          400: 'oklch(0.65 0.14 145)',
+          500: 'oklch(0.55 0.17 145)',
+          600: 'oklch(0.46 0.17 145)',
+          700: 'oklch(0.38 0.15 145)',
+          800: 'oklch(0.3 0.12 145)',
+          900: 'oklch(0.22 0.09 145)',
+        },
+        sage: {
+          50: 'oklch(0.97 0.02 160)',
+          100: 'oklch(0.93 0.04 160)',
+          200: 'oklch(0.86 0.06 160)',
+          300: 'oklch(0.76 0.09 160)',
+          400: 'oklch(0.65 0.12 160)',
+          500: 'oklch(0.55 0.14 160)',
+          600: 'oklch(0.46 0.14 160)',
+          700: 'oklch(0.38 0.12 160)',
+          800: 'oklch(0.3 0.1 160)',
+          900: 'oklch(0.22 0.08 160)',
         },
       },
       fontFamily: {

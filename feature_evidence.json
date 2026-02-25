@@ -2,10 +2,30 @@
   "kind": "feature_evidence_report",
   "features": [
     {
-      "featureId": "feature-rebuild-the-mobile-navigation-menu-in-publiclayout-tsx-as-a-proper-full-screen-overlay-drawer-when-open-the-menu-must-cover-the-entire-viewport-position-fixed-top-0-left-0-width-100vw-height-100vh-with-a-solid-background-so-no-page-content-behind-it-is-visible",
-      "featureTitle": "Rebuild the mobile navigation menu in PublicLayout.tsx as a proper full-screen overlay drawer. When open, the menu must cover the entire viewport (position fixed, top-0 left-0, width 100vw, height 100vh) with a solid background so no page content behind it is visible.",
+      "featureId": "feature-revert-the-entire-project-frontend-and-backend-to-the-state-it-was-in-at-version-6-undoing-all-changes-introduced-in-versions-7-through-13",
+      "featureTitle": "Revert the entire project (frontend and backend) to the state it was in at Version 6, undoing all changes introduced in Versions 7 through 13.",
       "files": [
-        "frontend/src/components/PublicLayout.tsx"
+        "frontend/src/App.tsx",
+        "frontend/src/components/AdminGuard.tsx",
+        "frontend/src/components/AdminLayout.tsx",
+        "frontend/src/components/IncomeTracking.tsx",
+        "frontend/src/components/LowStockWarning.tsx",
+        "frontend/src/components/ProfileSetupModal.tsx",
+        "frontend/src/components/PublicLayout.tsx",
+        "frontend/src/components/RevenueOverview.tsx",
+        "frontend/src/components/StockItemForm.tsx",
+        "frontend/src/components/TodaysSalesPanel.tsx",
+        "frontend/src/components/TrendingStocksPanel.tsx",
+        "frontend/src/components/TrialStatusBanner.tsx",
+        "frontend/src/components/TrialStatusCard.tsx",
+        "frontend/src/index.css",
+        "frontend/src/pages/AboutUs.tsx",
+        "frontend/src/pages/Contact.tsx",
+        "frontend/src/pages/CustomerManagement.tsx",
+        "frontend/src/pages/Home.tsx",
+        "frontend/src/pages/OwnerDashboard.tsx",
+        "frontend/src/pages/ProfilePage.tsx",
+        "frontend/tailwind.config.js"
       ],
       "components": [
         "authorization@4.0.0",
@@ -18,66 +38,6 @@
       ],
       "testIds": [
         "REQ-1"
-      ],
-      "confidence": "high"
-    },
-    {
-      "featureId": "feature-fix-the-layout-of-menu-items-inside-the-mobile-overlay-all-navigation-links-home-about-products-contact-etc-must-be-vertically-stacked-centered-both-horizontally-and-vertically-with-adequate-spacing-between-each-item-no-items-should-overlap-with-each-other-with-the-logo-or-with-any-header-elements",
-      "featureTitle": "Fix the layout of menu items inside the mobile overlay. All navigation links (Home, About, Products, Contact, etc.) must be vertically stacked, centered both horizontally and vertically, with adequate spacing between each item. No items should overlap with each other, with the logo, or with any header elements.",
-      "files": [
-        "frontend/src/components/PublicLayout.tsx"
-      ],
-      "components": [
-        "authorization@4.0.0",
-        "blob-storage@4.0.0",
-        "core-infrastructure@1.0.2",
-        "shadcn-ui@1.0.0",
-        "build-template-react@1.0.0",
-        "initial-app@1.0.0",
-        "github-export-icp-cli@1.0.0"
-      ],
-      "testIds": [
-        "REQ-2"
-      ],
-      "confidence": "high"
-    },
-    {
-      "featureId": "feature-ensure-the-close-x-button-in-the-mobile-menu-fully-dismisses-the-overlay-the-button-must-be-clearly-positioned-e-g-top-right-corner-of-the-overlay-visually-distinct-and-clicking-it-must-set-the-menu-state-to-closed-and-restore-all-normal-page-behavior",
-      "featureTitle": "Ensure the close (X) button in the mobile menu fully dismisses the overlay. The button must be clearly positioned (e.g., top-right corner of the overlay), visually distinct, and clicking it must set the menu state to closed and restore all normal page behavior.",
-      "files": [
-        "frontend/src/components/PublicLayout.tsx"
-      ],
-      "components": [
-        "authorization@4.0.0",
-        "blob-storage@4.0.0",
-        "core-infrastructure@1.0.2",
-        "shadcn-ui@1.0.0",
-        "build-template-react@1.0.0",
-        "initial-app@1.0.0",
-        "github-export-icp-cli@1.0.0"
-      ],
-      "testIds": [
-        "REQ-3"
-      ],
-      "confidence": "high"
-    },
-    {
-      "featureId": "feature-lock-the-body-scroll-when-the-mobile-menu-is-open-when-the-menu-overlay-is-active-apply-overflow-hidden-or-equivalent-to-the-document-body-so-the-background-page-content-cannot-be-scrolled-restore-normal-scroll-behavior-when-the-menu-is-closed",
-      "featureTitle": "Lock the body scroll when the mobile menu is open. When the menu overlay is active, apply overflow-hidden (or equivalent) to the document body so the background page content cannot be scrolled. Restore normal scroll behavior when the menu is closed.",
-      "files": [
-        "frontend/src/components/PublicLayout.tsx"
-      ],
-      "components": [
-        "authorization@4.0.0",
-        "blob-storage@4.0.0",
-        "core-infrastructure@1.0.2",
-        "shadcn-ui@1.0.0",
-        "build-template-react@1.0.0",
-        "initial-app@1.0.0",
-        "github-export-icp-cli@1.0.0"
-      ],
-      "testIds": [
-        "REQ-4"
       ],
       "confidence": "high"
     }

@@ -30,7 +30,7 @@ const formatINR = (amount: bigint | number) => {
 
 type ValidAdminPath =
   | '/admin'
-  | '/admin/stocks'
+  | '/admin/stock'
   | '/admin/customers'
   | '/admin/sales'
   | '/admin/revenue'
@@ -102,7 +102,7 @@ export default function OwnerDashboard() {
   const trendingCount = stockItems.filter((s) => s.isTrending).length;
 
   return (
-    <div className="space-y-8 animate-fade-in-up">
+    <div className="space-y-8 animate-fade-in-up p-6">
       {/* Welcome Banner */}
       <div className="gradient-hero rounded-2xl p-6 text-white shadow-lg">
         <div className="flex items-center justify-between">
@@ -136,7 +136,7 @@ export default function OwnerDashboard() {
             icon={<Package size={22} className="text-white" />}
             gradientClass="gradient-saffron"
             shadowClass="shadow-saffron"
-            linkTo="/admin/stocks"
+            linkTo="/admin/stock"
             isLoading={stockLoading}
             delay={0}
           />
@@ -233,7 +233,7 @@ export default function OwnerDashboard() {
             ))}
             {lowStockItems.length > 5 && (
               <Link
-                to="/admin/stocks"
+                to="/admin/stock"
                 className="flex items-center justify-center gap-2 py-2 text-sm text-coral font-medium hover:underline"
               >
                 View all {lowStockItems.length} low stock items <ArrowRight size={14} />
@@ -254,7 +254,7 @@ export default function OwnerDashboard() {
               {
                 label: 'Add Stock',
                 icon: <Package size={18} />,
-                to: '/admin/stocks' as ValidAdminPath,
+                to: '/admin/stock' as ValidAdminPath,
                 color: 'gradient-saffron shadow-saffron',
               },
               {

@@ -1,111 +1,74 @@
-import React, { useState } from 'react';
-import { Phone, MapPin, MessageCircle, Send, Clock } from 'lucide-react';
-import { SiWhatsapp } from 'react-icons/si';
+import { useState } from 'react';
+import { Phone, MapPin, Clock, Mail, Send } from 'lucide-react';
+import { Button } from '@/components/ui/button';
+import { Input } from '@/components/ui/input';
+import { Textarea } from '@/components/ui/textarea';
+import { Label } from '@/components/ui/label';
 
 export default function Contact() {
-  const [form, setForm] = useState({ name: '', email: '', phone: '', message: '' });
+  const [formData, setFormData] = useState({
+    name: '',
+    phone: '',
+    email: '',
+    message: '',
+  });
   const [submitted, setSubmitted] = useState(false);
-  const [submitting, setSubmitting] = useState(false);
 
-  const handleSubmit = async (e: React.FormEvent) => {
+  const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();
-    setSubmitting(true);
-    // Simulate submission (no backend endpoint for enquiries from public)
-    await new Promise(r => setTimeout(r, 1000));
     setSubmitted(true);
-    setSubmitting(false);
+    setTimeout(() => setSubmitted(false), 5000);
+    setFormData({ name: '', phone: '', email: '', message: '' });
   };
 
   return (
-    <div className="page-enter">
+    <div className="min-h-screen">
       {/* Hero */}
-      <section className="py-16 text-center" style={{ backgroundColor: 'var(--forest-green)' }}>
-        <div className="max-w-4xl mx-auto px-4">
-          <h1 className="font-display text-4xl font-bold mb-3" style={{ color: 'var(--warm-cream)' }}>
-            Contact Us
-          </h1>
-          <p className="text-base opacity-90" style={{ color: 'var(--warm-cream)' }}>
-            We're here to help with all your Ayurvedic wellness needs
+      <section className="bg-gradient-to-br from-forest-800 to-sage-800 text-white py-16">
+        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 text-center">
+          <h1 className="text-4xl font-bold mb-4 font-display">Contact Us</h1>
+          <p className="text-forest-200 text-lg max-w-xl mx-auto">
+            We'd love to hear from you. Reach out for product enquiries, consultations, or any questions.
           </p>
         </div>
       </section>
 
-      <section className="py-16" style={{ backgroundColor: 'var(--warm-cream)' }}>
-        <div className="max-w-6xl mx-auto px-4 sm:px-6 lg:px-8">
+      <section className="py-16 bg-forest-50">
+        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
           <div className="grid grid-cols-1 lg:grid-cols-2 gap-12">
             {/* Contact Info */}
             <div className="space-y-6">
-              <h2 className="font-display text-2xl font-bold" style={{ color: 'var(--forest-green)' }}>
-                Get in Touch
-              </h2>
-
-              {/* Phone */}
-              <div className="ayurvedic-card p-5 flex items-center gap-4">
-                <div className="w-12 h-12 rounded-xl flex-shrink-0 flex items-center justify-center" style={{ backgroundColor: 'var(--forest-green)' }}>
-                  <Phone size={22} style={{ color: 'var(--gold-accent)' }} />
-                </div>
-                <div>
-                  <p className="text-xs font-semibold uppercase tracking-wider mb-1" style={{ color: 'var(--earthy-brown)', opacity: 0.7 }}>Phone</p>
-                  <a href="tel:+919876543210" className="font-semibold text-lg hover:underline" style={{ color: 'var(--forest-green)' }}>
-                    +91 98765 43210
-                  </a>
-                </div>
-              </div>
-
-              {/* WhatsApp */}
-              <div className="ayurvedic-card p-5 flex items-center gap-4">
-                <div className="w-12 h-12 rounded-xl flex-shrink-0 flex items-center justify-center" style={{ backgroundColor: '#25D366' }}>
-                  <SiWhatsapp size={22} className="text-white" />
-                </div>
-                <div>
-                  <p className="text-xs font-semibold uppercase tracking-wider mb-1" style={{ color: 'var(--earthy-brown)', opacity: 0.7 }}>WhatsApp</p>
-                  <a
-                    href="https://wa.me/919876543210?text=Hello%2C%20I%20would%20like%20to%20enquire%20about%20your%20Ayurvedic%20products"
-                    target="_blank"
-                    rel="noopener noreferrer"
-                    className="font-semibold text-base hover:underline"
-                    style={{ color: '#25D366' }}
-                  >
-                    Chat on WhatsApp
-                  </a>
+              <div>
+                <h2 className="text-2xl font-bold text-forest-800 mb-6 font-display">Get in Touch</h2>
+                <div className="space-y-4">
+                  {[
+                    { icon: Phone, label: 'Phone', value: '+91 98765 43210', color: 'from-forest-500 to-sage-600' },
+                    { icon: Mail, label: 'Email', value: 'info@bevinamarada.com', color: 'from-saffron-500 to-gold-500' },
+                    { icon: MapPin, label: 'Address', value: 'Bangalore, Karnataka, India', color: 'from-teal-500 to-forest-600' },
+                    { icon: Clock, label: 'Hours', value: 'Mon–Sat: 9 AM – 7 PM', color: 'from-coral-500 to-saffron-500' },
+                  ].map((item) => {
+                    const Icon = item.icon;
+                    return (
+                      <div key={item.label} className="flex items-start gap-4 p-4 bg-white rounded-xl border border-forest-100 shadow-sm">
+                        <div className={`w-10 h-10 rounded-lg bg-gradient-to-br ${item.color} flex items-center justify-center flex-shrink-0`}>
+                          <Icon className="w-5 h-5 text-white" />
+                        </div>
+                        <div>
+                          <p className="text-xs text-forest-500 font-medium">{item.label}</p>
+                          <p className="text-forest-800 font-semibold">{item.value}</p>
+                        </div>
+                      </div>
+                    );
+                  })}
                 </div>
               </div>
 
-              {/* Address */}
-              <div className="ayurvedic-card p-5 flex items-start gap-4">
-                <div className="w-12 h-12 rounded-xl flex-shrink-0 flex items-center justify-center" style={{ backgroundColor: 'var(--earthy-brown)' }}>
-                  <MapPin size={22} style={{ color: 'var(--gold-accent)' }} />
-                </div>
-                <div>
-                  <p className="text-xs font-semibold uppercase tracking-wider mb-1" style={{ color: 'var(--earthy-brown)', opacity: 0.7 }}>Address</p>
-                  <p className="font-medium" style={{ color: 'var(--forest-green)' }}>
-                    Bevinamarada Ayurvedic Store<br />
-                    Main Road, Near Temple<br />
-                    Karnataka, India — 560001
-                  </p>
-                </div>
-              </div>
-
-              {/* Hours */}
-              <div className="ayurvedic-card p-5 flex items-start gap-4">
-                <div className="w-12 h-12 rounded-xl flex-shrink-0 flex items-center justify-center" style={{ backgroundColor: 'var(--gold-accent)' }}>
-                  <Clock size={22} className="text-white" />
-                </div>
-                <div>
-                  <p className="text-xs font-semibold uppercase tracking-wider mb-1" style={{ color: 'var(--earthy-brown)', opacity: 0.7 }}>Store Hours</p>
-                  <p className="text-sm" style={{ color: 'var(--forest-green)' }}>
-                    Mon – Sat: 9:00 AM – 8:00 PM<br />
-                    Sunday: 10:00 AM – 6:00 PM
-                  </p>
-                </div>
-              </div>
-
-              {/* Google Map */}
-              <div className="rounded-2xl overflow-hidden shadow-warm-lg border-2" style={{ borderColor: 'var(--forest-green)' }}>
+              {/* Map */}
+              <div className="rounded-2xl overflow-hidden shadow-lg border border-forest-100 h-64">
                 <iframe
-                  src="https://www.google.com/maps/embed?pb=!1m18!1m12!1m3!1d3887.9!2d77.5946!3d12.9716!2m3!1f0!2f0!3f0!3m2!1i1024!2i768!4f13.1!3m3!1m2!1s0x0%3A0x0!2zMTLCsDU4JzE3LjgiTiA3N8KwMzUnNDAuNiJF!5e0!3m2!1sen!2sin!4v1234567890"
+                  src="https://www.google.com/maps/embed?pb=!1m18!1m12!1m3!1d497698.99!2d77.35073!3d12.97194!2m3!1f0!2f0!3f0!3m2!1i1024!2i768!4f13.1!3m3!1m2!1s0x3bae1670c9b44e6d%3A0xf8dfc3e8517e4fe0!2sBengaluru%2C%20Karnataka!5e0!3m2!1sen!2sin!4v1234567890"
                   width="100%"
-                  height="250"
+                  height="100%"
                   style={{ border: 0 }}
                   allowFullScreen
                   loading="lazy"
@@ -115,74 +78,70 @@ export default function Contact() {
               </div>
             </div>
 
-            {/* Enquiry Form */}
-            <div>
-              <h2 className="font-display text-2xl font-bold mb-6" style={{ color: 'var(--forest-green)' }}>
-                Send an Enquiry
-              </h2>
-
+            {/* Contact Form */}
+            <div className="bg-white rounded-2xl p-8 shadow-sm border border-forest-100">
+              <h2 className="text-2xl font-bold text-forest-800 mb-6 font-display">Send an Enquiry</h2>
               {submitted ? (
-                <div className="ayurvedic-card p-8 text-center animate-scale-in">
-                  <div className="w-16 h-16 rounded-full mx-auto mb-4 flex items-center justify-center" style={{ backgroundColor: 'var(--forest-green)' }}>
-                    <Send size={28} style={{ color: 'var(--gold-accent)' }} />
+                <div className="text-center py-12">
+                  <div className="w-16 h-16 mx-auto mb-4 rounded-full bg-forest-100 flex items-center justify-center">
+                    <Send className="w-8 h-8 text-forest-600" />
                   </div>
-                  <h3 className="font-display text-xl font-bold mb-2" style={{ color: 'var(--forest-green)' }}>
-                    Thank You!
-                  </h3>
-                  <p className="text-sm" style={{ color: 'var(--earthy-brown)' }}>
-                    Your enquiry has been received. We'll get back to you within 24 hours.
-                  </p>
+                  <h3 className="text-xl font-bold text-forest-800 mb-2 font-display">Message Sent!</h3>
+                  <p className="text-forest-600">We'll get back to you within 24 hours.</p>
                 </div>
               ) : (
-                <form onSubmit={handleSubmit} className="ayurvedic-card p-6 space-y-4">
-                  {[
-                    { label: 'Your Name', key: 'name', type: 'text', placeholder: 'Enter your full name' },
-                    { label: 'Email Address', key: 'email', type: 'email', placeholder: 'your@email.com' },
-                    { label: 'Phone Number', key: 'phone', type: 'tel', placeholder: '+91 XXXXX XXXXX' },
-                  ].map(field => (
-                    <div key={field.key}>
-                      <label className="block text-sm font-semibold mb-1.5" style={{ color: 'var(--forest-green)' }}>
-                        {field.label}
-                      </label>
-                      <input
-                        type={field.type}
-                        value={form[field.key as keyof typeof form]}
-                        onChange={e => setForm(prev => ({ ...prev, [field.key]: e.target.value }))}
-                        placeholder={field.placeholder}
-                        className="w-full px-4 py-2.5 rounded-xl border-2 text-sm outline-none transition-colors"
-                        style={{ borderColor: 'var(--border)', backgroundColor: 'white', color: 'var(--earthy-brown)' }}
-                        onFocus={e => e.target.style.borderColor = 'var(--forest-green)'}
-                        onBlur={e => e.target.style.borderColor = 'var(--border)'}
-                      />
-                    </div>
-                  ))}
-                  <div>
-                    <label className="block text-sm font-semibold mb-1.5" style={{ color: 'var(--forest-green)' }}>
-                      Message
-                    </label>
-                    <textarea
-                      value={form.message}
-                      onChange={e => setForm(prev => ({ ...prev, message: e.target.value }))}
-                      placeholder="Tell us about your health concern or product enquiry..."
-                      rows={4}
-                      className="w-full px-4 py-2.5 rounded-xl border-2 text-sm outline-none transition-colors resize-none"
-                      style={{ borderColor: 'var(--border)', backgroundColor: 'white', color: 'var(--earthy-brown)' }}
-                      onFocus={e => e.target.style.borderColor = 'var(--forest-green)'}
-                      onBlur={e => e.target.style.borderColor = 'var(--border)'}
+                <form onSubmit={handleSubmit} className="space-y-4">
+                  <div className="space-y-1.5">
+                    <Label htmlFor="name" className="text-forest-700">Your Name *</Label>
+                    <Input
+                      id="name"
+                      value={formData.name}
+                      onChange={(e) => setFormData({ ...formData, name: e.target.value })}
+                      placeholder="Enter your name"
+                      required
+                      className="border-forest-200 focus:border-forest-500"
                     />
                   </div>
-                  <button
+                  <div className="space-y-1.5">
+                    <Label htmlFor="phone" className="text-forest-700">Phone Number</Label>
+                    <Input
+                      id="phone"
+                      value={formData.phone}
+                      onChange={(e) => setFormData({ ...formData, phone: e.target.value })}
+                      placeholder="+91 XXXXX XXXXX"
+                      className="border-forest-200 focus:border-forest-500"
+                    />
+                  </div>
+                  <div className="space-y-1.5">
+                    <Label htmlFor="email" className="text-forest-700">Email Address</Label>
+                    <Input
+                      id="email"
+                      type="email"
+                      value={formData.email}
+                      onChange={(e) => setFormData({ ...formData, email: e.target.value })}
+                      placeholder="your@email.com"
+                      className="border-forest-200 focus:border-forest-500"
+                    />
+                  </div>
+                  <div className="space-y-1.5">
+                    <Label htmlFor="message" className="text-forest-700">Message *</Label>
+                    <Textarea
+                      id="message"
+                      value={formData.message}
+                      onChange={(e) => setFormData({ ...formData, message: e.target.value })}
+                      placeholder="Tell us about your enquiry..."
+                      rows={4}
+                      required
+                      className="border-forest-200 focus:border-forest-500"
+                    />
+                  </div>
+                  <Button
                     type="submit"
-                    disabled={submitting}
-                    className="w-full py-3 rounded-xl font-semibold text-sm transition-all duration-200 disabled:opacity-60 flex items-center justify-center gap-2"
-                    style={{ backgroundColor: 'var(--forest-green)', color: 'var(--warm-cream)' }}
+                    className="w-full bg-gradient-to-r from-forest-600 to-sage-600 hover:from-forest-700 hover:to-sage-700 text-white"
                   >
-                    {submitting ? (
-                      <><div className="w-4 h-4 border-2 border-white/30 border-t-white rounded-full animate-spin" /> Sending...</>
-                    ) : (
-                      <><Send size={16} /> Send Enquiry</>
-                    )}
-                  </button>
+                    <Send className="w-4 h-4 mr-2" />
+                    Send Enquiry
+                  </Button>
                 </form>
               )}
             </div>

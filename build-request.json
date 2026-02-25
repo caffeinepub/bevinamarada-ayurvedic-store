@@ -1,98 +1,34 @@
 {
   "kind": "build_request",
-  "title": "Fix mobile navigation menu overlay behavior",
+  "title": "Revert to Version 6",
   "priority": "high",
   "requirements": [
     {
       "id": "REQ-1",
-      "text": "Rebuild the mobile navigation menu in PublicLayout.tsx as a proper full-screen overlay drawer. When open, the menu must cover the entire viewport (position fixed, top-0 left-0, width 100vw, height 100vh) with a solid background so no page content behind it is visible.",
-      "target": "frontend",
+      "text": "Revert the entire project (frontend and backend) to the state it was in at Version 6, undoing all changes introduced in Versions 7 through 13.",
+      "target": "both",
       "source": {
         "messageIds": [
-          "msg-latest"
+          "msg-4"
         ],
         "quotes": [
-          "The menu does not behave like a proper full-screen mobile drawer.",
-          "Mobile menu should open as a clean full-screen overlay."
+          "Please come back to version 6"
         ]
       },
       "acceptanceCriteria": [
-        "On mobile viewports, tapping the hamburger icon opens a full-screen overlay that completely covers the viewport.",
-        "No background page content (e.g., Admin Login, Why Choose Bevinamarada sections) is visible through or behind the open menu.",
-        "The overlay has a solid opaque background consistent with the site's Ayurvedic green/brown theme."
-      ]
-    },
-    {
-      "id": "REQ-2",
-      "text": "Fix the layout of menu items inside the mobile overlay. All navigation links (Home, About, Products, Contact, etc.) must be vertically stacked, centered both horizontally and vertically, with adequate spacing between each item. No items should overlap with each other, with the logo, or with any header elements.",
-      "target": "frontend",
-      "source": {
-        "messageIds": [
-          "msg-latest"
-        ],
-        "quotes": [
-          "The menu popup overlaps the header content instead of aligning properly.",
-          "The 'Home / Contact Us' button is overlapping with the logo and other menu items.",
-          "The 'Our Story' button is misaligned and partially hidden.",
-          "Menu items should be vertically stacked and centered.",
-          "No overlapping between logo, buttons, and links."
-        ]
-      },
-      "acceptanceCriteria": [
-        "All menu items are displayed in a single vertical column, centered on screen.",
-        "No menu item overlaps with any other menu item, the logo, or the close button.",
-        "The 'Our Story' / About link is fully visible and not clipped or hidden."
-      ]
-    },
-    {
-      "id": "REQ-3",
-      "text": "Ensure the close (X) button in the mobile menu fully dismisses the overlay. The button must be clearly positioned (e.g., top-right corner of the overlay), visually distinct, and clicking it must set the menu state to closed and restore all normal page behavior.",
-      "target": "frontend",
-      "source": {
-        "messageIds": [
-          "msg-latest"
-        ],
-        "quotes": [
-          "The close (X) button does not properly clear the overlay area.",
-          "Close (X) button should fully dismiss the menu."
-        ]
-      },
-      "acceptanceCriteria": [
-        "A clearly visible close (X) button is present in the top-right corner of the open mobile menu overlay.",
-        "Clicking the X button closes the menu overlay completely.",
-        "After closing, the page returns to its normal scrollable state with no residual overlay elements visible."
-      ]
-    },
-    {
-      "id": "REQ-4",
-      "text": "Lock the body scroll when the mobile menu is open. When the menu overlay is active, apply overflow-hidden (or equivalent) to the document body so the background page content cannot be scrolled. Restore normal scroll behavior when the menu is closed.",
-      "target": "frontend",
-      "source": {
-        "messageIds": [
-          "msg-latest"
-        ],
-        "quotes": [
-          "When the menu is open, background content (Admin Login / Why Choose Bevinamarada) is still visible and scrollable, which should not happen.",
-          "Background page should be locked (no scroll) when menu is open."
-        ]
-      },
-      "acceptanceCriteria": [
-        "When the mobile menu is open, the page behind it cannot be scrolled.",
-        "When the mobile menu is closed, normal page scrolling resumes immediately.",
-        "No layout shift or jump occurs when scroll lock is applied or removed."
+        "All frontend files match the Version 6 snapshot exactly.",
+        "All backend files match the Version 6 snapshot exactly.",
+        "No code, styles, or logic from Versions 7–13 (including the z-index/overlay fixes and white background changes) remain in the codebase."
       ]
     }
   ],
   "constraints": [
-    "Do not modify any files under frontend/src/hooks/ or frontend/src/components/ui/.",
-    "Fix must be scoped to the public-facing layout (PublicLayout.tsx) and must not affect the AdminLayout mobile menu.",
-    "Maintain the existing Ayurvedic green and brown color theme in the mobile menu overlay."
+    "Do not retain any changes introduced after Version 6.",
+    "Immutable frontend paths (hooks, main.tsx, ui components) must remain untouched per platform rules."
   ],
   "nonGoals": [
-    "Redesigning the desktop navigation.",
-    "Adding new navigation links or pages.",
-    "Changing the AdminLayout or admin panel navigation.",
-    "Any backend changes."
+    "Introducing any new features or fixes beyond restoring Version 6.",
+    "Partial rollbacks — the full revert to Version 6 is required."
   ],
   "imageRequirements": {
     "required": [],

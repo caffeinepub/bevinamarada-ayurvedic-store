@@ -1,80 +1,82 @@
-import React, { useState, useEffect } from 'react';
-import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogFooter } from '@/components/ui/dialog';
+import { useState, useEffect } from 'react';
+import { Dialog, DialogContent, DialogHeader, DialogTitle } from '@/components/ui/dialog';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { Loader2, Upload, X } from 'lucide-react';
 import { useAddStockItem, useUpdateStockItem } from '../hooks/useQueries';
-import { ExternalBlob } from '../backend';
-import type { StockItem } from '../backend';
+import { StockItem, ExternalBlob } from '../backend';
 
 export interface StockItemFormProps {
   open: boolean;
   onOpenChange: (open: boolean) => void;
   editItem?: StockItem | null;
-  trialExpired?: boolean;
 }
 
-export default function StockItemForm({ open, onOpenChange, editItem, trialExpired = false }: StockItemFormProps) {
-  const addMutation = useAddStockItem();
-  const updateMutation = useUpdateStockItem();
+const CATEGORIES = [
+  'Herbs & Botanicals',
+  'Oils & Ghee',
+  'Powders & Churnas',
+  'Tablets & Capsules',
+  'Syrups & Tonics',
+  'Skin Care',
+  'Hair Care',
+  'Digestive Health',
+  'Immunity Boosters',
+  'Other',
+];
 
+export default function StockItemForm({ open, onOpenChange, editItem }: StockItemFormProps) {
   const [name, setName] = useState('');
   const [category, setCategory] = useState('');
   const [quantity, setQuantity] = useState('');
   const [unitPrice, setUnitPrice] = useState('');
-  const [lowStockThreshold, setLowStockThreshold] = useState('5');
-  const [expiryDate, setExpiryDate] = useState('');
+  const [lowStockThreshold, setLowStockThreshold] = useState('10');
   const [imageFile, setImageFile] = useState<File | null>(null);
   const [imagePreview, setImagePreview] = useState<string | null>(null);
-  const [error, setError] = useState('');
+  const [existingImage, setExistingImage] = useState<ExternalBlob | null>(null);
+  const [expiryDate, setExpiryDate] = useState('');
 
-  const isEditing = !!editItem;
-  const isPending = addMutation.isPending || updateMutation.isPending;
+  const addItem = useAddStockItem();
+  const updateItem = useUpdateStockItem();
 
   useEffect(() => {
-    if (open) {
-      if (editItem) {
-        setName(editItem.name);
-        setCategory(editItem.category);
-        setQuantity(String(editItem.quantity));
-        setUnitPrice(String(editItem.unitPrice));
-        setLowStockThreshold(String(editItem.lowStockThreshold));
-        if (editItem.expiryDate) {
-          const ms = Number(editItem.expiryDate) / 1_000_000;
-          const d = new Date(ms);
-          setExpiryDate(d.toISOString().split('T')[0]);
-        } else {
-          setExpiryDate('');
-        }
-        if (editItem.image) {
-          setImagePreview(editItem.image.getDirectURL());
-        } else {
-          setImagePreview(null);
-        }
-        setImageFile(null);
+    if (editItem) {
+      setName(editItem.name);
+      setCategory(editItem.category);
+      setQuantity(editItem.quantity.toString());
+      setUnitPrice(editItem.unitPrice.toString());
+      setLowStockThreshold(editItem.lowStockThreshold.toString());
+      setExistingImage(editItem.image ?? null);
+      setImageFile(null);
+      setImagePreview(null);
+      if (editItem.expiryDate) {
+        const date = new Date(Number(editItem.expiryDate) / 1_000_000);
+        setExpiryDate(date.toISOString().split('T')[0]);
       } else {
-        setName('');
-        setCategory('');
-        setQuantity('');
-        setUnitPrice('');
-        setLowStockThreshold('5');
         setExpiryDate('');
-        setImageFile(null);
-        setImagePreview(null);
       }
-      setError('');
+    } else {
+      setName('');
+      setCategory('');
+      setQuantity('');
+      setUnitPrice('');
+      setLowStockThreshold('10');
+      setImageFile(null);
+      setImagePreview(null);
+      setExistingImage(null);
+      setExpiryDate('');
     }
-  }, [open, editItem]);
+  }, [editItem, open]);
 
   const handleImageChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     const file = e.target.files?.[0];
     if (file) {
       setImageFile(file);
+      setExistingImage(null);
       const reader = new FileReader();
-      reader.onloadend = () => {
-        setImagePreview(reader.result as string);
-      };
+      reader.onloadend = () => setImagePreview(reader.result as string);
       reader.readAsDataURL(file);
     }
   };
@@ -82,229 +84,184 @@ export default function StockItemForm({ open, onOpenChange, editItem, trialExpir
   const handleRemoveImage = () => {
     setImageFile(null);
     setImagePreview(null);
+    setExistingImage(null);
   };
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
-    setError('');
+    if (!name || !category || !quantity || !unitPrice) return;
 
-    if (trialExpired) {
-      setError('Your trial has expired. Please contact support to continue.');
-      return;
-    }
-
-    if (!name.trim() || !category.trim() || !quantity || !unitPrice) {
-      setError('Please fill in all required fields.');
-      return;
-    }
-
-    const qty = parseInt(quantity, 10);
-    const price = parseInt(unitPrice, 10);
-    const threshold = parseInt(lowStockThreshold, 10) || 5;
-
-    if (isNaN(qty) || qty < 0) {
-      setError('Quantity must be a valid non-negative number.');
-      return;
-    }
-    if (isNaN(price) || price < 0) {
-      setError('Unit price must be a valid non-negative number.');
-      return;
-    }
-
-    let imageBlob: ExternalBlob | null = null;
+    let imageBlob: ExternalBlob | null = existingImage;
     if (imageFile) {
-      const arrayBuffer = await imageFile.arrayBuffer();
-      imageBlob = ExternalBlob.fromBytes(new Uint8Array(arrayBuffer));
-    } else if (editItem?.image && !imageFile && imagePreview) {
-      imageBlob = editItem.image;
+      const bytes = new Uint8Array(await imageFile.arrayBuffer());
+      imageBlob = ExternalBlob.fromBytes(bytes);
     }
 
-    let expiryDateNanos: bigint | null = null;
-    if (expiryDate) {
-      const ms = new Date(expiryDate).getTime();
-      expiryDateNanos = BigInt(ms) * 1_000_000n;
+    const expiryTimestamp = expiryDate
+      ? BigInt(new Date(expiryDate).getTime()) * 1_000_000n
+      : null;
+
+    if (editItem) {
+      await updateItem.mutateAsync({
+        id: editItem.id,
+        name,
+        category,
+        quantity: BigInt(quantity),
+        unitPrice: BigInt(unitPrice),
+        lowStockThreshold: BigInt(lowStockThreshold),
+        image: imageBlob,
+        expiryDate: expiryTimestamp,
+      });
+    } else {
+      await addItem.mutateAsync({
+        name,
+        category,
+        quantity: BigInt(quantity),
+        unitPrice: BigInt(unitPrice),
+        lowStockThreshold: BigInt(lowStockThreshold),
+        image: imageBlob,
+        expiryDate: expiryTimestamp,
+      });
     }
 
-    try {
-      if (isEditing && editItem) {
-        await updateMutation.mutateAsync({
-          id: editItem.id,
-          name: name.trim(),
-          category: category.trim(),
-          quantity: BigInt(qty),
-          unitPrice: BigInt(price),
-          lowStockThreshold: BigInt(threshold),
-          image: imageBlob,
-          expiryDate: expiryDateNanos,
-        });
-      } else {
-        await addMutation.mutateAsync({
-          name: name.trim(),
-          category: category.trim(),
-          quantity: BigInt(qty),
-          unitPrice: BigInt(price),
-          lowStockThreshold: BigInt(threshold),
-          image: imageBlob,
-          expiryDate: expiryDateNanos,
-        });
-      }
-      onOpenChange(false);
-    } catch (err: unknown) {
-      const msg = err instanceof Error ? err.message : 'An error occurred. Please try again.';
-      setError(msg);
-    }
+    onOpenChange(false);
   };
+
+  const isPending = addItem.isPending || updateItem.isPending;
+  const currentImageUrl = imagePreview || (existingImage ? existingImage.getDirectURL() : null);
 
   return (
     <Dialog open={open} onOpenChange={onOpenChange}>
-      <DialogContent className="max-w-lg max-h-[90vh] overflow-y-auto">
+      <DialogContent className="sm:max-w-lg max-h-[90vh] overflow-y-auto">
         <DialogHeader>
-          <DialogTitle className="text-xl font-bold">
-            {isEditing ? 'Edit Stock Item' : 'Add New Stock Item'}
+          <DialogTitle className="text-forest-800 font-display">
+            {editItem ? 'Edit Stock Item' : 'Add New Stock Item'}
           </DialogTitle>
         </DialogHeader>
-
-        {trialExpired && (
-          <div className="bg-destructive/10 border border-destructive/30 rounded-lg p-3 text-sm text-destructive">
-            Your 7-day trial has expired. All admin actions are disabled.
-          </div>
-        )}
-
         <form onSubmit={handleSubmit} className="space-y-4">
-          <div className="space-y-1">
-            <Label htmlFor="item-name">Name *</Label>
-            <Input
-              id="item-name"
-              value={name}
-              onChange={(e) => setName(e.target.value)}
-              placeholder="e.g. Ashwagandha Powder"
-              disabled={isPending || trialExpired}
-              required
-            />
-          </div>
-
-          <div className="space-y-1">
-            <Label htmlFor="item-category">Category *</Label>
-            <Input
-              id="item-category"
-              value={category}
-              onChange={(e) => setCategory(e.target.value)}
-              placeholder="e.g. Herbs & Powders"
-              disabled={isPending || trialExpired}
-              required
-            />
-          </div>
-
-          <div className="grid grid-cols-2 gap-3">
-            <div className="space-y-1">
-              <Label htmlFor="item-quantity">Quantity *</Label>
+          <div className="grid grid-cols-2 gap-4">
+            <div className="col-span-2 space-y-1.5">
+              <Label htmlFor="name">Product Name *</Label>
               <Input
-                id="item-quantity"
+                id="name"
+                value={name}
+                onChange={(e) => setName(e.target.value)}
+                placeholder="e.g., Ashwagandha Powder"
+                required
+              />
+            </div>
+
+            <div className="col-span-2 space-y-1.5">
+              <Label htmlFor="category">Category *</Label>
+              <Select value={category} onValueChange={setCategory} required>
+                <SelectTrigger>
+                  <SelectValue placeholder="Select category" />
+                </SelectTrigger>
+                <SelectContent>
+                  {CATEGORIES.map((cat) => (
+                    <SelectItem key={cat} value={cat}>{cat}</SelectItem>
+                  ))}
+                </SelectContent>
+              </Select>
+            </div>
+
+            <div className="space-y-1.5">
+              <Label htmlFor="quantity">Quantity *</Label>
+              <Input
+                id="quantity"
                 type="number"
                 min="0"
                 value={quantity}
                 onChange={(e) => setQuantity(e.target.value)}
                 placeholder="0"
-                disabled={isPending || trialExpired}
                 required
               />
             </div>
-            <div className="space-y-1">
-              <Label htmlFor="item-price">Unit Price (₹) *</Label>
+
+            <div className="space-y-1.5">
+              <Label htmlFor="unitPrice">Unit Price (₹) *</Label>
               <Input
-                id="item-price"
+                id="unitPrice"
                 type="number"
                 min="0"
                 value={unitPrice}
                 onChange={(e) => setUnitPrice(e.target.value)}
                 placeholder="0"
-                disabled={isPending || trialExpired}
                 required
+              />
+            </div>
+
+            <div className="space-y-1.5">
+              <Label htmlFor="lowStockThreshold">Low Stock Alert</Label>
+              <Input
+                id="lowStockThreshold"
+                type="number"
+                min="0"
+                value={lowStockThreshold}
+                onChange={(e) => setLowStockThreshold(e.target.value)}
+                placeholder="10"
+              />
+            </div>
+
+            <div className="space-y-1.5">
+              <Label htmlFor="expiryDate">Expiry Date</Label>
+              <Input
+                id="expiryDate"
+                type="date"
+                value={expiryDate}
+                onChange={(e) => setExpiryDate(e.target.value)}
               />
             </div>
           </div>
 
-          <div className="space-y-1">
-            <Label htmlFor="item-threshold">Low Stock Threshold</Label>
-            <Input
-              id="item-threshold"
-              type="number"
-              min="0"
-              value={lowStockThreshold}
-              onChange={(e) => setLowStockThreshold(e.target.value)}
-              placeholder="5"
-              disabled={isPending || trialExpired}
-            />
-          </div>
-
-          <div className="space-y-1">
-            <Label htmlFor="item-expiry">Expiry Date</Label>
-            <Input
-              id="item-expiry"
-              type="date"
-              value={expiryDate}
-              onChange={(e) => setExpiryDate(e.target.value)}
-              disabled={isPending || trialExpired}
-            />
-          </div>
-
-          <div className="space-y-1">
+          {/* Image Upload */}
+          <div className="space-y-1.5">
             <Label>Product Image</Label>
-            {imagePreview ? (
-              <div className="relative w-full h-40 rounded-lg overflow-hidden border border-border">
-                <img src={imagePreview} alt="Preview" className="w-full h-full object-cover" />
+            {currentImageUrl ? (
+              <div className="relative w-full h-40 rounded-lg overflow-hidden border border-gray-200">
+                <img src={currentImageUrl} alt="Preview" className="w-full h-full object-cover" />
                 <button
                   type="button"
                   onClick={handleRemoveImage}
-                  disabled={isPending || trialExpired}
-                  className="absolute top-2 right-2 bg-background/80 rounded-full p-1 hover:bg-background transition-colors"
+                  className="absolute top-2 right-2 p-1 bg-red-500 text-white rounded-full hover:bg-red-600 transition-colors"
                 >
                   <X className="w-4 h-4" />
                 </button>
               </div>
             ) : (
-              <label
-                className={`flex flex-col items-center justify-center w-full h-32 border-2 border-dashed border-border rounded-lg cursor-pointer hover:bg-muted/50 transition-colors ${trialExpired ? 'opacity-50 cursor-not-allowed' : ''}`}
-              >
-                <Upload className="w-6 h-6 text-muted-foreground mb-2" />
-                <span className="text-sm text-muted-foreground">Click to upload image</span>
-                <input
-                  type="file"
-                  accept="image/*"
-                  className="hidden"
-                  onChange={handleImageChange}
-                  disabled={isPending || trialExpired}
-                />
+              <label className="flex flex-col items-center justify-center w-full h-32 border-2 border-dashed border-gray-300 rounded-lg cursor-pointer hover:border-forest-400 hover:bg-forest-50 transition-colors">
+                <Upload className="w-8 h-8 text-gray-400 mb-2" />
+                <span className="text-sm text-gray-500">Click to upload image</span>
+                <input type="file" accept="image/*" onChange={handleImageChange} className="hidden" />
               </label>
             )}
           </div>
 
-          {error && (
-            <div className="text-sm text-destructive bg-destructive/10 rounded-lg p-3">
-              {error}
-            </div>
-          )}
-
-          <DialogFooter>
+          <div className="flex gap-3 pt-2">
             <Button
               type="button"
               variant="outline"
               onClick={() => onOpenChange(false)}
+              className="flex-1"
               disabled={isPending}
             >
               Cancel
             </Button>
-            <Button type="submit" disabled={isPending || trialExpired}>
+            <Button
+              type="submit"
+              disabled={isPending || !name || !category || !quantity || !unitPrice}
+              className="flex-1 bg-gradient-to-r from-forest-600 to-sage-600 hover:from-forest-700 hover:to-sage-700 text-white"
+            >
               {isPending ? (
                 <>
-                  <Loader2 className="w-4 h-4 mr-2 animate-spin" />
-                  {isEditing ? 'Updating...' : 'Adding...'}
+                  <Loader2 className="w-4 h-4 animate-spin mr-2" />
+                  {editItem ? 'Updating...' : 'Adding...'}
                 </>
               ) : (
-                isEditing ? 'Update Item' : 'Add Item'
+                editItem ? 'Update Item' : 'Add Item'
               )}
             </Button>
-          </DialogFooter>
+          </div>
         </form>
       </DialogContent>
     </Dialog>

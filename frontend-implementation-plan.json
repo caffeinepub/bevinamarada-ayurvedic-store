@@ -1,69 +1,156 @@
 {
   "kind": "implementation_plan",
   "version": "1.0",
-  "title": "Fix mobile navigation menu overlay behavior",
+  "title": "Revert Frontend to Version 6",
   "requirements": [
     {
       "id": "REQ-1",
-      "summary": "Rebuild the mobile navigation menu in PublicLayout.tsx as a proper full-screen overlay drawer that completely covers the viewport with a solid background",
+      "summary": "Revert all frontend files to their Version 6 state, removing all changes from Versions 7–13 including z-index/overlay fixes and white background changes",
       "acceptanceCriteria": [
-        "On mobile viewports, tapping the hamburger icon opens a full-screen overlay that completely covers the viewport.",
-        "No background page content (e.g., Admin Login, Why Choose Bevinamarada sections) is visible through or behind the open menu.",
-        "The overlay has a solid opaque background consistent with the site's Ayurvedic green/brown theme."
+        "All frontend files match the Version 6 snapshot exactly.",
+        "No code, styles, or logic from Versions 7–13 (including the z-index/overlay fixes and white background changes) remain in the codebase.",
+        "The application renders and functions as it did in Version 6."
       ],
       "file_operations": [
         {
-          "path": "frontend/src/components/PublicLayout.tsx",
+          "path": "frontend/src/App.tsx",
           "operation": "modify",
-          "description": "Refactor the mobile menu implementation to render as a full-screen overlay drawer. Apply position: fixed, top-0, left-0, width: 100vw, height: 100vh with a solid opaque background using the existing Ayurvedic green/brown color tokens from the theme. Ensure the overlay has z-index high enough to cover all page content when open. Replace any existing conditional rendering logic to show the overlay only when the mobile menu state is active."
-        }
-      ]
-    },
-    {
-      "id": "REQ-2",
-      "summary": "Fix the layout of menu items inside the mobile overlay so all navigation links are vertically stacked, centered, and properly spaced without overlapping",
-      "acceptanceCriteria": [
-        "All menu items are displayed in a single vertical column, centered on screen.",
-        "No menu item overlaps with any other menu item, the logo, or the close button.",
-        "The 'Our Story' / About link is fully visible and not clipped or hidden."
-      ],
-      "file_operations": [
+          "description": "Revert routing configuration and component structure to Version 6 state, removing any route changes, layout modifications, or guard logic added in Versions 7–13."
+        },
+        {
+          "path": "frontend/src/components/AdminGuard.tsx",
+          "operation": "modify",
+          "description": "Revert authentication guard component logic to Version 6, removing any modal handling, z-index fixes, or overlay behavior changes introduced in later versions."
+        },
+        {
+          "path": "frontend/src/components/AdminLayout.tsx",
+          "operation": "modify",
+          "description": "Revert admin panel shell structure, sidebar navigation, profile dropdown, and mobile menu to Version 6 state, removing any z-index, overlay, or styling changes from Versions 7–13."
+        },
         {
           "path": "frontend/src/components/PublicLayout.tsx",
           "operation": "modify",
-          "description": "Restructure the menu items container within the mobile overlay to use flexbox with flex-direction: column, items-center, and justify-center. Add adequate vertical spacing (gap or margin) between each navigation link (Home, About, Products, Contact, etc.). Ensure no absolute positioning or negative margins cause overlaps. Verify the logo and close button are positioned outside the scrollable menu items area to prevent collision. Test that the 'Our Story' / About link renders fully visible without clipping."
-        }
-      ]
-    },
-    {
-      "id": "REQ-3",
-      "summary": "Ensure the close (X) button in the mobile menu fully dismisses the overlay and is clearly positioned in the top-right corner",
-      "acceptanceCriteria": [
-        "A clearly visible close (X) button is present in the top-right corner of the open mobile menu overlay.",
-        "Clicking the X button closes the menu overlay completely.",
-        "After closing, the page returns to its normal scrollable state with no residual overlay elements visible."
-      ],
-      "file_operations": [
+          "description": "Revert public site shell including header, navigation menus, and footer to Version 6 state, removing any styling or structural changes from later versions."
+        },
         {
-          "path": "frontend/src/components/PublicLayout.tsx",
+          "path": "frontend/src/components/ProfileSetupModal.tsx",
           "operation": "modify",
-          "description": "Position the close (X) button in the top-right corner of the mobile overlay using absolute positioning (e.g., top-4 right-4). Ensure the button's onClick handler sets the mobile menu state to closed. Verify that when the menu state is closed, no overlay DOM elements remain visible or rendered. Style the button to be visually distinct with sufficient size and contrast against the overlay background."
-        }
-      ]
-    },
-    {
-      "id": "REQ-4",
-      "summary": "Lock the body scroll when the mobile menu is open and restore normal scroll behavior when closed",
-      "acceptanceCriteria": [
-        "When the mobile menu is open, the page behind it cannot be scrolled.",
-        "When the mobile menu is closed, normal page scrolling resumes immediately.",
-        "No layout shift or jump occurs when scroll lock is applied or removed."
-      ],
-      "file_operations": [
+          "description": "Revert profile setup modal component to Version 6 state, removing any z-index fixes, overlay handling, or modal behavior changes introduced in Versions 7–13."
+        },
         {
-          "path": "frontend/src/components/PublicLayout.tsx",
+          "path": "frontend/src/components/StockItemForm.tsx",
           "operation": "modify",
-          "description": "Add a useEffect hook that watches the mobile menu open state. When the menu opens, apply 'overflow-hidden' to document.body.style. When the menu closes, restore the original overflow value (or remove the inline style). Ensure cleanup in the useEffect return function to prevent scroll lock from persisting if the component unmounts while the menu is open. Verify no layout shift occurs by preserving scrollbar gutter if needed."
+          "description": "Revert stock item form dialog to Version 6 state, removing any form validation changes, styling updates, or modal behavior modifications from later versions."
+        },
+        {
+          "path": "frontend/src/components/TrialStatusBanner.tsx",
+          "operation": "modify",
+          "description": "Revert trial status banner component to Version 6 state, removing any styling changes, z-index adjustments, or behavior modifications from Versions 7–13."
+        },
+        {
+          "path": "frontend/src/pages/OwnerDashboard.tsx",
+          "operation": "modify",
+          "description": "Revert owner dashboard page to Version 6 state, removing any metric card changes, styling updates, or layout modifications introduced in later versions."
+        },
+        {
+          "path": "frontend/src/pages/StockManagement.tsx",
+          "operation": "modify",
+          "description": "Revert stock management page to Version 6 state, removing any filtering changes, modal behavior updates, or UI modifications from Versions 7–13."
+        },
+        {
+          "path": "frontend/src/pages/Home.tsx",
+          "operation": "modify",
+          "description": "Revert home page hero banner, category grid, and trust indicators to Version 6 state, removing any background color changes (especially white background additions) or styling modifications from later versions."
+        },
+        {
+          "path": "frontend/src/pages/AboutUs.tsx",
+          "operation": "modify",
+          "description": "Revert About Us page content, hero section, and card styling to Version 6 state, removing any white background changes or styling updates from Versions 7–13."
+        },
+        {
+          "path": "frontend/src/pages/Contact.tsx",
+          "operation": "modify",
+          "description": "Revert Contact page layout and form styling to Version 6 state, removing any background or styling changes introduced in later versions."
+        },
+        {
+          "path": "frontend/src/pages/CustomerManagement.tsx",
+          "operation": "modify",
+          "description": "Revert customer management page to Version 6 state, removing any UI changes, form modifications, or styling updates from Versions 7–13."
+        },
+        {
+          "path": "frontend/src/pages/ProfilePage.tsx",
+          "operation": "modify",
+          "description": "Revert profile page layout and form to Version 6 state, removing any styling or behavior changes from later versions."
+        },
+        {
+          "path": "frontend/src/pages/SalesReports.tsx",
+          "operation": "modify",
+          "description": "Revert sales reports page including tabbed views and print functionality to Version 6 state, removing any UI or styling changes from Versions 7–13."
+        },
+        {
+          "path": "frontend/src/index.css",
+          "operation": "modify",
+          "description": "Revert global stylesheet to Version 6 state, removing any CSS custom property changes, color updates, component class modifications, gradient changes, white background additions, z-index adjustments, or other styling changes introduced in Versions 7–13."
+        },
+        {
+          "path": "frontend/index.html",
+          "operation": "modify",
+          "description": "Revert HTML entry point to Version 6 state, removing any metadata, theme color, or font preconnect changes from later versions."
+        },
+        {
+          "path": "frontend/tailwind.config.js",
+          "operation": "modify",
+          "description": "Revert Tailwind configuration to Version 6 state, removing any color palette changes, custom property updates, font modifications, or shadow/animation changes from Versions 7–13."
+        },
+        {
+          "path": "frontend/src/components/IncomeTracking.tsx",
+          "operation": "modify",
+          "description": "Revert income tracking component to Version 6 state, removing any metric display changes or styling updates from later versions."
+        },
+        {
+          "path": "frontend/src/components/LowStockWarning.tsx",
+          "operation": "modify",
+          "description": "Revert low stock warning component to Version 6 state, removing any card styling or behavior changes from Versions 7–13."
+        },
+        {
+          "path": "frontend/src/components/RevenueOverview.tsx",
+          "operation": "modify",
+          "description": "Revert revenue overview component to Version 6 state, removing any summary card changes or styling updates from later versions."
+        },
+        {
+          "path": "frontend/src/components/TodaysSalesPanel.tsx",
+          "operation": "modify",
+          "description": "Revert today's sales panel to Version 6 state, removing any summary or transaction list changes from Versions 7–13."
+        },
+        {
+          "path": "frontend/src/components/TrendingStocksPanel.tsx",
+          "operation": "modify",
+          "description": "Revert trending stocks panel to Version 6 state, removing any list styling or card changes from later versions."
+        },
+        {
+          "path": "frontend/src/components/TrialStatusCard.tsx",
+          "operation": "modify",
+          "description": "Revert trial status card to Version 6 state, removing any styling or urgency state changes from Versions 7–13."
+        },
+        {
+          "path": "frontend/src/pages/IncomePage.tsx",
+          "operation": "modify",
+          "description": "Revert income page wrapper to Version 6 state, removing any layout or header changes from later versions."
+        },
+        {
+          "path": "frontend/src/pages/RevenuePage.tsx",
+          "operation": "modify",
+          "description": "Revert revenue page wrapper to Version 6 state, removing any layout changes from Versions 7–13."
+        },
+        {
+          "path": "frontend/src/pages/SalesPage.tsx",
+          "operation": "modify",
+          "description": "Revert sales page wrapper to Version 6 state, removing any layout changes from later versions."
+        },
+        {
+          "path": "frontend/src/pages/TrendingPage.tsx",
+          "operation": "modify",
+          "description": "Revert trending page wrapper to Version 6 state, removing any layout changes from Versions 7–13."
         }
       ]
     }

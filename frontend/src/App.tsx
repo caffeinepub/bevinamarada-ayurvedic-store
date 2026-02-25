@@ -1,10 +1,12 @@
-import React from 'react';
 import { QueryClient, QueryClientProvider } from '@tanstack/react-query';
-import { RouterProvider, createRouter, createRoute, createRootRoute, Outlet, redirect } from '@tanstack/react-router';
+import { RouterProvider, createRouter, createRoute, createRootRoute, Outlet } from '@tanstack/react-router';
 import { ThemeProvider } from 'next-themes';
+import PublicLayout from './components/PublicLayout';
 import AdminLayout from './components/AdminLayout';
 import AdminGuard from './components/AdminGuard';
-import PublicLayout from './components/PublicLayout';
+import Home from './pages/Home';
+import AboutUs from './pages/AboutUs';
+import Contact from './pages/Contact';
 import OwnerDashboard from './pages/OwnerDashboard';
 import StockManagement from './pages/StockManagement';
 import CustomerManagement from './pages/CustomerManagement';
@@ -14,33 +16,17 @@ import TrendingPage from './pages/TrendingPage';
 import SalesPage from './pages/SalesPage';
 import RevenuePage from './pages/RevenuePage';
 import IncomePage from './pages/IncomePage';
-import Home from './pages/Home';
-import AboutUs from './pages/AboutUs';
-import Contact from './pages/Contact';
 
-const queryClient = new QueryClient({
-  defaultOptions: {
-    queries: {
-      staleTime: 30_000,
-      retry: 1,
-    },
-  },
-});
+const queryClient = new QueryClient();
 
-// Root route
 const rootRoute = createRootRoute({
   component: () => <Outlet />,
 });
 
-// Public layout route
 const publicLayoutRoute = createRoute({
   getParentRoute: () => rootRoute,
-  id: 'publicLayout',
-  component: () => (
-    <PublicLayout>
-      <Outlet />
-    </PublicLayout>
-  ),
+  id: 'public',
+  component: PublicLayout,
 });
 
 const homeRoute = createRoute({
@@ -61,17 +47,16 @@ const contactRoute = createRoute({
   component: Contact,
 });
 
-// Admin layout route
-const adminLayoutRoute = createRoute({
+const adminGuardRoute = createRoute({
   getParentRoute: () => rootRoute,
-  id: 'adminLayout',
-  component: () => (
-    <AdminGuard>
-      <AdminLayout>
-        <Outlet />
-      </AdminLayout>
-    </AdminGuard>
-  ),
+  id: 'admin-guard',
+  component: AdminGuard,
+});
+
+const adminLayoutRoute = createRoute({
+  getParentRoute: () => adminGuardRoute,
+  id: 'admin-layout',
+  component: AdminLayout,
 });
 
 const adminIndexRoute = createRoute({
@@ -80,9 +65,9 @@ const adminIndexRoute = createRoute({
   component: OwnerDashboard,
 });
 
-const adminStocksRoute = createRoute({
+const adminStockRoute = createRoute({
   getParentRoute: () => adminLayoutRoute,
-  path: '/admin/stocks',
+  path: '/admin/stock',
   component: StockManagement,
 });
 
@@ -130,16 +115,18 @@ const adminIncomeRoute = createRoute({
 
 const routeTree = rootRoute.addChildren([
   publicLayoutRoute.addChildren([homeRoute, aboutRoute, contactRoute]),
-  adminLayoutRoute.addChildren([
-    adminIndexRoute,
-    adminStocksRoute,
-    adminCustomersRoute,
-    adminSalesReportsRoute,
-    adminProfileRoute,
-    adminTrendingRoute,
-    adminSalesRoute,
-    adminRevenueRoute,
-    adminIncomeRoute,
+  adminGuardRoute.addChildren([
+    adminLayoutRoute.addChildren([
+      adminIndexRoute,
+      adminStockRoute,
+      adminCustomersRoute,
+      adminSalesReportsRoute,
+      adminProfileRoute,
+      adminTrendingRoute,
+      adminSalesRoute,
+      adminRevenueRoute,
+      adminIncomeRoute,
+    ]),
   ]),
 ]);
 

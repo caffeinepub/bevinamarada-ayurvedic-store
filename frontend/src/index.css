@@ -109,7 +109,7 @@
     @apply text-sm font-medium opacity-80;
   }
 
-  /* Buttons — avoid opacity modifiers on CSS-var-based colors; use plain classes */
+  /* Buttons */
   .btn-saffron {
     @apply rounded-xl px-4 py-2 font-semibold transition-all duration-150 shadow-sm hover:shadow-md;
     background-color: oklch(0.65 0.22 40);
@@ -144,7 +144,7 @@
     @apply px-4 py-3;
   }
 
-  /* Badge variants — use opacity modifiers now that colors have <alpha-value> in tailwind.config.js */
+  /* Badge variants */
   .badge-saffron {
     @apply inline-flex items-center gap-1 px-2.5 py-0.5 rounded-full text-xs font-semibold bg-saffron/15 text-saffron;
   }

@@ -1,53 +1,22 @@
 {
   "schemaVersion": "1.0.0",
   "projectStateVersion": 3,
-  "summary": "Complete website and business management system for Bevinamarada Ayurvedic Store. Includes customer-facing pages (Home, About, Products, Contact) with Ayurvedic green/brown theme, and a secure admin dashboard for stock management, income tracking, sales reports, and customer enquiries. Mobile-first design is a top priority.",
-  "architectural_notes": [
-    "Mobile-first design is critical — all features must work perfectly on mobile phones",
-    "Admin panel requires secure login (username/password); customers need no login",
-    "Ayurvedic theme: green and brown colors inspired by Neem tree (Bevinamarada)"
-  ],
-  "known_issues": [
-    "Mobile nav menu overlay broken: overlaps header, items misaligned, background still scrollable, close button ineffective — needs full-screen drawer behavior"
-  ],
-  "isFixRequest": true,
+  "summary": "New project",
+  "architectural_notes": [],
+  "known_issues": [],
+  "isFixRequest": false,
   "existing_features": [
     {
-      "id": "feature-rebuild-the-mobile-navigation-menu-in-publiclayout-tsx-as-a-proper-full-screen-overlay-drawer-when-open-the-menu-must-cover-the-entire-viewport-position-fixed-top-0-left-0-width-100vw-height-100vh-with-a-solid-background-so-no-page-content-behind-it-is-visible",
-      "title": "Rebuild the mobile navigation menu in PublicLayout.tsx as a proper full-screen overlay drawer. When open, the menu must cover the entire viewport (position fixed, top-0 left-0, width 100vw, height 100vh) with a solid background so no page content behind it is visible.",
+      "id": "feature-revert-the-entire-project-frontend-and-backend-to-the-state-it-was-in-at-version-6-undoing-all-changes-introduced-in-versions-7-through-13",
+      "title": "Revert the entire project (frontend and backend) to the state it was in at Version 6, undoing all changes introduced in Versions 7 through 13.",
       "reqIds": [
         "REQ-1"
-      ],
-      "version": 1
-    },
-    {
-      "id": "feature-fix-the-layout-of-menu-items-inside-the-mobile-overlay-all-navigation-links-home-about-products-contact-etc-must-be-vertically-stacked-centered-both-horizontally-and-vertically-with-adequate-spacing-between-each-item-no-items-should-overlap-with-each-other-with-the-logo-or-with-any-header-elements",
-      "title": "Fix the layout of menu items inside the mobile overlay. All navigation links (Home, About, Products, Contact, etc.) must be vertically stacked, centered both horizontally and vertically, with adequate spacing between each item. No items should overlap with each other, with the logo, or with any header elements.",
-      "reqIds": [
-        "REQ-2"
-      ],
-      "version": 1
-    },
-    {
-      "id": "feature-ensure-the-close-x-button-in-the-mobile-menu-fully-dismisses-the-overlay-the-button-must-be-clearly-positioned-e-g-top-right-corner-of-the-overlay-visually-distinct-and-clicking-it-must-set-the-menu-state-to-closed-and-restore-all-normal-page-behavior",
-      "title": "Ensure the close (X) button in the mobile menu fully dismisses the overlay. The button must be clearly positioned (e.g., top-right corner of the overlay), visually distinct, and clicking it must set the menu state to closed and restore all normal page behavior.",
-      "reqIds": [
-        "REQ-3"
-      ],
-      "version": 1
-    },
-    {
-      "id": "feature-lock-the-body-scroll-when-the-mobile-menu-is-open-when-the-menu-overlay-is-active-apply-overflow-hidden-or-equivalent-to-the-document-body-so-the-background-page-content-cannot-be-scrolled-restore-normal-scroll-behavior-when-the-menu-is-closed",
-      "title": "Lock the body scroll when the mobile menu is open. When the menu overlay is active, apply overflow-hidden (or equivalent) to the document body so the background page content cannot be scrolled. Restore normal scroll behavior when the menu is closed.",
-      "reqIds": [
-        "REQ-4"
       ],
       "version": 1
     }
   ],
   "new_feature_requests": [],
-  "gameProjectType": "none",
-  "projectName": "Bevinamarada Ayurvedic Store",
+  "projectName": "Revert to Version 6",
   "clarification_mode": "instant",
   "clarification_rounds": 0
 }

@@ -1,28 +1,11 @@
-import React, { useState, useEffect } from 'react';
-import { Users, Plus, Edit, Trash2, Phone, Mail, MapPin, Search, X, Loader2, ClipboardList } from 'lucide-react';
+import { useState, useEffect } from 'react';
+import { Users, Plus, Search, Edit2, Trash2, Phone, Mail, ShoppingBag, MessageSquare, X } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
-import { Badge } from '@/components/ui/badge';
+import { Textarea } from '@/components/ui/textarea';
+import { Dialog, DialogContent, DialogHeader, DialogTitle } from '@/components/ui/dialog';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
-import {
-  Dialog,
-  DialogContent,
-  DialogHeader,
-  DialogTitle,
-  DialogFooter,
-} from '@/components/ui/dialog';
-import {
-  AlertDialog,
-  AlertDialogAction,
-  AlertDialogCancel,
-  AlertDialogContent,
-  AlertDialogDescription,
-  AlertDialogFooter,
-  AlertDialogHeader,
-  AlertDialogTitle,
-} from '@/components/ui/alert-dialog';
-import { useGetTrialStatus } from '../hooks/useQueries';
 
 interface Customer {
   id: string;
@@ -30,9 +13,10 @@ interface Customer {
   phone: string;
   email: string;
   address: string;
-  visitCount: number;
-  lastVisit: string;
   notes: string;
+  visitCount: number;
+  totalSpent: number;
+  lastVisit: string;
   createdAt: string;
 }
 
@@ -41,17 +25,17 @@ interface Enquiry {
   customerId: string;
   customerName: string;
   product: string;
-  notes: string;
+  message: string;
   date: string;
 }
 
-const STORAGE_KEY = 'ayurvedic_customers';
-const ENQUIRY_KEY = 'ayurvedic_enquiries';
+const STORAGE_KEY = 'bevinamarada_customers';
+const ENQUIRY_STORAGE_KEY = 'bevinamarada_enquiries';
 
 function loadCustomers(): Customer[] {
   try {
-    const raw = localStorage.getItem(STORAGE_KEY);
-    return raw ? JSON.parse(raw) : [];
+    const data = localStorage.getItem(STORAGE_KEY);
+    return data ? JSON.parse(data) : [];
   } catch {
     return [];
   }
@@ -63,74 +47,48 @@ function saveCustomers(customers: Customer[]) {
 
 function loadEnquiries(): Enquiry[] {
   try {
-    const raw = localStorage.getItem(ENQUIRY_KEY);
-    return raw ? JSON.parse(raw) : [];
+    const data = localStorage.getItem(ENQUIRY_STORAGE_KEY);
+    return data ? JSON.parse(data) : [];
   } catch {
     return [];
   }
 }
 
 function saveEnquiries(enquiries: Enquiry[]) {
-  localStorage.setItem(ENQUIRY_KEY, JSON.stringify(enquiries));
+  localStorage.setItem(ENQUIRY_STORAGE_KEY, JSON.stringify(enquiries));
 }
 
-const emptyCustomer: Omit<Customer, 'id' | 'visitCount' | 'lastVisit' | 'createdAt'> = {
-  name: '',
-  phone: '',
-  email: '',
-  address: '',
-  notes: '',
-};
-
 export default function CustomerManagement() {
-  const { data: trialStatus } = useGetTrialStatus();
-  const trialExpired = trialStatus ? !trialStatus.trialActive : false;
-
-  const [customers, setCustomers] = useState<Customer[]>([]);
-  const [enquiries, setEnquiries] = useState<Enquiry[]>([]);
+  const [customers, setCustomers] = useState<Customer[]>(loadCustomers);
+  const [enquiries, setEnquiries] = useState<Enquiry[]>(loadEnquiries);
   const [search, setSearch] = useState('');
-
-  // Add/Edit dialog
-  const [formOpen, setFormOpen] = useState(false);
+  const [showForm, setShowForm] = useState(false);
   const [editCustomer, setEditCustomer] = useState<Customer | null>(null);
-  const [formData, setFormData] = useState({ ...emptyCustomer });
-  const [formError, setFormError] = useState('');
-  const [formLoading, setFormLoading] = useState(false);
+  const [showEnquiryForm, setShowEnquiryForm] = useState(false);
+  const [selectedCustomer, setSelectedCustomer] = useState<Customer | null>(null);
+  const [formData, setFormData] = useState({
+    name: '', phone: '', email: '', address: '', notes: '',
+  });
+  const [enquiryData, setEnquiryData] = useState({ product: '', message: '' });
 
-  // Delete dialog
-  const [deleteId, setDeleteId] = useState<string | null>(null);
+  useEffect(() => { saveCustomers(customers); }, [customers]);
+  useEffect(() => { saveEnquiries(enquiries); }, [enquiries]);
 
-  // Enquiry dialog
-  const [enquiryOpen, setEnquiryOpen] = useState(false);
-  const [enquiryCustomer, setEnquiryCustomer] = useState<Customer | null>(null);
-  const [enquiryProduct, setEnquiryProduct] = useState('');
-  const [enquiryNotes, setEnquiryNotes] = useState('');
-  const [enquiryError, setEnquiryError] = useState('');
-
-  useEffect(() => {
-    setCustomers(loadCustomers());
-    setEnquiries(loadEnquiries());
-  }, []);
-
-  const filteredCustomers = customers.filter(
-    (c) =>
-      c.name.toLowerCase().includes(search.toLowerCase()) ||
-      c.phone.includes(search) ||
-      c.email.toLowerCase().includes(search.toLowerCase())
+  const filteredCustomers = customers.filter(c =>
+    c.name.toLowerCase().includes(search.toLowerCase()) ||
+    c.phone.includes(search) ||
+    c.email.toLowerCase().includes(search.toLowerCase())
   );
 
-  const repeatCustomers = customers.filter((c) => c.visitCount >= 2);
+  const repeatCustomers = customers.filter(c => c.visitCount > 1);
 
-  const handleOpenAdd = () => {
-    if (trialExpired) return;
+  const openAddForm = () => {
     setEditCustomer(null);
-    setFormData({ ...emptyCustomer });
-    setFormError('');
-    setFormOpen(true);
+    setFormData({ name: '', phone: '', email: '', address: '', notes: '' });
+    setShowForm(true);
   };
 
-  const handleOpenEdit = (customer: Customer) => {
-    if (trialExpired) return;
+  const openEditForm = (customer: Customer) => {
     setEditCustomer(customer);
     setFormData({
       name: customer.name,
@@ -139,463 +97,272 @@ export default function CustomerManagement() {
       address: customer.address,
       notes: customer.notes,
     });
-    setFormError('');
-    setFormOpen(true);
+    setShowForm(true);
   };
 
-  const handleFormSubmit = async (e: React.FormEvent) => {
-    e.preventDefault();
-    setFormError('');
-    if (!formData.name.trim()) {
-      setFormError('Customer name is required.');
-      return;
+  const handleSave = () => {
+    if (!formData.name.trim()) return;
+    if (editCustomer) {
+      setCustomers(prev => prev.map(c =>
+        c.id === editCustomer.id ? { ...c, ...formData } : c
+      ));
+    } else {
+      const newCustomer: Customer = {
+        id: Date.now().toString(),
+        ...formData,
+        visitCount: 1,
+        totalSpent: 0,
+        lastVisit: new Date().toISOString().split('T')[0],
+        createdAt: new Date().toISOString().split('T')[0],
+      };
+      setCustomers(prev => [...prev, newCustomer]);
     }
-    setFormLoading(true);
-    try {
-      if (editCustomer) {
-        const updated = customers.map((c) =>
-          c.id === editCustomer.id
-            ? { ...c, ...formData, name: formData.name.trim() }
-            : c
-        );
-        saveCustomers(updated);
-        setCustomers(updated);
-      } else {
-        const newCustomer: Customer = {
-          id: Date.now().toString(),
-          ...formData,
-          name: formData.name.trim(),
-          visitCount: 1,
-          lastVisit: new Date().toLocaleDateString('en-IN'),
-          createdAt: new Date().toISOString(),
-        };
-        const updated = [...customers, newCustomer];
-        saveCustomers(updated);
-        setCustomers(updated);
-      }
-      setFormOpen(false);
-    } finally {
-      setFormLoading(false);
-    }
+    setShowForm(false);
   };
 
   const handleDelete = (id: string) => {
-    const updated = customers.filter((c) => c.id !== id);
-    saveCustomers(updated);
-    setCustomers(updated);
-    setDeleteId(null);
+    setCustomers(prev => prev.filter(c => c.id !== id));
   };
 
-  const handleEnquirySubmit = (e: React.FormEvent) => {
-    e.preventDefault();
-    setEnquiryError('');
-    if (!enquiryProduct.trim()) {
-      setEnquiryError('Product name is required.');
-      return;
-    }
-    if (!enquiryCustomer) return;
+  const openEnquiryForm = (customer: Customer) => {
+    setSelectedCustomer(customer);
+    setEnquiryData({ product: '', message: '' });
+    setShowEnquiryForm(true);
+  };
+
+  const handleSaveEnquiry = () => {
+    if (!selectedCustomer || !enquiryData.product.trim()) return;
     const newEnquiry: Enquiry = {
       id: Date.now().toString(),
-      customerId: enquiryCustomer.id,
-      customerName: enquiryCustomer.name,
-      product: enquiryProduct.trim(),
-      notes: enquiryNotes.trim(),
-      date: new Date().toLocaleDateString('en-IN'),
+      customerId: selectedCustomer.id,
+      customerName: selectedCustomer.name,
+      product: enquiryData.product,
+      message: enquiryData.message,
+      date: new Date().toISOString().split('T')[0],
     };
-    const updatedEnquiries = [...enquiries, newEnquiry];
-    saveEnquiries(updatedEnquiries);
-    setEnquiries(updatedEnquiries);
-
-    // Increment visit count
-    const updatedCustomers = customers.map((c) =>
-      c.id === enquiryCustomer.id
-        ? { ...c, visitCount: c.visitCount + 1, lastVisit: new Date().toLocaleDateString('en-IN') }
+    setEnquiries(prev => [...prev, newEnquiry]);
+    setCustomers(prev => prev.map(c =>
+      c.id === selectedCustomer.id
+        ? { ...c, visitCount: c.visitCount + 1, lastVisit: new Date().toISOString().split('T')[0] }
         : c
-    );
-    saveCustomers(updatedCustomers);
-    setCustomers(updatedCustomers);
-
-    setEnquiryOpen(false);
-    setEnquiryProduct('');
-    setEnquiryNotes('');
+    ));
+    setShowEnquiryForm(false);
   };
 
+  const CustomerCard = ({ customer }: { customer: Customer }) => (
+    <div className="bg-white rounded-2xl p-5 border border-forest-100 shadow-sm hover:shadow-md transition-shadow">
+      <div className="flex items-start justify-between mb-3">
+        <div className="flex items-center gap-3">
+          <div className="w-10 h-10 rounded-full bg-gradient-to-br from-forest-500 to-sage-600 flex items-center justify-center text-white font-bold text-sm">
+            {customer.name.charAt(0).toUpperCase()}
+          </div>
+          <div>
+            <h3 className="font-semibold text-forest-800">{customer.name}</h3>
+            <p className="text-xs text-forest-500">Since {customer.createdAt}</p>
+          </div>
+        </div>
+        <div className="flex gap-1">
+          <button
+            onClick={() => openEnquiryForm(customer)}
+            className="p-1.5 text-forest-400 hover:text-forest-600 hover:bg-forest-50 rounded-lg transition-colors"
+            title="Record Enquiry"
+          >
+            <MessageSquare className="w-4 h-4" />
+          </button>
+          <button
+            onClick={() => openEditForm(customer)}
+            className="p-1.5 text-forest-400 hover:text-forest-600 hover:bg-forest-50 rounded-lg transition-colors"
+          >
+            <Edit2 className="w-4 h-4" />
+          </button>
+          <button
+            onClick={() => handleDelete(customer.id)}
+            className="p-1.5 text-red-400 hover:text-red-600 hover:bg-red-50 rounded-lg transition-colors"
+          >
+            <Trash2 className="w-4 h-4" />
+          </button>
+        </div>
+      </div>
+      <div className="space-y-1.5 text-sm">
+        {customer.phone && (
+          <div className="flex items-center gap-2 text-forest-600">
+            <Phone className="w-3.5 h-3.5 text-forest-400" />
+            {customer.phone}
+          </div>
+        )}
+        {customer.email && (
+          <div className="flex items-center gap-2 text-forest-600">
+            <Mail className="w-3.5 h-3.5 text-forest-400" />
+            {customer.email}
+          </div>
+        )}
+      </div>
+      <div className="mt-3 pt-3 border-t border-forest-100 flex items-center justify-between text-xs text-forest-500">
+        <span className="flex items-center gap-1">
+          <ShoppingBag className="w-3.5 h-3.5" />
+          {customer.visitCount} visit{customer.visitCount !== 1 ? 's' : ''}
+        </span>
+        <span>Last: {customer.lastVisit}</span>
+      </div>
+    </div>
+  );
+
   return (
-    <div className="space-y-6 animate-fade-in-up">
-      {/* Header */}
-      <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
-        <div>
-          <h1 className="text-3xl font-display font-bold text-foreground">Customer Management</h1>
-          <p className="text-muted-foreground mt-1">Track customers, visits, and enquiries</p>
+    <div className="p-6 max-w-7xl mx-auto">
+      <div className="flex items-center justify-between mb-6">
+        <div className="flex items-center gap-3">
+          <div className="w-10 h-10 rounded-xl bg-gradient-to-br from-forest-500 to-sage-600 flex items-center justify-center">
+            <Users className="w-5 h-5 text-white" />
+          </div>
+          <div>
+            <h1 className="text-2xl font-bold text-forest-800 font-display">Customer Management</h1>
+            <p className="text-forest-500 text-sm">{customers.length} total customers</p>
+          </div>
         </div>
         <Button
-          onClick={handleOpenAdd}
-          disabled={trialExpired}
-          className={trialExpired ? 'opacity-50 cursor-not-allowed' : ''}
-          title={trialExpired ? 'Trial expired — admin actions disabled' : 'Add new customer'}
+          onClick={openAddForm}
+          className="bg-gradient-to-r from-forest-600 to-sage-600 hover:from-forest-700 hover:to-sage-700 text-white"
         >
           <Plus className="w-4 h-4 mr-2" />
           Add Customer
         </Button>
       </div>
 
-      {trialExpired && (
-        <div className="bg-destructive/10 border border-destructive/30 rounded-lg p-3 text-sm text-destructive font-medium">
-          ⚠️ Your 7-day trial has expired. All admin actions are disabled.
-        </div>
-      )}
-
-      {/* Search */}
-      <div className="relative">
-        <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-muted-foreground" />
-        <Input
-          placeholder="Search by name, phone, or email..."
-          value={search}
-          onChange={(e) => setSearch(e.target.value)}
-          className="pl-9"
-        />
-        {search && (
-          <button onClick={() => setSearch('')} className="absolute right-3 top-1/2 -translate-y-1/2">
-            <X className="w-4 h-4 text-muted-foreground" />
-          </button>
-        )}
-      </div>
-
       <Tabs defaultValue="all">
-        <TabsList>
+        <TabsList className="mb-6">
           <TabsTrigger value="all">All Customers ({customers.length})</TabsTrigger>
           <TabsTrigger value="repeat">Repeat Customers ({repeatCustomers.length})</TabsTrigger>
           <TabsTrigger value="enquiries">Enquiry History ({enquiries.length})</TabsTrigger>
         </TabsList>
 
-        <TabsContent value="all" className="mt-4">
+        <TabsContent value="all">
+          <div className="mb-4">
+            <div className="relative">
+              <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-forest-400" />
+              <Input
+                value={search}
+                onChange={(e) => setSearch(e.target.value)}
+                placeholder="Search customers..."
+                className="pl-9 border-forest-200"
+              />
+            </div>
+          </div>
           {filteredCustomers.length === 0 ? (
-            <div className="bg-card rounded-xl border border-border p-12 text-center">
-              <Users className="w-12 h-12 text-muted-foreground mx-auto mb-3" />
-              <p className="text-muted-foreground">
-                {search ? 'No customers match your search.' : 'No customers yet. Add your first customer!'}
-              </p>
-              {!search && !trialExpired && (
-                <Button onClick={handleOpenAdd} variant="outline" className="mt-4">
-                  <Plus className="w-4 h-4 mr-2" />
-                  Add Customer
-                </Button>
-              )}
+            <div className="text-center py-12 text-forest-400">
+              <Users className="w-12 h-12 mx-auto mb-3 opacity-50" />
+              <p className="font-medium">No customers found</p>
+              <p className="text-sm mt-1">Add your first customer to get started</p>
             </div>
           ) : (
-            <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
-              {filteredCustomers.map((customer) => (
-                <CustomerCard
-                  key={customer.id}
-                  customer={customer}
-                  trialExpired={trialExpired}
-                  onEdit={() => handleOpenEdit(customer)}
-                  onDelete={() => setDeleteId(customer.id)}
-                  onEnquiry={() => {
-                    setEnquiryCustomer(customer);
-                    setEnquiryProduct('');
-                    setEnquiryNotes('');
-                    setEnquiryError('');
-                    setEnquiryOpen(true);
-                  }}
-                />
-              ))}
+            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
+              {filteredCustomers.map(c => <CustomerCard key={c.id} customer={c} />)}
             </div>
           )}
         </TabsContent>
 
-        <TabsContent value="repeat" className="mt-4">
+        <TabsContent value="repeat">
           {repeatCustomers.length === 0 ? (
-            <div className="bg-card rounded-xl border border-border p-12 text-center">
-              <Users className="w-12 h-12 text-muted-foreground mx-auto mb-3" />
-              <p className="text-muted-foreground">No repeat customers yet.</p>
+            <div className="text-center py-12 text-forest-400">
+              <Users className="w-12 h-12 mx-auto mb-3 opacity-50" />
+              <p className="font-medium">No repeat customers yet</p>
             </div>
           ) : (
-            <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
-              {repeatCustomers.map((customer) => (
-                <CustomerCard
-                  key={customer.id}
-                  customer={customer}
-                  trialExpired={trialExpired}
-                  onEdit={() => handleOpenEdit(customer)}
-                  onDelete={() => setDeleteId(customer.id)}
-                  onEnquiry={() => {
-                    setEnquiryCustomer(customer);
-                    setEnquiryProduct('');
-                    setEnquiryNotes('');
-                    setEnquiryError('');
-                    setEnquiryOpen(true);
-                  }}
-                />
-              ))}
+            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
+              {repeatCustomers.map(c => <CustomerCard key={c.id} customer={c} />)}
             </div>
           )}
         </TabsContent>
 
-        <TabsContent value="enquiries" className="mt-4">
+        <TabsContent value="enquiries">
           {enquiries.length === 0 ? (
-            <div className="bg-card rounded-xl border border-border p-12 text-center">
-              <ClipboardList className="w-12 h-12 text-muted-foreground mx-auto mb-3" />
-              <p className="text-muted-foreground">No enquiries recorded yet.</p>
+            <div className="text-center py-12 text-forest-400">
+              <MessageSquare className="w-12 h-12 mx-auto mb-3 opacity-50" />
+              <p className="font-medium">No enquiries recorded yet</p>
             </div>
           ) : (
-            <div className="bg-card rounded-xl border border-border overflow-hidden">
-              <table className="w-full">
-                <thead>
-                  <tr className="border-b border-border bg-muted/30">
-                    <th className="text-left px-4 py-3 text-xs font-semibold uppercase tracking-wider text-muted-foreground">Customer</th>
-                    <th className="text-left px-4 py-3 text-xs font-semibold uppercase tracking-wider text-muted-foreground">Product</th>
-                    <th className="text-left px-4 py-3 text-xs font-semibold uppercase tracking-wider text-muted-foreground">Notes</th>
-                    <th className="text-left px-4 py-3 text-xs font-semibold uppercase tracking-wider text-muted-foreground">Date</th>
-                  </tr>
-                </thead>
-                <tbody className="divide-y divide-border">
-                  {enquiries.map((enq) => (
-                    <tr key={enq.id} className="hover:bg-muted/20 transition-colors">
-                      <td className="px-4 py-3 font-medium">{enq.customerName}</td>
-                      <td className="px-4 py-3 text-sm">{enq.product}</td>
-                      <td className="px-4 py-3 text-sm text-muted-foreground">{enq.notes || '—'}</td>
-                      <td className="px-4 py-3 text-sm text-muted-foreground">{enq.date}</td>
-                    </tr>
-                  ))}
-                </tbody>
-              </table>
+            <div className="space-y-3">
+              {enquiries.slice().reverse().map(enq => (
+                <div key={enq.id} className="bg-white rounded-xl p-4 border border-forest-100 shadow-sm">
+                  <div className="flex items-start justify-between">
+                    <div>
+                      <p className="font-semibold text-forest-800">{enq.customerName}</p>
+                      <p className="text-sm text-forest-600 mt-0.5">Product: <span className="font-medium">{enq.product}</span></p>
+                      {enq.message && <p className="text-sm text-forest-500 mt-1">{enq.message}</p>}
+                    </div>
+                    <span className="text-xs text-forest-400 whitespace-nowrap ml-4">{enq.date}</span>
+                  </div>
+                </div>
+              ))}
             </div>
           )}
         </TabsContent>
       </Tabs>
 
       {/* Add/Edit Customer Dialog */}
-      <Dialog open={formOpen} onOpenChange={setFormOpen}>
-        <DialogContent className="max-w-md">
+      <Dialog open={showForm} onOpenChange={setShowForm}>
+        <DialogContent className="sm:max-w-md">
           <DialogHeader>
-            <DialogTitle className="font-display text-xl">
+            <DialogTitle className="text-forest-800 font-display">
               {editCustomer ? 'Edit Customer' : 'Add New Customer'}
             </DialogTitle>
           </DialogHeader>
-          <form onSubmit={handleFormSubmit} className="space-y-4">
-            <div className="space-y-1">
-              <Label htmlFor="cust-name">Name *</Label>
-              <Input
-                id="cust-name"
-                value={formData.name}
-                onChange={(e) => setFormData({ ...formData, name: e.target.value })}
-                placeholder="Customer name"
-                disabled={formLoading}
-                required
-              />
+          <div className="space-y-4">
+            <div className="space-y-1.5">
+              <Label>Name *</Label>
+              <Input value={formData.name} onChange={e => setFormData({ ...formData, name: e.target.value })} placeholder="Customer name" />
             </div>
-            <div className="space-y-1">
-              <Label htmlFor="cust-phone">Phone</Label>
-              <Input
-                id="cust-phone"
-                value={formData.phone}
-                onChange={(e) => setFormData({ ...formData, phone: e.target.value })}
-                placeholder="+91 XXXXX XXXXX"
-                disabled={formLoading}
-              />
+            <div className="space-y-1.5">
+              <Label>Phone</Label>
+              <Input value={formData.phone} onChange={e => setFormData({ ...formData, phone: e.target.value })} placeholder="+91 XXXXX XXXXX" />
             </div>
-            <div className="space-y-1">
-              <Label htmlFor="cust-email">Email</Label>
-              <Input
-                id="cust-email"
-                type="email"
-                value={formData.email}
-                onChange={(e) => setFormData({ ...formData, email: e.target.value })}
-                placeholder="customer@email.com"
-                disabled={formLoading}
-              />
+            <div className="space-y-1.5">
+              <Label>Email</Label>
+              <Input value={formData.email} onChange={e => setFormData({ ...formData, email: e.target.value })} placeholder="email@example.com" />
             </div>
-            <div className="space-y-1">
-              <Label htmlFor="cust-address">Address</Label>
-              <Input
-                id="cust-address"
-                value={formData.address}
-                onChange={(e) => setFormData({ ...formData, address: e.target.value })}
-                placeholder="Street, City"
-                disabled={formLoading}
-              />
+            <div className="space-y-1.5">
+              <Label>Address</Label>
+              <Input value={formData.address} onChange={e => setFormData({ ...formData, address: e.target.value })} placeholder="Address" />
             </div>
-            <div className="space-y-1">
-              <Label htmlFor="cust-notes">Notes</Label>
-              <Input
-                id="cust-notes"
-                value={formData.notes}
-                onChange={(e) => setFormData({ ...formData, notes: e.target.value })}
-                placeholder="Any special notes..."
-                disabled={formLoading}
-              />
+            <div className="space-y-1.5">
+              <Label>Notes</Label>
+              <Textarea value={formData.notes} onChange={e => setFormData({ ...formData, notes: e.target.value })} placeholder="Any notes..." rows={2} />
             </div>
-            {formError && (
-              <p className="text-sm text-destructive">{formError}</p>
-            )}
-            <DialogFooter>
-              <Button type="button" variant="outline" onClick={() => setFormOpen(false)} disabled={formLoading}>
-                Cancel
+            <div className="flex gap-3">
+              <Button variant="outline" onClick={() => setShowForm(false)} className="flex-1">Cancel</Button>
+              <Button onClick={handleSave} disabled={!formData.name.trim()} className="flex-1 bg-gradient-to-r from-forest-600 to-sage-600 text-white">
+                {editCustomer ? 'Update' : 'Add Customer'}
               </Button>
-              <Button type="submit" disabled={formLoading}>
-                {formLoading ? <Loader2 className="w-4 h-4 mr-2 animate-spin" /> : null}
-                {editCustomer ? 'Update Customer' : 'Add Customer'}
-              </Button>
-            </DialogFooter>
-          </form>
+            </div>
+          </div>
         </DialogContent>
       </Dialog>
-
-      {/* Delete Confirmation */}
-      <AlertDialog open={deleteId !== null} onOpenChange={(open) => { if (!open) setDeleteId(null); }}>
-        <AlertDialogContent>
-          <AlertDialogHeader>
-            <AlertDialogTitle>Delete Customer</AlertDialogTitle>
-            <AlertDialogDescription>
-              Are you sure you want to delete this customer? This action cannot be undone.
-            </AlertDialogDescription>
-          </AlertDialogHeader>
-          <AlertDialogFooter>
-            <AlertDialogCancel>Cancel</AlertDialogCancel>
-            <AlertDialogAction
-              onClick={() => deleteId && handleDelete(deleteId)}
-              className="bg-destructive text-destructive-foreground hover:bg-destructive/90"
-            >
-              Delete
-            </AlertDialogAction>
-          </AlertDialogFooter>
-        </AlertDialogContent>
-      </AlertDialog>
 
       {/* Enquiry Dialog */}
-      <Dialog open={enquiryOpen} onOpenChange={setEnquiryOpen}>
-        <DialogContent className="max-w-md">
+      <Dialog open={showEnquiryForm} onOpenChange={setShowEnquiryForm}>
+        <DialogContent className="sm:max-w-md">
           <DialogHeader>
-            <DialogTitle className="font-display text-xl">Record Enquiry</DialogTitle>
+            <DialogTitle className="text-forest-800 font-display">
+              Record Enquiry — {selectedCustomer?.name}
+            </DialogTitle>
           </DialogHeader>
-          {enquiryCustomer && (
-            <form onSubmit={handleEnquirySubmit} className="space-y-4">
-              <div className="bg-muted/30 rounded-lg p-3">
-                <p className="font-medium">{enquiryCustomer.name}</p>
-                {enquiryCustomer.phone && (
-                  <p className="text-sm text-muted-foreground">{enquiryCustomer.phone}</p>
-                )}
-              </div>
-              <div className="space-y-1">
-                <Label htmlFor="enq-product">Product Enquired *</Label>
-                <Input
-                  id="enq-product"
-                  value={enquiryProduct}
-                  onChange={(e) => setEnquiryProduct(e.target.value)}
-                  placeholder="e.g. Ashwagandha Powder"
-                  required
-                />
-              </div>
-              <div className="space-y-1">
-                <Label htmlFor="enq-notes">Notes</Label>
-                <Input
-                  id="enq-notes"
-                  value={enquiryNotes}
-                  onChange={(e) => setEnquiryNotes(e.target.value)}
-                  placeholder="Any additional notes..."
-                />
-              </div>
-              {enquiryError && (
-                <p className="text-sm text-destructive">{enquiryError}</p>
-              )}
-              <DialogFooter>
-                <Button type="button" variant="outline" onClick={() => setEnquiryOpen(false)}>Cancel</Button>
-                <Button type="submit">Record Enquiry</Button>
-              </DialogFooter>
-            </form>
-          )}
+          <div className="space-y-4">
+            <div className="space-y-1.5">
+              <Label>Product Enquired *</Label>
+              <Input value={enquiryData.product} onChange={e => setEnquiryData({ ...enquiryData, product: e.target.value })} placeholder="Product name" />
+            </div>
+            <div className="space-y-1.5">
+              <Label>Message / Notes</Label>
+              <Textarea value={enquiryData.message} onChange={e => setEnquiryData({ ...enquiryData, message: e.target.value })} placeholder="Additional notes..." rows={3} />
+            </div>
+            <div className="flex gap-3">
+              <Button variant="outline" onClick={() => setShowEnquiryForm(false)} className="flex-1">Cancel</Button>
+              <Button onClick={handleSaveEnquiry} disabled={!enquiryData.product.trim()} className="flex-1 bg-gradient-to-r from-forest-600 to-sage-600 text-white">
+                Save Enquiry
+              </Button>
+            </div>
+          </div>
         </DialogContent>
       </Dialog>
-    </div>
-  );
-}
-
-interface CustomerCardProps {
-  customer: Customer;
-  trialExpired: boolean;
-  onEdit: () => void;
-  onDelete: () => void;
-  onEnquiry: () => void;
-}
-
-function CustomerCard({ customer, trialExpired, onEdit, onDelete, onEnquiry }: CustomerCardProps) {
-  return (
-    <div className="bg-card rounded-xl border border-border p-4 hover:shadow-md transition-shadow">
-      <div className="flex items-start justify-between mb-3">
-        <div className="flex items-center gap-3">
-          <div className="w-10 h-10 rounded-full bg-primary/10 flex items-center justify-center">
-            <span className="text-primary font-semibold text-sm">
-              {customer.name.charAt(0).toUpperCase()}
-            </span>
-          </div>
-          <div>
-            <p className="font-semibold text-foreground">{customer.name}</p>
-            <p className="text-xs text-muted-foreground">
-              {customer.visitCount} visit{customer.visitCount !== 1 ? 's' : ''}
-            </p>
-          </div>
-        </div>
-        {customer.visitCount >= 2 && (
-          <Badge className="bg-primary/10 text-primary border-primary/20 text-xs">Repeat</Badge>
-        )}
-      </div>
-
-      <div className="space-y-1 mb-3">
-        {customer.phone && (
-          <div className="flex items-center gap-2 text-sm text-muted-foreground">
-            <Phone className="w-3.5 h-3.5" />
-            <span>{customer.phone}</span>
-          </div>
-        )}
-        {customer.email && (
-          <div className="flex items-center gap-2 text-sm text-muted-foreground">
-            <Mail className="w-3.5 h-3.5" />
-            <span className="truncate">{customer.email}</span>
-          </div>
-        )}
-        {customer.address && (
-          <div className="flex items-center gap-2 text-sm text-muted-foreground">
-            <MapPin className="w-3.5 h-3.5" />
-            <span className="truncate">{customer.address}</span>
-          </div>
-        )}
-      </div>
-
-      {customer.lastVisit && (
-        <p className="text-xs text-muted-foreground mb-3">Last visit: {customer.lastVisit}</p>
-      )}
-
-      <div className="flex gap-2">
-        <Button
-          size="sm"
-          variant="outline"
-          className="flex-1 text-xs"
-          onClick={onEnquiry}
-          disabled={trialExpired}
-        >
-          <ClipboardList className="w-3.5 h-3.5 mr-1" />
-          Enquiry
-        </Button>
-        <Button
-          size="sm"
-          variant="ghost"
-          onClick={onEdit}
-          disabled={trialExpired}
-          className={trialExpired ? 'opacity-50 cursor-not-allowed' : ''}
-        >
-          <Edit className="w-3.5 h-3.5" />
-        </Button>
-        <Button
-          size="sm"
-          variant="ghost"
-          onClick={onDelete}
-          disabled={trialExpired}
-          className={`text-destructive hover:text-destructive ${trialExpired ? 'opacity-50 cursor-not-allowed' : ''}`}
-        >
-          <Trash2 className="w-3.5 h-3.5" />
-        </Button>
-      </div>
     </div>
   );
 }
