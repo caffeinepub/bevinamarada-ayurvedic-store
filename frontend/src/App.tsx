@@ -4,6 +4,7 @@ import { ThemeProvider } from 'next-themes';
 import PublicLayout from './components/PublicLayout';
 import AdminLayout from './components/AdminLayout';
 import AdminGuard from './components/AdminGuard';
+import AdminLogin from './pages/AdminLogin';
 import Home from './pages/Home';
 import AboutUs from './pages/AboutUs';
 import Contact from './pages/Contact';
@@ -45,6 +46,13 @@ const contactRoute = createRoute({
   getParentRoute: () => publicLayoutRoute,
   path: '/contact',
   component: Contact,
+});
+
+// Standalone admin login route (no guard, no layout)
+const adminLoginRoute = createRoute({
+  getParentRoute: () => rootRoute,
+  path: '/admin-login',
+  component: AdminLogin,
 });
 
 const adminGuardRoute = createRoute({
@@ -115,6 +123,7 @@ const adminIncomeRoute = createRoute({
 
 const routeTree = rootRoute.addChildren([
   publicLayoutRoute.addChildren([homeRoute, aboutRoute, contactRoute]),
+  adminLoginRoute,
   adminGuardRoute.addChildren([
     adminLayoutRoute.addChildren([
       adminIndexRoute,

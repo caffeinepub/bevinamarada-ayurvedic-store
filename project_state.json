@@ -1,22 +1,48 @@
 {
   "schemaVersion": "1.0.0",
   "projectStateVersion": 3,
-  "summary": "New project",
-  "architectural_notes": [],
+  "summary": "Project with an admin portal. User has specified admin login credentials (username: baslxr, password: bas12345) and wants a 'remember me' / save username and password option on the login page.",
+  "architectural_notes": [
+    "Admin portal credentials: username = baslxr, password = bas12345",
+    "Admin login page should include a 'Remember Me' / save username and password option"
+  ],
   "known_issues": [],
   "isFixRequest": false,
   "existing_features": [
     {
-      "id": "feature-revert-the-entire-project-frontend-and-backend-to-the-state-it-was-in-at-version-6-undoing-all-changes-introduced-in-versions-7-through-13",
-      "title": "Revert the entire project (frontend and backend) to the state it was in at Version 6, undoing all changes introduced in Versions 7 through 13.",
+      "id": "feature-create-a-standalone-admin-portal-login-page-separate-from-internet-identity-that-authenticates-using-hardcoded-credentials-username-baslxr-and-password-bas12345-the-login-page-should-be-accessible-at-a-dedicated-route-e-g-admin-login-and-redirect-to-the-admin-dashboard-upon-successful-authentication",
+      "title": "Create a standalone admin portal login page (separate from Internet Identity) that authenticates using hardcoded credentials: username 'baslxr' and password 'bas12345'. The login page should be accessible at a dedicated route (e.g., /admin-login) and redirect to the admin dashboard upon successful authentication.",
       "reqIds": [
         "REQ-1"
       ],
       "version": 1
+    },
+    {
+      "id": "feature-add-a-remember-me-checkbox-on-the-admin-login-page-when-checked-and-the-user-logs-in-successfully-the-username-and-password-are-persisted-in-localstorage-so-that-the-fields-are-pre-filled-on-the-next-visit-when-unchecked-no-credentials-are-saved-and-any-previously-saved-credentials-are-cleared-from-localstorage",
+      "title": "Add a 'Remember Me' checkbox on the admin login page. When checked and the user logs in successfully, the username and password are persisted in localStorage so that the fields are pre-filled on the next visit. When unchecked, no credentials are saved and any previously saved credentials are cleared from localStorage.",
+      "reqIds": [
+        "REQ-2"
+      ],
+      "version": 1
+    },
+    {
+      "id": "feature-protect-all-existing-admin-routes-so-that-unauthenticated-users-those-who-have-not-logged-in-via-the-admin-login-page-are-redirected-to-the-admin-login-page-store-the-authenticated-session-state-in-sessionstorage-or-a-react-context-so-that-refreshing-the-page-within-the-same-session-keeps-the-user-logged-in-but-closing-the-browser-clears-the-session-unless-remember-me-credentials-are-saved",
+      "title": "Protect all existing admin routes so that unauthenticated users (those who have not logged in via the admin login page) are redirected to the admin login page. Store the authenticated session state in sessionStorage (or a React context) so that refreshing the page within the same session keeps the user logged in, but closing the browser clears the session (unless Remember Me credentials are saved).",
+      "reqIds": [
+        "REQ-3"
+      ],
+      "version": 1
     }
   ],
-  "new_feature_requests": [],
-  "projectName": "Revert to Version 6",
+  "new_feature_requests": [
+    {
+      "id": "AR-1",
+      "summary": "Admin portal login with username 'baslxr' and password 'bas12345', plus a 'remember me' / save credentials option",
+      "reqIds": [],
+      "status": "pending"
+    }
+  ],
+  "projectName": "Bevinamarada Ayurvedic Store",
   "clarification_mode": "instant",
   "clarification_rounds": 0
 }

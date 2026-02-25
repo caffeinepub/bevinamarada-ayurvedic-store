@@ -1,34 +1,77 @@
 {
   "kind": "build_request",
-  "title": "Revert to Version 6",
-  "priority": "high",
+  "title": "Add admin portal login with hardcoded credentials and remember me option",
+  "projectName": "Bevinamarada Ayurvedic Store",
+  "priority": "normal",
   "requirements": [
     {
       "id": "REQ-1",
-      "text": "Revert the entire project (frontend and backend) to the state it was in at Version 6, undoing all changes introduced in Versions 7 through 13.",
-      "target": "both",
+      "text": "Create a standalone admin portal login page (separate from Internet Identity) that authenticates using hardcoded credentials: username 'baslxr' and password 'bas12345'. The login page should be accessible at a dedicated route (e.g., /admin-login) and redirect to the admin dashboard upon successful authentication.",
+      "target": "frontend",
       "source": {
         "messageIds": [
-          "msg-4"
+          "msg-6"
         ],
         "quotes": [
-          "Please come back to version 6"
+          "admit portal login username is baslxr. And password is bas12345"
         ]
       },
       "acceptanceCriteria": [
-        "All frontend files match the Version 6 snapshot exactly.",
-        "All backend files match the Version 6 snapshot exactly.",
-        "No code, styles, or logic from Versions 7–13 (including the z-index/overlay fixes and white background changes) remain in the codebase."
+        "A login page exists with username and password input fields",
+        "Entering username 'baslxr' and password 'bas12345' grants access to the admin area",
+        "Entering incorrect credentials shows an error message",
+        "Successful login redirects the user to the admin dashboard"
+      ]
+    },
+    {
+      "id": "REQ-2",
+      "text": "Add a 'Remember Me' checkbox on the admin login page. When checked and the user logs in successfully, the username and password are persisted in localStorage so that the fields are pre-filled on the next visit. When unchecked, no credentials are saved and any previously saved credentials are cleared from localStorage.",
+      "target": "frontend",
+      "source": {
+        "messageIds": [
+          "msg-6"
+        ],
+        "quotes": [
+          "remember or save username and password option"
+        ]
+      },
+      "acceptanceCriteria": [
+        "A 'Remember Me' checkbox is displayed on the login page",
+        "When 'Remember Me' is checked and login is successful, username and password are saved to localStorage",
+        "On subsequent visits, the username and password fields are pre-filled from localStorage if saved credentials exist",
+        "The 'Remember Me' checkbox is also pre-checked if saved credentials exist",
+        "When 'Remember Me' is unchecked on login, any previously saved credentials are removed from localStorage"
+      ]
+    },
+    {
+      "id": "REQ-3",
+      "text": "Protect all existing admin routes so that unauthenticated users (those who have not logged in via the admin login page) are redirected to the admin login page. Store the authenticated session state in sessionStorage (or a React context) so that refreshing the page within the same session keeps the user logged in, but closing the browser clears the session (unless Remember Me credentials are saved).",
+      "target": "frontend",
+      "source": {
+        "messageIds": [
+          "msg-6"
+        ],
+        "quotes": [
+          "admit portal login username is baslxr. And password is bas12345"
+        ]
+      },
+      "acceptanceCriteria": [
+        "Navigating directly to any admin route without being logged in redirects to the admin login page",
+        "After login, navigating to admin routes works without re-authentication within the same session",
+        "A logout button in the admin layout clears the session and redirects to the login page"
       ]
     }
   ],
   "constraints": [
-    "Do not retain any changes introduced after Version 6.",
-    "Immutable frontend paths (hooks, main.tsx, ui components) must remain untouched per platform rules."
+    "Do not remove or break the existing Internet Identity integration in useInternetIdentity.ts",
+    "Hardcoded credentials (baslxr / bas12345) must be used exactly as provided",
+    "Do not modify any files under frontend/src/hooks/ or frontend/src/components/ui"
   ],
   "nonGoals": [
-    "Introducing any new features or fixes beyond restoring Version 6.",
-    "Partial rollbacks — the full revert to Version 6 is required."
+    "Backend credential storage or API-based authentication",
+    "Multi-user or dynamic credential management",
+    "Password hashing or encryption (credentials are hardcoded on the frontend)",
+    "Changing the existing Internet Identity login flow"
   ],
   "imageRequirements": {
     "required": [],

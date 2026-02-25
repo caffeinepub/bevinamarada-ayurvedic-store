@@ -1,156 +1,66 @@
 {
   "kind": "implementation_plan",
   "version": "1.0",
-  "title": "Revert Frontend to Version 6",
+  "title": "Add admin portal login with hardcoded credentials and remember me option",
   "requirements": [
     {
       "id": "REQ-1",
-      "summary": "Revert all frontend files to their Version 6 state, removing all changes from Versions 7–13 including z-index/overlay fixes and white background changes",
+      "summary": "Create a standalone admin portal login page with hardcoded credentials (baslxr/bas12345) that authenticates separately from Internet Identity and redirects to admin dashboard on success",
       "acceptanceCriteria": [
-        "All frontend files match the Version 6 snapshot exactly.",
-        "No code, styles, or logic from Versions 7–13 (including the z-index/overlay fixes and white background changes) remain in the codebase.",
-        "The application renders and functions as it did in Version 6."
+        "A login page exists with username and password input fields",
+        "Entering username 'baslxr' and password 'bas12345' grants access to the admin area",
+        "Entering incorrect credentials shows an error message",
+        "Successful login redirects the user to the admin dashboard"
       ],
       "file_operations": [
         {
+          "path": "frontend/src/pages/AdminLogin.tsx",
+          "operation": "create",
+          "description": "Create a standalone admin login page component with username and password input fields, hardcoded credential validation (baslxr/bas12345), error message display for invalid credentials, and redirect logic to /admin-dashboard on successful authentication. Use form with controlled inputs and leverage existing Tailwind classes and theme colors (saffron, teal) for consistent styling. Store authenticated session state in sessionStorage upon successful login."
+        },
+        {
           "path": "frontend/src/App.tsx",
           "operation": "modify",
-          "description": "Revert routing configuration and component structure to Version 6 state, removing any route changes, layout modifications, or guard logic added in Versions 7–13."
-        },
+          "description": "Add a new public route for /admin-login that renders the AdminLogin page component. Place this route outside the AdminGuard wrapper so it is accessible without Internet Identity authentication. Ensure the route is registered before the protected admin routes."
+        }
+      ]
+    },
+    {
+      "id": "REQ-2",
+      "summary": "Add a 'Remember Me' checkbox that persists credentials to localStorage when checked and pre-fills login fields on subsequent visits",
+      "acceptanceCriteria": [
+        "A 'Remember Me' checkbox is displayed on the login page",
+        "When 'Remember Me' is checked and login is successful, username and password are saved to localStorage",
+        "On subsequent visits, the username and password fields are pre-filled from localStorage if saved credentials exist",
+        "The 'Remember Me' checkbox is also pre-checked if saved credentials exist",
+        "When 'Remember Me' is unchecked on login, any previously saved credentials are removed from localStorage"
+      ],
+      "file_operations": [
+        {
+          "path": "frontend/src/pages/AdminLogin.tsx",
+          "operation": "modify",
+          "description": "Add a 'Remember Me' checkbox to the login form. On component mount, check localStorage for saved credentials (keys: 'adminUsername', 'adminPassword', 'adminRememberMe') and pre-fill the username and password fields if they exist, also checking the checkbox. On successful login, if 'Remember Me' is checked, save the username and password to localStorage; if unchecked, clear any previously saved credentials from localStorage. Handle the checkbox state and implement the save/clear logic in the form submission handler."
+        }
+      ]
+    },
+    {
+      "id": "REQ-3",
+      "summary": "Protect all existing admin routes by checking session authentication state and redirecting unauthenticated users to the admin login page, with session persistence via sessionStorage",
+      "acceptanceCriteria": [
+        "Navigating directly to any admin route without being logged in redirects to the admin login page",
+        "After login, navigating to admin routes works without re-authentication within the same session",
+        "A logout button in the admin layout clears the session and redirects to the login page"
+      ],
+      "file_operations": [
         {
           "path": "frontend/src/components/AdminGuard.tsx",
           "operation": "modify",
-          "description": "Revert authentication guard component logic to Version 6, removing any modal handling, z-index fixes, or overlay behavior changes introduced in later versions."
+          "description": "Add session authentication check at the top of the AdminGuard component before the Internet Identity authentication logic. Check sessionStorage for 'adminSessionActive' key. If not present or false, redirect to /admin-login using the router's navigate function. If session is active, proceed with existing Internet Identity and profile setup flow. Do not remove or alter the existing Internet Identity integration; only add the session check as a preliminary gate."
         },
         {
           "path": "frontend/src/components/AdminLayout.tsx",
           "operation": "modify",
-          "description": "Revert admin panel shell structure, sidebar navigation, profile dropdown, and mobile menu to Version 6 state, removing any z-index, overlay, or styling changes from Versions 7–13."
-        },
-        {
-          "path": "frontend/src/components/PublicLayout.tsx",
-          "operation": "modify",
-          "description": "Revert public site shell including header, navigation menus, and footer to Version 6 state, removing any styling or structural changes from later versions."
-        },
-        {
-          "path": "frontend/src/components/ProfileSetupModal.tsx",
-          "operation": "modify",
-          "description": "Revert profile setup modal component to Version 6 state, removing any z-index fixes, overlay handling, or modal behavior changes introduced in Versions 7–13."
-        },
-        {
-          "path": "frontend/src/components/StockItemForm.tsx",
-          "operation": "modify",
-          "description": "Revert stock item form dialog to Version 6 state, removing any form validation changes, styling updates, or modal behavior modifications from later versions."
-        },
-        {
-          "path": "frontend/src/components/TrialStatusBanner.tsx",
-          "operation": "modify",
-          "description": "Revert trial status banner component to Version 6 state, removing any styling changes, z-index adjustments, or behavior modifications from Versions 7–13."
-        },
-        {
-          "path": "frontend/src/pages/OwnerDashboard.tsx",
-          "operation": "modify",
-          "description": "Revert owner dashboard page to Version 6 state, removing any metric card changes, styling updates, or layout modifications introduced in later versions."
-        },
-        {
-          "path": "frontend/src/pages/StockManagement.tsx",
-          "operation": "modify",
-          "description": "Revert stock management page to Version 6 state, removing any filtering changes, modal behavior updates, or UI modifications from Versions 7–13."
-        },
-        {
-          "path": "frontend/src/pages/Home.tsx",
-          "operation": "modify",
-          "description": "Revert home page hero banner, category grid, and trust indicators to Version 6 state, removing any background color changes (especially white background additions) or styling modifications from later versions."
-        },
-        {
-          "path": "frontend/src/pages/AboutUs.tsx",
-          "operation": "modify",
-          "description": "Revert About Us page content, hero section, and card styling to Version 6 state, removing any white background changes or styling updates from Versions 7–13."
-        },
-        {
-          "path": "frontend/src/pages/Contact.tsx",
-          "operation": "modify",
-          "description": "Revert Contact page layout and form styling to Version 6 state, removing any background or styling changes introduced in later versions."
-        },
-        {
-          "path": "frontend/src/pages/CustomerManagement.tsx",
-          "operation": "modify",
-          "description": "Revert customer management page to Version 6 state, removing any UI changes, form modifications, or styling updates from Versions 7–13."
-        },
-        {
-          "path": "frontend/src/pages/ProfilePage.tsx",
-          "operation": "modify",
-          "description": "Revert profile page layout and form to Version 6 state, removing any styling or behavior changes from later versions."
-        },
-        {
-          "path": "frontend/src/pages/SalesReports.tsx",
-          "operation": "modify",
-          "description": "Revert sales reports page including tabbed views and print functionality to Version 6 state, removing any UI or styling changes from Versions 7–13."
-        },
-        {
-          "path": "frontend/src/index.css",
-          "operation": "modify",
-          "description": "Revert global stylesheet to Version 6 state, removing any CSS custom property changes, color updates, component class modifications, gradient changes, white background additions, z-index adjustments, or other styling changes introduced in Versions 7–13."
-        },
-        {
-          "path": "frontend/index.html",
-          "operation": "modify",
-          "description": "Revert HTML entry point to Version 6 state, removing any metadata, theme color, or font preconnect changes from later versions."
-        },
-        {
-          "path": "frontend/tailwind.config.js",
-          "operation": "modify",
-          "description": "Revert Tailwind configuration to Version 6 state, removing any color palette changes, custom property updates, font modifications, or shadow/animation changes from Versions 7–13."
-        },
-        {
-          "path": "frontend/src/components/IncomeTracking.tsx",
-          "operation": "modify",
-          "description": "Revert income tracking component to Version 6 state, removing any metric display changes or styling updates from later versions."
-        },
-        {
-          "path": "frontend/src/components/LowStockWarning.tsx",
-          "operation": "modify",
-          "description": "Revert low stock warning component to Version 6 state, removing any card styling or behavior changes from Versions 7–13."
-        },
-        {
-          "path": "frontend/src/components/RevenueOverview.tsx",
-          "operation": "modify",
-          "description": "Revert revenue overview component to Version 6 state, removing any summary card changes or styling updates from later versions."
-        },
-        {
-          "path": "frontend/src/components/TodaysSalesPanel.tsx",
-          "operation": "modify",
-          "description": "Revert today's sales panel to Version 6 state, removing any summary or transaction list changes from Versions 7–13."
-        },
-        {
-          "path": "frontend/src/components/TrendingStocksPanel.tsx",
-          "operation": "modify",
-          "description": "Revert trending stocks panel to Version 6 state, removing any list styling or card changes from later versions."
-        },
-        {
-          "path": "frontend/src/components/TrialStatusCard.tsx",
-          "operation": "modify",
-          "description": "Revert trial status card to Version 6 state, removing any styling or urgency state changes from Versions 7–13."
-        },
-        {
-          "path": "frontend/src/pages/IncomePage.tsx",
-          "operation": "modify",
-          "description": "Revert income page wrapper to Version 6 state, removing any layout or header changes from later versions."
-        },
-        {
-          "path": "frontend/src/pages/RevenuePage.tsx",
-          "operation": "modify",
-          "description": "Revert revenue page wrapper to Version 6 state, removing any layout changes from Versions 7–13."
-        },
-        {
-          "path": "frontend/src/pages/SalesPage.tsx",
-          "operation": "modify",
-          "description": "Revert sales page wrapper to Version 6 state, removing any layout changes from later versions."
-        },
-        {
-          "path": "frontend/src/pages/TrendingPage.tsx",
-          "operation": "modify",
-          "description": "Revert trending page wrapper to Version 6 state, removing any layout changes from Versions 7–13."
+          "description": "Add a 'Logout from Admin Portal' button in the profile dropdown menu (or as a separate visible logout button in the sidebar). On click, clear the 'adminSessionActive' key from sessionStorage and navigate to /admin-login. Keep the existing Internet Identity logout button unchanged. Ensure both logout mechanisms are clearly labeled and do not interfere with each other."
         }
       ]
     }

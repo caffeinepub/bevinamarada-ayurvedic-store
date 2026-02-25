@@ -1,71 +1,50 @@
 {
   "kind": "coverage_report",
   "version": "1.0",
-  "generatedAt": "2026-02-25T06:42:46.780Z",
+  "generatedAt": "2026-02-25T11:45:20.371Z",
   "sources": {
     "buildRequest": true,
     "implementationPlan": true
   },
   "requirements": {
-    "total": 1,
-    "implemented": 1,
+    "total": 3,
+    "implemented": 3,
     "items": [
       {
         "id": "REQ-1",
-        "summary": "Revert the entire project (frontend and backend) to the state it was in at Version 6, undoing all changes introduced in Versions 7 through 13.",
+        "summary": "Create a standalone admin portal login page (separate from Internet Identity) that authenticates using hardcoded credentials: username 'baslxr' and password 'bas12345'. The login page should be accessible at a dedicated route (e.g., /admin-login) and redirect to the admin dashboard upon successful authentication.",
         "status": "implemented",
         "plannedFiles": [
-          "frontend/src/App.tsx",
-          "frontend/src/components/AdminGuard.tsx",
-          "frontend/src/components/AdminLayout.tsx",
-          "frontend/src/components/PublicLayout.tsx",
-          "frontend/src/components/ProfileSetupModal.tsx",
-          "frontend/src/components/StockItemForm.tsx",
-          "frontend/src/components/TrialStatusBanner.tsx",
-          "frontend/src/pages/OwnerDashboard.tsx",
-          "frontend/src/pages/StockManagement.tsx",
-          "frontend/src/pages/Home.tsx",
-          "frontend/src/pages/AboutUs.tsx",
-          "frontend/src/pages/Contact.tsx",
-          "frontend/src/pages/CustomerManagement.tsx",
-          "frontend/src/pages/ProfilePage.tsx",
-          "frontend/src/pages/SalesReports.tsx",
-          "frontend/src/index.css",
-          "frontend/index.html",
-          "frontend/tailwind.config.js",
-          "frontend/src/components/IncomeTracking.tsx",
-          "frontend/src/components/LowStockWarning.tsx",
-          "frontend/src/components/RevenueOverview.tsx",
-          "frontend/src/components/TodaysSalesPanel.tsx",
-          "frontend/src/components/TrendingStocksPanel.tsx",
-          "frontend/src/components/TrialStatusCard.tsx",
-          "frontend/src/pages/IncomePage.tsx",
-          "frontend/src/pages/RevenuePage.tsx",
-          "frontend/src/pages/SalesPage.tsx",
-          "frontend/src/pages/TrendingPage.tsx"
+          "frontend/src/pages/AdminLogin.tsx",
+          "frontend/src/App.tsx"
         ],
         "matchedFiles": [
-          "frontend/src/App.tsx",
+          "frontend/src/pages/AdminLogin.tsx",
+          "frontend/src/App.tsx"
+        ]
+      },
+      {
+        "id": "REQ-2",
+        "summary": "Add a 'Remember Me' checkbox on the admin login page. When checked and the user logs in successfully, the username and password are persisted in localStorage so that the fields are pre-filled on the next visit. When unchecked, no credentials are saved and any previously saved credentials are cleared from localStorage.",
+        "status": "implemented",
+        "plannedFiles": [
+          "frontend/src/pages/AdminLogin.tsx"
+        ],
+        "matchedFiles": [
+          "frontend/src/pages/AdminLogin.tsx"
+        ]
+      },
+      {
+        "id": "REQ-3",
+        "summary": "Protect all existing admin routes so that unauthenticated users (those who have not logged in via the admin login page) are redirected to the admin login page. Store the authenticated session state in sessionStorage (or a React context) so that refreshing the page within the same session keeps the user logged in, but closing the browser clears the session (unless Remember Me credentials are saved).",
+        "status": "implemented",
+        "plannedFiles": [
           "frontend/src/components/AdminGuard.tsx",
-          "frontend/src/components/AdminLayout.tsx",
-          "frontend/src/components/PublicLayout.tsx",
-          "frontend/src/components/ProfileSetupModal.tsx",
-          "frontend/src/components/StockItemForm.tsx",
-          "frontend/src/components/TrialStatusBanner.tsx",
-          "frontend/src/pages/OwnerDashboard.tsx",
-          "frontend/src/pages/Home.tsx",
-          "frontend/src/pages/AboutUs.tsx",
-          "frontend/src/pages/Contact.tsx",
-          "frontend/src/pages/CustomerManagement.tsx",
-          "frontend/src/pages/ProfilePage.tsx",
-          "frontend/src/index.css",
-          "frontend/tailwind.config.js",
-          "frontend/src/components/IncomeTracking.tsx",
-          "frontend/src/components/LowStockWarning.tsx",
-          "frontend/src/components/RevenueOverview.tsx",
-          "frontend/src/components/TodaysSalesPanel.tsx",
-          "frontend/src/components/TrendingStocksPanel.tsx",
-          "frontend/src/components/TrialStatusCard.tsx"
+          "frontend/src/components/AdminLayout.tsx"
+        ],
+        "matchedFiles": [
+          "frontend/src/components/AdminGuard.tsx",
+          "frontend/src/components/AdminLayout.tsx"
         ]
       }
     ]
@@ -78,28 +57,7 @@
     "frontend/src/App.tsx",
     "frontend/src/components/AdminGuard.tsx",
     "frontend/src/components/AdminLayout.tsx",
-    "frontend/src/components/IncomeTracking.tsx",
-    "frontend/src/components/LowStockWarning.tsx",
-    "frontend/src/components/ProfileSetupModal.tsx",
-    "frontend/src/components/PublicLayout.tsx",
-    "frontend/src/components/RevenueOverview.tsx",
-    "frontend/src/components/StockItemForm.tsx",
-    "frontend/src/components/TodaysSalesPanel.tsx",
-    "frontend/src/components/TrendingProducts.tsx",
-    "frontend/src/components/TrendingStocksPanel.tsx",
-    "frontend/src/components/TrialStatusBanner.tsx",
-    "frontend/src/components/TrialStatusCard.tsx",
-    "frontend/src/index.css",
-    "frontend/src/pages/AboutUs.tsx",
-    "frontend/src/pages/AdminDashboard.tsx",
-    "frontend/src/pages/Contact.tsx",
-    "frontend/src/pages/CustomerManagement.tsx",
-    "frontend/src/pages/EnquiryManagement.tsx",
-    "frontend/src/pages/Home.tsx",
-    "frontend/src/pages/OwnerDashboard.tsx",
-    "frontend/src/pages/ProductManagement.tsx",
-    "frontend/src/pages/ProfilePage.tsx",
-    "frontend/tailwind.config.js",
+    "frontend/src/pages/AdminLogin.tsx",
     "project_state.json",
     "scratch/component-selection.json",
     "spec.md",

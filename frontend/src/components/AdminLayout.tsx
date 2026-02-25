@@ -13,6 +13,7 @@ import {
   TrendingUp,
   Warehouse,
   ChevronDown,
+  ShieldOff,
 } from 'lucide-react';
 import { useInternetIdentity } from '../hooks/useInternetIdentity';
 import { useGetCallerUserProfile } from '../hooks/useQueries';
@@ -40,6 +41,11 @@ export default function AdminLayout() {
     await clear();
     queryClient.clear();
     navigate({ to: '/' });
+  };
+
+  const handleAdminPortalLogout = () => {
+    sessionStorage.removeItem('adminSessionActive');
+    navigate({ to: '/admin-login' });
   };
 
   const currentPath = window.location.pathname;
@@ -110,6 +116,13 @@ export default function AdminLayout() {
               <LogOut className="w-4 h-4" />
               Logout
             </button>
+            <button
+              onClick={handleAdminPortalLogout}
+              className="w-full flex items-center gap-2 px-3 py-2 text-forest-300 hover:text-amber-400 hover:bg-amber-500/10 rounded-lg transition-colors text-sm"
+            >
+              <ShieldOff className="w-4 h-4" />
+              Exit Admin Portal
+            </button>
           </div>
         </div>
       </aside>
@@ -166,7 +179,7 @@ export default function AdminLayout() {
                     className="fixed inset-0 z-10"
                     onClick={() => setProfileDropdownOpen(false)}
                   />
-                  <div className="absolute right-0 top-full mt-1 w-48 bg-white rounded-xl shadow-lg border border-gray-200 py-1 z-20">
+                  <div className="absolute right-0 top-full mt-1 w-56 bg-white rounded-xl shadow-lg border border-gray-200 py-1 z-20">
                     <Link
                       to="/admin/profile"
                       className="flex items-center gap-2 px-4 py-2 text-sm text-gray-700 hover:bg-gray-50 transition-colors"
@@ -181,6 +194,14 @@ export default function AdminLayout() {
                     >
                       <LogOut className="w-4 h-4" />
                       Logout
+                    </button>
+                    <div className="border-t border-gray-100 my-1" />
+                    <button
+                      onClick={() => { setProfileDropdownOpen(false); handleAdminPortalLogout(); }}
+                      className="w-full flex items-center gap-2 px-4 py-2 text-sm text-amber-700 hover:bg-amber-50 transition-colors"
+                    >
+                      <ShieldOff className="w-4 h-4" />
+                      Exit Admin Portal
                     </button>
                   </div>
                 </>
@@ -240,30 +261,13 @@ export default function AdminLayout() {
                     }`}
                   >
                     <Icon className={`w-5 h-5 ${isActive ? 'text-saffron-400' : 'text-forest-400'}`} />
-                    <span className="font-medium">{item.label}</span>
+                    <span className="font-medium text-sm">{item.label}</span>
                   </Link>
                 );
               })}
-              <Link
-                to="/admin/trending"
-                onClick={() => setMobileMenuOpen(false)}
-                className="flex items-center gap-3 px-4 py-3 rounded-xl text-forest-300 hover:bg-forest-700/50 hover:text-white transition-all duration-200"
-              >
-                <TrendingUp className="w-5 h-5 text-forest-400" />
-                <span className="font-medium">Trending</span>
-              </Link>
             </nav>
 
-            <div className="p-4 border-t border-forest-700/50">
-              <div className="flex items-center gap-3 px-3 py-2 rounded-xl bg-forest-800/50 mb-2">
-                <div className="w-8 h-8 rounded-full bg-gradient-to-br from-saffron-400 to-gold-500 flex items-center justify-center text-white text-sm font-bold">
-                  {userProfile?.name?.charAt(0)?.toUpperCase() || 'A'}
-                </div>
-                <div>
-                  <p className="text-sm font-medium text-white">{userProfile?.name || 'Admin'}</p>
-                  <p className="text-xs text-forest-400">Administrator</p>
-                </div>
-              </div>
+            <div className="p-4 border-t border-forest-700/50 space-y-1">
               <Link
                 to="/admin/profile"
                 onClick={() => setMobileMenuOpen(false)}
@@ -274,10 +278,17 @@ export default function AdminLayout() {
               </Link>
               <button
                 onClick={() => { setMobileMenuOpen(false); handleLogout(); }}
-                className="w-full flex items-center gap-2 px-3 py-2 text-forest-300 hover:text-red-400 hover:bg-red-500/10 rounded-lg transition-colors text-sm mt-1"
+                className="w-full flex items-center gap-2 px-3 py-2 text-forest-300 hover:text-red-400 hover:bg-red-500/10 rounded-lg transition-colors text-sm"
               >
                 <LogOut className="w-4 h-4" />
                 Logout
+              </button>
+              <button
+                onClick={() => { setMobileMenuOpen(false); handleAdminPortalLogout(); }}
+                className="w-full flex items-center gap-2 px-3 py-2 text-forest-300 hover:text-amber-400 hover:bg-amber-500/10 rounded-lg transition-colors text-sm"
+              >
+                <ShieldOff className="w-4 h-4" />
+                Exit Admin Portal
               </button>
             </div>
           </div>

@@ -2,30 +2,11 @@
   "kind": "feature_evidence_report",
   "features": [
     {
-      "featureId": "feature-revert-the-entire-project-frontend-and-backend-to-the-state-it-was-in-at-version-6-undoing-all-changes-introduced-in-versions-7-through-13",
-      "featureTitle": "Revert the entire project (frontend and backend) to the state it was in at Version 6, undoing all changes introduced in Versions 7 through 13.",
+      "featureId": "feature-create-a-standalone-admin-portal-login-page-separate-from-internet-identity-that-authenticates-using-hardcoded-credentials-username-baslxr-and-password-bas12345-the-login-page-should-be-accessible-at-a-dedicated-route-e-g-admin-login-and-redirect-to-the-admin-dashboard-upon-successful-authentication",
+      "featureTitle": "Create a standalone admin portal login page (separate from Internet Identity) that authenticates using hardcoded credentials: username 'baslxr' and password 'bas12345'. The login page should be accessible at a dedicated route (e.g., /admin-login) and redirect to the admin dashboard upon successful authentication.",
       "files": [
         "frontend/src/App.tsx",
-        "frontend/src/components/AdminGuard.tsx",
-        "frontend/src/components/AdminLayout.tsx",
-        "frontend/src/components/IncomeTracking.tsx",
-        "frontend/src/components/LowStockWarning.tsx",
-        "frontend/src/components/ProfileSetupModal.tsx",
-        "frontend/src/components/PublicLayout.tsx",
-        "frontend/src/components/RevenueOverview.tsx",
-        "frontend/src/components/StockItemForm.tsx",
-        "frontend/src/components/TodaysSalesPanel.tsx",
-        "frontend/src/components/TrendingStocksPanel.tsx",
-        "frontend/src/components/TrialStatusBanner.tsx",
-        "frontend/src/components/TrialStatusCard.tsx",
-        "frontend/src/index.css",
-        "frontend/src/pages/AboutUs.tsx",
-        "frontend/src/pages/Contact.tsx",
-        "frontend/src/pages/CustomerManagement.tsx",
-        "frontend/src/pages/Home.tsx",
-        "frontend/src/pages/OwnerDashboard.tsx",
-        "frontend/src/pages/ProfilePage.tsx",
-        "frontend/tailwind.config.js"
+        "frontend/src/pages/AdminLogin.tsx"
       ],
       "components": [
         "authorization@4.0.0",
@@ -38,6 +19,47 @@
       ],
       "testIds": [
         "REQ-1"
+      ],
+      "confidence": "high"
+    },
+    {
+      "featureId": "feature-add-a-remember-me-checkbox-on-the-admin-login-page-when-checked-and-the-user-logs-in-successfully-the-username-and-password-are-persisted-in-localstorage-so-that-the-fields-are-pre-filled-on-the-next-visit-when-unchecked-no-credentials-are-saved-and-any-previously-saved-credentials-are-cleared-from-localstorage",
+      "featureTitle": "Add a 'Remember Me' checkbox on the admin login page. When checked and the user logs in successfully, the username and password are persisted in localStorage so that the fields are pre-filled on the next visit. When unchecked, no credentials are saved and any previously saved credentials are cleared from localStorage.",
+      "files": [
+        "frontend/src/pages/AdminLogin.tsx"
+      ],
+      "components": [
+        "authorization@4.0.0",
+        "blob-storage@4.0.0",
+        "core-infrastructure@1.0.2",
+        "shadcn-ui@1.0.0",
+        "build-template-react@1.0.0",
+        "initial-app@1.0.0",
+        "github-export-icp-cli@1.0.0"
+      ],
+      "testIds": [
+        "REQ-2"
+      ],
+      "confidence": "high"
+    },
+    {
+      "featureId": "feature-protect-all-existing-admin-routes-so-that-unauthenticated-users-those-who-have-not-logged-in-via-the-admin-login-page-are-redirected-to-the-admin-login-page-store-the-authenticated-session-state-in-sessionstorage-or-a-react-context-so-that-refreshing-the-page-within-the-same-session-keeps-the-user-logged-in-but-closing-the-browser-clears-the-session-unless-remember-me-credentials-are-saved",
+      "featureTitle": "Protect all existing admin routes so that unauthenticated users (those who have not logged in via the admin login page) are redirected to the admin login page. Store the authenticated session state in sessionStorage (or a React context) so that refreshing the page within the same session keeps the user logged in, but closing the browser clears the session (unless Remember Me credentials are saved).",
+      "files": [
+        "frontend/src/components/AdminGuard.tsx",
+        "frontend/src/components/AdminLayout.tsx"
+      ],
+      "components": [
+        "authorization@4.0.0",
+        "blob-storage@4.0.0",
+        "core-infrastructure@1.0.2",
+        "shadcn-ui@1.0.0",
+        "build-template-react@1.0.0",
+        "initial-app@1.0.0",
+        "github-export-icp-cli@1.0.0"
+      ],
+      "testIds": [
+        "REQ-3"
       ],
       "confidence": "high"
     }

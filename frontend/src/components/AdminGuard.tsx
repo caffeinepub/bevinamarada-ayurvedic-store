@@ -1,11 +1,23 @@
 import { useInternetIdentity } from '../hooks/useInternetIdentity';
 import { useGetCallerUserProfile } from '../hooks/useQueries';
 import ProfileSetupModal from './ProfileSetupModal';
-import { Outlet } from '@tanstack/react-router';
+import { Outlet, useNavigate } from '@tanstack/react-router';
 import { Loader2, ShieldX } from 'lucide-react';
 import { UserRole } from '../backend';
+import { useEffect } from 'react';
 
 export default function AdminGuard() {
+  const navigate = useNavigate();
+
+  // Check admin portal session first
+  const hasAdminSession = sessionStorage.getItem('adminSessionActive') === 'true';
+
+  useEffect(() => {
+    if (!hasAdminSession) {
+      navigate({ to: '/admin-login' });
+    }
+  }, [hasAdminSession, navigate]);
+
   const { identity, loginStatus, login } = useInternetIdentity();
   const isAuthenticated = !!identity;
   const isLoggingIn = loginStatus === 'logging-in';
@@ -19,6 +31,11 @@ export default function AdminGuard() {
   const showProfileSetup = isAuthenticated && !profileLoading && isFetched && userProfile === null;
   const isAdmin = userProfile?.role === UserRole.admin;
   const isAccessDenied = isAuthenticated && !profileLoading && isFetched && userProfile !== null && !isAdmin;
+
+  // While redirecting (no session), show nothing
+  if (!hasAdminSession) {
+    return null;
+  }
 
   if (!isAuthenticated) {
     return (
