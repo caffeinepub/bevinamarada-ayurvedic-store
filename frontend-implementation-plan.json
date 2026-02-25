@@ -1,192 +1,319 @@
 {
   "kind": "implementation_plan",
   "version": "1.0",
-  "title": "Fix Admin Portal Visibility and Apply Neon Dark Black-and-Green Theme",
+  "title": "Switch to Pharma Theme, Fix Contrast Issues, Update Admin Credentials",
   "requirements": [
     {
       "id": "REQ-1",
-      "summary": "Ensure the admin portal is fully accessible and visible with correct routing, authentication guard logic, and session handling",
+      "summary": "Replace cyber/neon dark theme with clean pharma-grade UI theme using light clinical color palette",
       "acceptanceCriteria": [
-        "Navigating to /admin-login renders the login form",
-        "Logging in with admin/admin123 redirects to /owner-dashboard",
-        "All admin sub-routes render their respective pages without redirecting to login when session is active",
-        "AdminLayout sidebar is visible on all admin pages with links to all modules",
-        "AdminGuard redirects unauthenticated users to /admin-login"
-      ],
-      "file_operations": [
-        {
-          "path": "frontend/src/App.tsx",
-          "operation": "modify",
-          "description": "Review and verify that all admin routes are correctly registered: /admin-login as standalone, and all admin sub-routes (/owner-dashboard, /admin/stock, /admin/sales, /admin/revenue, /admin/customers, /admin/enquiries, /admin/income, /admin/trending, /admin/products, /admin/reports) are nested under AdminGuard and AdminLayout. Ensure no route definitions are missing or misconfigured that would prevent admin pages from rendering."
-        },
-        {
-          "path": "frontend/src/components/AdminGuard.tsx",
-          "operation": "modify",
-          "description": "Fix the authentication guard logic to correctly read both 'admin-session' and 'adminSessionActive' keys from sessionStorage. Ensure that when both keys are present and valid, the guard renders the Outlet without redirecting. When either key is missing or invalid, redirect to /admin-login. Add proper checks to prevent infinite redirect loops for authenticated users."
-        },
-        {
-          "path": "frontend/src/pages/AdminLogin.tsx",
-          "operation": "modify",
-          "description": "Verify that on successful login with admin/admin123, both 'admin-session' and 'adminSessionActive' are set in sessionStorage (and localStorage if 'remember me' is checked) before navigating to /owner-dashboard. Ensure the redirect logic uses the router's navigate function correctly."
-        },
-        {
-          "path": "frontend/src/components/AdminLayout.tsx",
-          "operation": "modify",
-          "description": "Ensure the sidebar navigation renders all required admin route links: Owner Dashboard, Stock Management, Sales, Revenue, Customers, Enquiries, Income, Trending, Products, and Reports. Verify the sidebar is visible on both desktop and mobile, and that the logout handler clears both 'admin-session' and 'adminSessionActive' from sessionStorage/localStorage before navigating to /admin-login."
-        }
-      ]
-    },
-    {
-      "id": "REQ-2",
-      "summary": "Apply and enforce a neon dark black-and-green theme consistently across all pages using CSS custom properties and Tailwind config tokens",
-      "acceptanceCriteria": [
-        "Application background is near-black on all pages",
-        "Neon green is used consistently for accents, buttons, links, and highlights across admin and public pages",
-        "Cards and panels have dark surfaces with visible neon glow or border effects",
-        "No default light or blue theme remnants are visible anywhere",
-        "Tailwind config neon color tokens are correctly defined and referenced in components",
-        "CSS custom properties in index.css reflect the neon dark palette for both light and dark mode tokens"
+        "No neon glow effects, scanlines, or cyber grid backgrounds are visible anywhere in the app",
+        "The app uses a light, professional pharma-inspired color palette consistently across all pages",
+        "All Tailwind config neon color tokens and animations (pulseGlow, neonFlicker) are replaced with pharma-appropriate tokens",
+        "The visual style is consistent and polished across public pages and admin pages"
       ],
       "file_operations": [
         {
           "path": "frontend/src/index.css",
           "operation": "modify",
-          "description": "Update all CSS custom properties to enforce the neon dark theme. Set background tokens to near-black (#0a0a0a or #0d0d0d), foreground to light gray or white, primary/accent colors to bright neon green (#00ff88 or #39ff14), card/popover backgrounds to dark surfaces (e.g., #1a1a1a), and border colors to muted dark tones with optional neon highlights. Apply these tokens to both :root and .dark selectors to ensure consistency. Remove or override any conflicting light or blue theme values."
+          "description": "Remove all neon-specific CSS utilities including neonGlow, neonBorder, neonText, scanlines, gridBackground, pulseGlow, and neonFlicker animations. Replace the dark neon color scheme with pharma-appropriate light colors (white backgrounds, soft greens, muted teals, light grays, accent blues). Remove Google Fonts import for Orbitron, Rajdhani, and Share Tech Mono. Keep Tailwind directives (@tailwind base, components, utilities) intact."
         },
         {
           "path": "frontend/tailwind.config.js",
           "operation": "modify",
-          "description": "Define or update neon dark color tokens in the extend.colors section: set 'neon' or 'primary' to bright neon green shades (#00ff88, #39ff14, with hover/active variants), 'background' to near-black (#0a0a0a, #0d0d0d), 'foreground' to white or light gray, 'card' to dark surface (#1a1a1a), and 'border' to muted dark with optional neon accents. Ensure these tokens replace any default light or blue color definitions and are globally available for use in all components."
+          "description": "Replace the neon dark color tokens (neon greens, black surfaces) with pharma-grade light color palette tokens (white, soft green, muted teal, light gray, accent blue). Remove custom neon glow box shadows and replace with subtle professional shadows. Remove pulseGlow and neonFlicker keyframe animations. Update fontFamily to use pharma-appropriate fonts (Inter/Nunito for body, DM Sans/Poppins for headings) instead of Orbitron, Rajdhani, and Share Tech Mono."
         },
         {
-          "path": "frontend/src/pages/AdminLogin.tsx",
+          "path": "frontend/index.css",
           "operation": "modify",
-          "description": "Apply neon dark theme styling to the admin login page: use near-black background, neon green for the submit button and focus states, dark card surface for the login form container, and ensure all text is light-colored for readability. Remove any light or blue theme remnants."
+          "description": "Update OKLCH-based CSS custom property design tokens to use a light pharma color scheme. Replace dark theme tokens with light clinical colors (white, soft greens, muted teals, light grays, accent blues). Ensure the light theme is applied globally as the default. Remove any dark theme or neon-specific token definitions."
+        }
+      ]
+    },
+    {
+      "id": "REQ-2",
+      "summary": "Replace cyber/sci-fi fonts with professional pharma-appropriate sans-serif fonts",
+      "acceptanceCriteria": [
+        "Orbitron, Rajdhani, and Share Tech Mono fonts are no longer used anywhere",
+        "A clean, readable pharma-appropriate font is applied consistently across all headings and body text",
+        "Font imports in index.css are updated to the new font families"
+      ],
+      "file_operations": [
+        {
+          "path": "frontend/src/index.css",
+          "operation": "modify",
+          "description": "Replace Google Fonts import for Orbitron, Rajdhani, and Share Tech Mono with pharma-appropriate fonts: Inter or Nunito for body text and DM Sans or Poppins for headings. Update the @import url() statement at the top of the file to load the new font families from Google Fonts."
+        },
+        {
+          "path": "frontend/tailwind.config.js",
+          "operation": "modify",
+          "description": "Update the fontFamily configuration in the theme.extend section to use the new pharma fonts. Set 'sans' to use Inter or Nunito as the default body font stack, and configure heading font keys (if any) to use DM Sans or Poppins. Remove all references to Orbitron, Rajdhani, and Share Tech Mono."
+        }
+      ]
+    },
+    {
+      "id": "REQ-3",
+      "summary": "Fix text and UI contrast issues to ensure all text is clearly readable against backgrounds",
+      "acceptanceCriteria": [
+        "No text is invisible or hard to read against its background in any page or component",
+        "All card, table, form, and nav text is clearly visible with appropriate contrast",
+        "Dark text is used on light backgrounds and vice versa consistently throughout"
+      ],
+      "file_operations": [
+        {
+          "path": "frontend/src/pages/AdminDashboard.tsx",
+          "operation": "modify",
+          "description": "Update text colors to ensure sufficient contrast against the pharma light background. Replace any dark text classes with readable colors (e.g., dark gray or black text on white/light green cards). Ensure all navigation card titles, descriptions, and icons have appropriate contrast ratios (WCAG AA minimum)."
         },
         {
           "path": "frontend/src/pages/OwnerDashboard.tsx",
           "operation": "modify",
-          "description": "Apply neon dark theme to the owner dashboard: use near-black page background, dark card surfaces for stat cards, neon green accents on borders or icons, and light text. Ensure all clickable cards have neon glow or hover effects."
+          "description": "Update metric cards and navigation link text colors for proper contrast against light pharma backgrounds. Ensure stat numbers, labels, and all text elements are clearly legible with dark text on light backgrounds."
         },
         {
           "path": "frontend/src/pages/StockManagement.tsx",
           "operation": "modify",
-          "description": "Apply neon dark theme to the stock management page: use near-black background, dark surfaces for tables and forms, neon green for action buttons (Add, Edit, Delete), and neon borders or glow effects on interactive elements. Ensure text is light-colored."
-        },
-        {
-          "path": "frontend/src/pages/SalesPage.tsx",
-          "operation": "modify",
-          "description": "Apply neon dark theme to the sales page: use near-black background, dark card surfaces for today's sales panel, neon green accents on headings and key metrics, and light text throughout."
-        },
-        {
-          "path": "frontend/src/pages/RevenuePage.tsx",
-          "operation": "modify",
-          "description": "Apply neon dark theme to the revenue page: use near-black background, dark surfaces for revenue cards and tables, neon green for highlights and borders, and light text."
-        },
-        {
-          "path": "frontend/src/pages/CustomerManagement.tsx",
-          "operation": "modify",
-          "description": "Apply neon dark theme to the customer management page: use near-black background, dark surfaces for customer cards and forms, neon green accents on tabs and action buttons, and light text."
-        },
-        {
-          "path": "frontend/src/pages/EnquiryManagement.tsx",
-          "operation": "modify",
-          "description": "Apply neon dark theme to the enquiry management page: use near-black background, dark table surfaces, neon green for tab highlights and active states, and light text."
-        },
-        {
-          "path": "frontend/src/pages/IncomePage.tsx",
-          "operation": "modify",
-          "description": "Apply neon dark theme to the income page: use near-black background, dark card surfaces for income cards, neon green accents on headings and key figures, and light text."
-        },
-        {
-          "path": "frontend/src/pages/TrendingPage.tsx",
-          "operation": "modify",
-          "description": "Apply neon dark theme to the trending page: use near-black background, dark product card surfaces, neon green borders or glow effects on trending items, and light text."
+          "description": "Fix contrast for table headers, row text, search input, tab labels, and action button text. Use dark text on light backgrounds throughout. Ensure the data table, filter tabs, and all interactive elements have readable text with appropriate contrast."
         },
         {
           "path": "frontend/src/pages/ProductManagement.tsx",
           "operation": "modify",
-          "description": "Apply neon dark theme to the product management page: use near-black background, dark table and form surfaces, neon green for action buttons and toggles, and light text."
+          "description": "Update table text, action button labels, search input, and column headers to use dark text on light backgrounds. Ensure all product data, action icons, and form labels are clearly visible with sufficient contrast."
+        },
+        {
+          "path": "frontend/src/pages/CustomerManagement.tsx",
+          "operation": "modify",
+          "description": "Fix contrast for customer table rows, tab labels, search input, form fields, and action buttons. Use dark text on light card backgrounds. Ensure all customer data, visit counts, and enquiry text are legible."
         },
         {
           "path": "frontend/src/pages/SalesReports.tsx",
           "operation": "modify",
-          "description": "Apply neon dark theme to the sales reports page: use near-black background, dark surfaces for summary cards and report tables, neon green accents on tabs and export buttons, and light text."
+          "description": "Update chart labels, summary cards, tab navigation, and table text to ensure proper contrast against light backgrounds. Use dark text consistently for all sales data, revenue figures, and analytics displays."
         },
         {
-          "path": "frontend/src/pages/AdminDashboard.tsx",
+          "path": "frontend/src/pages/AdminLogin.tsx",
           "operation": "modify",
-          "description": "Apply neon dark theme to the admin dashboard: use near-black background, dark navigation card surfaces, neon green borders or glow effects on hover, and light text for all card labels and icons."
+          "description": "Update form field labels, input text, button text, and error messages to use colors with appropriate contrast against the pharma light background. Ensure username/password fields and the login button are clearly readable."
         },
         {
           "path": "frontend/src/pages/Home.tsx",
           "operation": "modify",
-          "description": "Apply neon dark theme to the home page: use near-black background, neon green accents on hero headings and CTAs, dark surfaces for trust indicator cards, and light text. Ensure the hero section uses neon glow effects on key elements."
-        },
-        {
-          "path": "frontend/src/pages/Products.tsx",
-          "operation": "modify",
-          "description": "Apply neon dark theme to the products page: use near-black background, neon green accents on placeholder text or links, and light text."
-        },
-        {
-          "path": "frontend/src/pages/AboutUs.tsx",
-          "operation": "modify",
-          "description": "Apply neon dark theme to the About Us page: use near-black background, dark card surfaces for the story section and core values grid, neon green accents on icons or headings, and light text throughout."
-        },
-        {
-          "path": "frontend/src/pages/Contact.tsx",
-          "operation": "modify",
-          "description": "Apply neon dark theme to the contact page: use near-black background, dark form surface, neon green for submit button and focus states, and light text. Ensure the map section integrates with the dark theme."
+          "description": "Fix contrast for hero section headings, CTAs, trust indicators, stat labels, and all text overlays. Use dark text on light backgrounds or ensure sufficient contrast for any text over the pharma hero background image (frontend/public/assets/generated/pharma-hero-bg.dim_1440x600.png). Replace the hero background reference with the new pharma hero background."
         },
         {
           "path": "frontend/src/components/AdminLayout.tsx",
           "operation": "modify",
-          "description": "Apply neon dark theme to the admin layout sidebar: use near-black or very dark background for the sidebar, neon green for active/hover link states, dark surfaces for the mobile menu overlay, and light text for all navigation links. Add subtle neon glow effects to active navigation items."
+          "description": "Update sidebar navigation link text, icons, and active state indicators to ensure proper contrast against the pharma light sidebar background. Use dark text for all nav labels and ensure the mobile drawer has readable text as well."
         },
         {
           "path": "frontend/src/components/PublicLayout.tsx",
           "operation": "modify",
-          "description": "Apply neon dark theme to the public layout header: use near-black header background, neon green for logo or brand name, neon accents on nav links with glow on hover, and light text. Ensure the mobile menu overlay also uses the dark neon theme."
-        },
-        {
-          "path": "frontend/src/components/TrendingProducts.tsx",
-          "operation": "modify",
-          "description": "Apply neon dark theme to the trending products section: use dark card surfaces for product cards, neon green borders or glow effects on hover, light text for product names and prices, and neon accents on the enquiry link."
-        },
-        {
-          "path": "frontend/src/components/TrendingStocksPanel.tsx",
-          "operation": "modify",
-          "description": "Apply neon dark theme to the trending stocks panel: use dark card surfaces, neon green accents on borders or labels, and light text for product details."
+          "description": "Fix header and navigation link text colors for proper contrast against the pharma light header background. Update the logo image reference to use the new pharma logo (frontend/public/assets/generated/pharma-logo.dim_200x60.png). Ensure mobile menu text and all nav elements are clearly visible."
         },
         {
           "path": "frontend/src/components/TodaysSalesPanel.tsx",
           "operation": "modify",
-          "description": "Apply neon dark theme to the today's sales panel: use dark surfaces for stat cards and transaction table, neon green accents on key metrics and headings, and light text throughout."
+          "description": "Update stat card text, table headers, and row text to use dark colors on light backgrounds. Ensure all sales figures, transaction details, and labels have sufficient contrast."
         },
         {
           "path": "frontend/src/components/RevenueOverview.tsx",
           "operation": "modify",
-          "description": "Apply neon dark theme to the revenue overview: use dark card surfaces, neon green accents on revenue figures and borders, and light text for all labels and table content."
+          "description": "Fix contrast for revenue stat cards and the top-products table. Use dark text on light card backgrounds. Ensure all revenue figures and product breakdown text are clearly legible."
         },
         {
           "path": "frontend/src/components/IncomeTracking.tsx",
           "operation": "modify",
-          "description": "Apply neon dark theme to the income tracking component: use dark card surfaces for income cards, neon green accents on headings and key figures, and light text for all content."
+          "description": "Update income stat cards and monthly breakdown table text to ensure proper contrast against light pharma backgrounds. Use dark text consistently for all income figures and labels."
+        },
+        {
+          "path": "frontend/src/components/TrendingProducts.tsx",
+          "operation": "modify",
+          "description": "Fix contrast for product card titles, prices, and enquiry link text. Ensure all trending product information is readable against the pharma light card backgrounds."
+        },
+        {
+          "path": "frontend/src/components/TrendingStocksPanel.tsx",
+          "operation": "modify",
+          "description": "Update trending stock card text (category, price, stock quantity) to use dark text on light backgrounds. Ensure all product details are clearly visible."
+        }
+      ]
+    },
+    {
+      "id": "REQ-4",
+      "summary": "Fix 'Add Items' and 'Add Customer' dialog/modal overlaps by ensuring proper backdrop, z-index, and solid backgrounds",
+      "acceptanceCriteria": [
+        "The 'Add Items' dialog renders fully above the stock management page content with a solid background",
+        "The 'Add Customer' dialog renders fully above the customer management page content with a solid background",
+        "Modal backdrops dim the content behind them and dialogs are fully legible",
+        "No UI element bleeds through or behind any dialog/modal"
+      ],
+      "file_operations": [
+        {
+          "path": "frontend/src/components/StockItemForm.tsx",
+          "operation": "modify",
+          "description": "Ensure the dialog/modal has a fully opaque backdrop overlay (e.g., bg-black/50 or bg-gray-900/50) and the dialog container has a solid white or light pharma-colored background (bg-white or bg-gray-50). Verify z-index layering is correct (typically z-50 for dialog, z-40 for backdrop) so the dialog renders fully above all page content. Add visible borders or box shadows to the dialog container for clear separation."
+        },
+        {
+          "path": "frontend/src/pages/CustomerManagement.tsx",
+          "operation": "modify",
+          "description": "Ensure the 'Add Customer' dialog/modal has a fully opaque backdrop overlay and a solid white or light-colored background. Verify z-index layering so the dialog renders above all customer management page content. Add borders or shadows to the dialog for visual clarity. Apply the same fixes to any other dialog or overlay used in customer management."
+        }
+      ]
+    },
+    {
+      "id": "REQ-5",
+      "summary": "Update admin login credentials from admin/admin123 to baslxr/bas12345",
+      "acceptanceCriteria": [
+        "Logging in with username 'baslxr' and password 'bas12345' successfully authenticates and redirects to the owner dashboard",
+        "Logging in with the old credentials 'admin' / 'admin123' fails authentication",
+        "The admin login page is styled with the new pharma theme"
+      ],
+      "file_operations": [
+        {
+          "path": "frontend/src/pages/AdminLogin.tsx",
+          "operation": "modify",
+          "description": "Change the hardcoded username validation from 'admin' to 'baslxr' and the hardcoded password validation from 'admin123' to 'bas12345'. Ensure the login form UI uses the new pharma theme colors, fonts, and proper contrast for all form fields, labels, buttons, and error messages. Update any placeholder text or help text to reflect the new credentials if appropriate."
+        }
+      ]
+    },
+    {
+      "id": "REQ-6",
+      "summary": "Apply pharma theme consistently across all public and admin pages with unified card styles, navigation, and layout",
+      "acceptanceCriteria": [
+        "All pages consistently use the pharma color palette, typography, and card/layout styles",
+        "The public header/navigation is clean and professional with readable links",
+        "The admin sidebar and all admin page layouts use the pharma theme without any remaining neon or cyber styling",
+        "Cards, tables, buttons, and forms across all pages have a cohesive, high-quality pharma aesthetic"
+      ],
+      "file_operations": [
+        {
+          "path": "frontend/src/pages/Home.tsx",
+          "operation": "modify",
+          "description": "Apply the pharma theme to the hero section, trust indicators, stats, and CTAs. Use white or light pharma-colored card backgrounds with subtle box shadows and rounded corners. Replace any neon styling with clean pharma design tokens. Wire in the generated pharma hero background image (frontend/public/assets/generated/pharma-hero-bg.dim_1440x600.png) as the hero section background. Ensure consistent use of the pharma color palette and typography."
+        },
+        {
+          "path": "frontend/src/pages/Products.tsx",
+          "operation": "modify",
+          "description": "Update the placeholder 'coming soon' message to use pharma theme styling with light backgrounds, professional fonts, and appropriate card styling. Ensure consistency with the rest of the app."
+        },
+        {
+          "path": "frontend/src/pages/AboutUs.tsx",
+          "operation": "modify",
+          "description": "Apply pharma theme to the hero section, company story, and core values grid. Use white or light pharma card backgrounds, professional fonts, and subtle shadows. Ensure all icons, headings, and text follow the pharma color palette and typography."
+        },
+        {
+          "path": "frontend/src/pages/Contact.tsx",
+          "operation": "modify",
+          "description": "Apply pharma theme to the contact info section, map container, and enquiry form. Use light card backgrounds, professional styling, and ensure form fields have proper borders and readable labels. Update button styling to match the pharma theme."
+        },
+        {
+          "path": "frontend/src/pages/OwnerDashboard.tsx",
+          "operation": "modify",
+          "description": "Apply pharma theme to all metric cards, navigation links, and the low-stock alert banner. Use white or light pharma backgrounds, subtle shadows, rounded corners, and consistent typography. Remove any remaining neon or cyber styling."
+        },
+        {
+          "path": "frontend/src/pages/AdminDashboard.tsx",
+          "operation": "modify",
+          "description": "Apply pharma theme to all navigation cards. Use white or light pharma card backgrounds with subtle box shadows and rounded corners. Update card titles, descriptions, and icons to use pharma colors and fonts. Remove all neon effects."
+        },
+        {
+          "path": "frontend/src/pages/StockManagement.tsx",
+          "operation": "modify",
+          "description": "Apply pharma theme to the page layout, filter tabs, search bar, data table, and action buttons. Use light card backgrounds, professional table styling with borders, and ensure all UI elements follow the pharma color palette and typography. Remove any neon or cyber styling."
+        },
+        {
+          "path": "frontend/src/pages/ProductManagement.tsx",
+          "operation": "modify",
+          "description": "Apply pharma theme to the product table, search bar, and action buttons. Use white or light card backgrounds, professional table styling, and consistent pharma fonts and colors. Remove any neon effects."
+        },
+        {
+          "path": "frontend/src/pages/CustomerManagement.tsx",
+          "operation": "modify",
+          "description": "Apply pharma theme to customer tabs, table, search bar, and forms. Use light pharma card backgrounds, professional table styling, and ensure all buttons, inputs, and labels follow the pharma aesthetic. Remove neon styling."
+        },
+        {
+          "path": "frontend/src/pages/EnquiryManagement.tsx",
+          "operation": "modify",
+          "description": "Apply pharma theme to the enquiry tabs and table. Use light card backgrounds, professional table styling, and consistent pharma colors and fonts. Remove any neon effects."
+        },
+        {
+          "path": "frontend/src/pages/SalesReports.tsx",
+          "operation": "modify",
+          "description": "Apply pharma theme to sales analytics tabs, summary cards, charts, and the export button. Use white or light pharma card backgrounds, professional chart styling, and consistent typography. Remove neon effects."
+        },
+        {
+          "path": "frontend/src/pages/SalesPage.tsx",
+          "operation": "modify",
+          "description": "Apply pharma theme to the page layout and back-navigation header. Ensure the TodaysSalesPanel component inherits the pharma styling."
+        },
+        {
+          "path": "frontend/src/pages/RevenuePage.tsx",
+          "operation": "modify",
+          "description": "Apply pharma theme to the page layout and back-navigation header. Ensure the RevenueOverview component inherits the pharma styling."
+        },
+        {
+          "path": "frontend/src/pages/IncomePage.tsx",
+          "operation": "modify",
+          "description": "Apply pharma theme to the page layout and back-navigation header. Ensure the IncomeTracking component inherits the pharma styling."
+        },
+        {
+          "path": "frontend/src/pages/TrendingPage.tsx",
+          "operation": "modify",
+          "description": "Apply pharma theme to the page layout and back-navigation header. Ensure the TrendingStocksPanel component inherits the pharma styling."
+        },
+        {
+          "path": "frontend/src/pages/ProfilePage.tsx",
+          "operation": "modify",
+          "description": "Apply pharma theme to the user profile form. Use light card backgrounds, professional form styling, and ensure all inputs, labels, and buttons follow the pharma color palette and typography."
+        },
+        {
+          "path": "frontend/src/components/PublicLayout.tsx",
+          "operation": "modify",
+          "description": "Apply pharma theme to the public header, desktop nav links, and mobile menu overlay. Use a clean white or light pharma header background, professional fonts, and ensure all nav links are styled consistently. Wire in the generated pharma logo (frontend/public/assets/generated/pharma-logo.dim_200x60.png) in place of any existing logo. Remove any neon or cyber styling."
+        },
+        {
+          "path": "frontend/src/components/AdminLayout.tsx",
+          "operation": "modify",
+          "description": "Apply pharma theme to the admin sidebar navigation and mobile drawer. Use light pharma backgrounds, professional fonts, and ensure all nav links, icons, and the logout button follow the pharma aesthetic. Remove neon effects."
         },
         {
           "path": "frontend/src/components/LowStockWarning.tsx",
           "operation": "modify",
-          "description": "Apply neon dark theme to the low stock warning banner: use a dark alert background with neon green border or icon, light text for the warning message, and neon green for the action link."
+          "description": "Apply pharma theme to the alert banner. Use a light pharma-colored alert background (e.g., soft yellow or orange for warnings), readable dark text, and professional styling with rounded corners and subtle borders."
+        },
+        {
+          "path": "frontend/src/components/TrendingProducts.tsx",
+          "operation": "modify",
+          "description": "Apply pharma theme to the trending products grid. Use white or light pharma card backgrounds, professional card styling with rounded corners and subtle shadows, and ensure product titles, prices, and links follow the pharma typography and colors."
+        },
+        {
+          "path": "frontend/src/components/TrendingStocksPanel.tsx",
+          "operation": "modify",
+          "description": "Apply pharma theme to the trending stocks card grid. Use light pharma card backgrounds, professional styling, and consistent fonts and colors for product details."
+        },
+        {
+          "path": "frontend/src/components/TodaysSalesPanel.tsx",
+          "operation": "modify",
+          "description": "Apply pharma theme to the sales stat cards and transactions table. Use white or light pharma card backgrounds, professional table styling, and consistent typography. Remove neon effects."
+        },
+        {
+          "path": "frontend/src/components/RevenueOverview.tsx",
+          "operation": "modify",
+          "description": "Apply pharma theme to revenue cards and the top-products table. Use light pharma card backgrounds, professional table styling, and consistent fonts and colors."
+        },
+        {
+          "path": "frontend/src/components/IncomeTracking.tsx",
+          "operation": "modify",
+          "description": "Apply pharma theme to income stat cards and the monthly breakdown table. Use white or light pharma card backgrounds, professional table styling, and consistent typography."
         },
         {
           "path": "frontend/src/components/StockItemForm.tsx",
           "operation": "modify",
-          "description": "Apply neon dark theme to the stock item form dialog: use dark dialog background, dark input field surfaces, neon green for submit button and focus states, light text for labels and placeholders, and neon border accents."
+          "description": "Apply pharma theme to the stock item dialog form. Use a solid white or light pharma background for the dialog, professional form field styling, readable labels, and ensure buttons follow the pharma aesthetic. Ensure proper contrast for all form elements."
         },
         {
           "path": "frontend/src/components/ProfileSetupModal.tsx",
           "operation": "modify",
-          "description": "Apply neon dark theme to the profile setup modal: use dark modal background, dark input field surface, neon green for the submit button, light text for headings and labels, and neon border on focus states."
+          "description": "Apply pharma theme to the profile setup modal. Use a solid white or light pharma background, professional form styling, and ensure the modal has proper backdrop and z-index layering consistent with the pharma aesthetic."
         }
       ]
     }

@@ -1,62 +1,81 @@
 {
   "kind": "spec_vs_diff_report",
   "version": "1.0",
-  "generatedAt": "2026-02-25T14:45:26.498Z",
-  "summary": "The diff implements both REQ-1 (admin portal routing and guard) and REQ-2 (neon dark theme). However, REQ-1 has a partial mismatch: the spec requires successful login to redirect to /owner-dashboard, but the implementation redirects to /admin/owner-dashboard. REQ-2 is largely satisfied with neon tokens in tailwind.config.js and index.css, but About and Products public pages are not shown in the diff leaving some uncertainty about full coverage.",
+  "generatedAt": "2026-02-25T15:39:26.405Z",
+  "summary": "The diff implements the majority of requirements: pharma theme colors, font replacement, credential update, modal fixes, and theming across key pages. However, several specific requirements have gaps or are partially/not implemented.",
   "missing_requirements": [
     {
       "id": "REQ-1",
-      "requirement": "After successful login with admin/admin123, user must be redirected to /owner-dashboard. The spec also lists /owner-dashboard as a protected admin route.",
-      "reason": "AdminLogin.tsx navigates to '/admin/owner-dashboard' and App.tsx registers the route as '/admin/owner-dashboard', but the spec explicitly requires the post-login redirect target and protected route to be '/owner-dashboard'.",
+      "requirement": "Update frontend/index.css (root-level, not src/) to reflect new pharma color tokens, removing all neon-specific utilities",
+      "reason": "The diff shows frontend/src/index.css was updated with pharma tokens, but frontend/index.css (root-level) is not listed as a modified file. The build request explicitly names both files.",
       "evidence": [
-        "frontend/src/pages/AdminLogin.tsx",
-        "frontend/src/App.tsx"
+        "frontend/src/index.css"
       ]
     },
     {
-      "id": "REQ-2",
-      "requirement": "All pages including About and Products public-facing pages must reflect the neon dark theme with no light or blue theme remnants.",
-      "reason": "The diff does not include AboutUs.tsx or Products.tsx, so it cannot be confirmed that these pages have been updated to apply the neon theme consistently.",
+      "id": "REQ-1",
+      "requirement": "Remove all neon glows, scanline effects, grid backgrounds, neonFlicker/pulseGlow animations from frontend/src/index.css",
+      "reason": "The frontend-file-summaries.txt entry for frontend/src/index.css explicitly states it still includes neon theme utilities including neon-text-glow text-shadow, neon-glow box-shadow, bg-grid-neon background pattern, and pulseGlow/animate-pulse-glow keyframe animation. This directly contradicts REQ-1.",
+      "evidence": [
+        "frontend-file-summaries.txt",
+        "frontend/src/index.css"
+      ]
+    },
+    {
+      "id": "REQ-6",
+      "requirement": "Apply pharma theme consistently to all public-facing pages including Products, AboutUs, and Contact pages",
+      "reason": "The diff does not include modifications to frontend/src/pages/Products.tsx, frontend/src/pages/AboutUs.tsx, or frontend/src/pages/Contact.tsx. These are listed as required pages in REQ-6 but are absent from the modified files list.",
+      "evidence": []
+    },
+    {
+      "id": "REQ-6",
+      "requirement": "Apply pharma theme to admin pages: EnquiryManagement, SalesReports, SalesPage, RevenuePage, IncomePage, TrendingPage, ProfilePage",
+      "reason": "None of these admin pages appear in the modified files list, so their theming updates cannot be confirmed.",
+      "evidence": []
+    },
+    {
+      "id": "REQ-6",
+      "requirement": "ProductManagement page should use pharma theme consistently",
+      "reason": "frontend/src/pages/ProductManagement.tsx is not in the modified files list, so its pharma theme update is unconfirmed.",
       "evidence": []
     }
   ],
   "hallucinated_features": [
     {
-      "description": "Remember Me / localStorage session persistence for admin login",
-      "reason": "The spec only requires sessionStorage keys 'admin-session' and 'adminSessionActive'. The implementation also stores session data in localStorage when Remember Me is checked, which was not requested.",
+      "description": "Dark mode CSS variables block added to frontend/src/index.css",
+      "reason": "A full .dark CSS variable block was added in frontend/src/index.css, but the build request makes no mention of dark mode support — only a light pharma theme was requested.",
       "evidence": [
-        "frontend/src/pages/AdminLogin.tsx",
-        "frontend/src/components/AdminGuard.tsx"
+        "frontend/src/index.css"
       ]
     },
     {
-      "description": "An /admin index route rendering a separate AdminDashboard hub page",
-      "reason": "The spec lists protected admin routes starting from /owner-dashboard and sub-routes like /admin/stock etc., but does not mention an /admin index route with a separate AdminDashboard hub page.",
+      "description": "Top info bar with phone number and address added to PublicLayout",
+      "reason": "A Top Info Bar with contact details was added to PublicLayout. This is a new UI feature not requested in the build spec.",
       "evidence": [
-        "frontend/src/App.tsx",
-        "frontend/src/pages/AdminDashboard.tsx"
+        "frontend/src/components/PublicLayout.tsx"
+      ]
+    },
+    {
+      "description": "rememberMe checkbox state added to AdminLogin",
+      "reason": "A rememberMe state variable was added to AdminLogin.tsx. The build request only asked to change credentials and apply the pharma theme — no remember me feature was requested.",
+      "evidence": [
+        "frontend/src/pages/AdminLogin.tsx"
       ]
     }
   ],
-  "confidence": 0.78,
+  "confidence": 0.72,
   "changed_files": [
-    "frontend/src/App.tsx",
-    "frontend/src/components/AdminGuard.tsx",
+    "frontend-file-summaries.txt",
     "frontend/src/components/AdminLayout.tsx",
     "frontend/src/components/PublicLayout.tsx",
+    "frontend/src/components/StockItemForm.tsx",
     "frontend/src/index.css",
     "frontend/src/pages/AdminDashboard.tsx",
     "frontend/src/pages/AdminLogin.tsx",
     "frontend/src/pages/CustomerManagement.tsx",
-    "frontend/src/pages/EnquiryManagement.tsx",
     "frontend/src/pages/Home.tsx",
-    "frontend/src/pages/IncomePage.tsx",
     "frontend/src/pages/OwnerDashboard.tsx",
-    "frontend/src/pages/ProductManagement.tsx",
-    "frontend/src/pages/RevenuePage.tsx",
-    "frontend/src/pages/SalesPage.tsx",
     "frontend/src/pages/StockManagement.tsx",
-    "frontend/src/pages/TrendingPage.tsx",
     "frontend/tailwind.config.js",
     "project_state.json"
   ]

@@ -1,6 +1,5 @@
-import { useState, useEffect } from 'react';
-import { Link } from '@tanstack/react-router';
-import { ArrowLeft, Users, Plus, Edit, Trash2, MessageSquare, Search } from 'lucide-react';
+import React, { useState, useEffect } from 'react';
+import { Plus, Search, Edit, Trash2, Users, MessageSquare, X, Save, Eye } from 'lucide-react';
 
 interface Customer {
   id: string;
@@ -22,304 +21,439 @@ interface Enquiry {
   date: string;
 }
 
-const CUSTOMERS_KEY = 'ayurveda_customers';
-const ENQUIRIES_KEY = 'ayurveda_enquiries';
+const STORAGE_KEY = 'pharma_customers';
+const ENQUIRY_KEY = 'pharma_enquiries';
 
-function loadCustomers(): Customer[] {
-  try {
-    return JSON.parse(localStorage.getItem(CUSTOMERS_KEY) || '[]');
-  } catch { return []; }
+function generateId() {
+  return Date.now().toString(36) + Math.random().toString(36).slice(2);
 }
 
-function saveCustomers(customers: Customer[]) {
-  localStorage.setItem(CUSTOMERS_KEY, JSON.stringify(customers));
-}
-
-function loadEnquiries(): Enquiry[] {
-  try {
-    return JSON.parse(localStorage.getItem(ENQUIRIES_KEY) || '[]');
-  } catch { return []; }
-}
-
-function saveEnquiries(enquiries: Enquiry[]) {
-  localStorage.setItem(ENQUIRIES_KEY, JSON.stringify(enquiries));
-}
+const emptyCustomer: Omit<Customer, 'id' | 'visitCount' | 'lastVisit'> = {
+  name: '',
+  phone: '',
+  email: '',
+  address: '',
+  notes: '',
+};
 
 export default function CustomerManagement() {
-  const [tab, setTab] = useState<'all' | 'repeat' | 'enquiries'>('all');
-  const [customers, setCustomers] = useState<Customer[]>(loadCustomers);
-  const [enquiries, setEnquiries] = useState<Enquiry[]>(loadEnquiries);
+  const [customers, setCustomers] = useState<Customer[]>([]);
+  const [enquiries, setEnquiries] = useState<Enquiry[]>([]);
+  const [activeTab, setActiveTab] = useState<'all' | 'repeat' | 'enquiries'>('all');
   const [search, setSearch] = useState('');
   const [showForm, setShowForm] = useState(false);
   const [editCustomer, setEditCustomer] = useState<Customer | null>(null);
+  const [formData, setFormData] = useState(emptyCustomer);
   const [showEnquiryForm, setShowEnquiryForm] = useState(false);
-  const [enquiryCustomer, setEnquiryCustomer] = useState<Customer | null>(null);
+  const [enquiryData, setEnquiryData] = useState({ customerId: '', product: '', message: '' });
 
-  const [form, setForm] = useState({ name: '', phone: '', email: '', address: '', notes: '' });
-  const [enquiryForm, setEnquiryForm] = useState({ product: '', message: '' });
+  useEffect(() => {
+    const stored = localStorage.getItem(STORAGE_KEY);
+    if (stored) setCustomers(JSON.parse(stored));
+    const storedEnq = localStorage.getItem(ENQUIRY_KEY);
+    if (storedEnq) setEnquiries(JSON.parse(storedEnq));
+  }, []);
 
-  useEffect(() => { saveCustomers(customers); }, [customers]);
-  useEffect(() => { saveEnquiries(enquiries); }, [enquiries]);
+  const saveCustomers = (data: Customer[]) => {
+    setCustomers(data);
+    localStorage.setItem(STORAGE_KEY, JSON.stringify(data));
+  };
 
-  const filteredCustomers = customers.filter(c =>
-    c.name.toLowerCase().includes(search.toLowerCase()) ||
-    c.phone.includes(search) ||
-    c.email.toLowerCase().includes(search.toLowerCase())
-  );
+  const saveEnquiries = (data: Enquiry[]) => {
+    setEnquiries(data);
+    localStorage.setItem(ENQUIRY_KEY, JSON.stringify(data));
+  };
 
-  const repeatCustomers = filteredCustomers.filter(c => c.visitCount > 1);
+  const handleOpenAdd = () => {
+    setEditCustomer(null);
+    setFormData(emptyCustomer);
+    setShowForm(true);
+  };
+
+  const handleOpenEdit = (customer: Customer) => {
+    setEditCustomer(customer);
+    setFormData({
+      name: customer.name,
+      phone: customer.phone,
+      email: customer.email,
+      address: customer.address,
+      notes: customer.notes,
+    });
+    setShowForm(true);
+  };
 
   const handleSaveCustomer = () => {
-    if (!form.name.trim()) return;
+    if (!formData.name.trim()) return alert('Name is required');
     if (editCustomer) {
-      setCustomers(prev => prev.map(c => c.id === editCustomer.id ? { ...c, ...form } : c));
+      const updated = customers.map((c) =>
+        c.id === editCustomer.id ? { ...editCustomer, ...formData } : c
+      );
+      saveCustomers(updated);
     } else {
       const newCustomer: Customer = {
-        id: Date.now().toString(),
-        ...form,
+        id: generateId(),
+        ...formData,
         visitCount: 1,
         lastVisit: new Date().toLocaleDateString('en-IN'),
       };
-      setCustomers(prev => [...prev, newCustomer]);
+      saveCustomers([...customers, newCustomer]);
     }
     setShowForm(false);
-    setEditCustomer(null);
-    setForm({ name: '', phone: '', email: '', address: '', notes: '' });
   };
 
-  const handleDeleteCustomer = (id: string) => {
+  const handleDelete = (id: string) => {
     if (confirm('Delete this customer?')) {
-      setCustomers(prev => prev.filter(c => c.id !== id));
+      saveCustomers(customers.filter((c) => c.id !== id));
     }
   };
 
   const handleAddEnquiry = () => {
-    if (!enquiryCustomer || !enquiryForm.product.trim()) return;
+    if (!enquiryData.customerId || !enquiryData.product) return alert('Please fill all fields');
+    const customer = customers.find((c) => c.id === enquiryData.customerId);
     const newEnquiry: Enquiry = {
-      id: Date.now().toString(),
-      customerId: enquiryCustomer.id,
-      customerName: enquiryCustomer.name,
-      product: enquiryForm.product,
-      message: enquiryForm.message,
+      id: generateId(),
+      customerId: enquiryData.customerId,
+      customerName: customer?.name || 'Unknown',
+      product: enquiryData.product,
+      message: enquiryData.message,
       date: new Date().toLocaleDateString('en-IN'),
     };
-    setEnquiries(prev => [...prev, newEnquiry]);
-    setCustomers(prev => prev.map(c =>
-      c.id === enquiryCustomer.id
-        ? { ...c, visitCount: c.visitCount + 1, lastVisit: new Date().toLocaleDateString('en-IN') }
-        : c
-    ));
+    saveEnquiries([...enquiries, newEnquiry]);
+    setEnquiryData({ customerId: '', product: '', message: '' });
     setShowEnquiryForm(false);
-    setEnquiryCustomer(null);
-    setEnquiryForm({ product: '', message: '' });
   };
 
-  const displayList = tab === 'repeat' ? repeatCustomers : filteredCustomers;
+  const filteredCustomers = customers.filter((c) => {
+    const matchSearch = c.name.toLowerCase().includes(search.toLowerCase()) ||
+      c.phone.includes(search) || c.email.toLowerCase().includes(search.toLowerCase());
+    if (activeTab === 'repeat') return matchSearch && c.visitCount > 1;
+    return matchSearch;
+  });
+
+  const inputClass = "w-full px-3 py-2.5 border border-[oklch(0.88_0.01_200)] rounded-lg text-[oklch(0.15_0.02_220)] placeholder-[oklch(0.65_0.02_200)] bg-white focus:outline-none focus:ring-2 focus:ring-[oklch(0.45_0.15_195)] focus:border-transparent text-sm";
+  const labelClass = "block text-sm font-medium text-[oklch(0.25_0.03_220)] mb-1.5";
 
   return (
-    <div className="min-h-screen bg-neon-black p-6 lg:p-8">
+    <div className="p-6 lg:p-8">
       {/* Header */}
-      <div className="flex items-center justify-between mb-6">
+      <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 mb-6">
         <div>
-          <div className="flex items-center gap-2 mb-1">
-            <Link to="/admin" className="text-gray-500 hover:text-neon-green transition-colors">
-              <ArrowLeft className="w-4 h-4" />
-            </Link>
-            <Users className="w-5 h-5 text-neon-green" />
-            <h1 className="font-orbitron text-xl font-bold text-white">CUSTOMERS</h1>
-          </div>
-          <p className="text-gray-500 font-mono text-xs">{customers.length} total customers</p>
+          <h1 className="text-2xl font-bold text-[oklch(0.15_0.02_220)] font-heading">Customer Management</h1>
+          <p className="text-[oklch(0.5_0.03_200)] text-sm mt-0.5">Manage customer records and enquiries</p>
         </div>
-        <button
-          onClick={() => { setEditCustomer(null); setForm({ name: '', phone: '', email: '', address: '', notes: '' }); setShowForm(true); }}
-          className="flex items-center gap-2 px-4 py-2 neon-btn-solid rounded-md font-orbitron text-xs font-bold tracking-wider"
-        >
-          <Plus className="w-4 h-4" />
-          ADD
-        </button>
+        <div className="flex gap-2">
+          <button
+            onClick={() => setShowEnquiryForm(true)}
+            className="inline-flex items-center gap-2 px-4 py-2.5 bg-white border border-[oklch(0.88_0.01_200)] text-[oklch(0.3_0.03_220)] font-semibold rounded-lg hover:bg-[oklch(0.95_0.02_200)] transition-colors text-sm"
+          >
+            <MessageSquare className="w-4 h-4" />
+            Add Enquiry
+          </button>
+          <button
+            onClick={handleOpenAdd}
+            className="inline-flex items-center gap-2 px-4 py-2.5 bg-[oklch(0.45_0.15_195)] hover:bg-[oklch(0.4_0.15_195)] text-white font-semibold rounded-lg transition-colors shadow-pharma-sm text-sm"
+          >
+            <Plus className="w-4 h-4" />
+            Add Customer
+          </button>
+        </div>
       </div>
 
       {/* Tabs */}
-      <div className="flex gap-2 mb-4">
-        {(['all', 'repeat', 'enquiries'] as const).map((t) => (
+      <div className="flex gap-2 mb-5">
+        {[
+          { key: 'all', label: 'All Customers', count: customers.length },
+          { key: 'repeat', label: 'Repeat Customers', count: customers.filter((c) => c.visitCount > 1).length },
+          { key: 'enquiries', label: 'Enquiries', count: enquiries.length },
+        ].map((tab) => (
           <button
-            key={t}
-            onClick={() => setTab(t)}
-            className={`px-4 py-2 rounded-md text-xs font-mono font-medium transition-all duration-200 capitalize ${
-              tab === t
-                ? 'bg-neon-green/10 text-neon-green border border-neon-green/50'
-                : 'text-gray-500 border border-transparent hover:text-neon-green hover:border-neon-green/20'
+            key={tab.key}
+            onClick={() => setActiveTab(tab.key as typeof activeTab)}
+            className={`px-4 py-2 rounded-lg text-sm font-medium transition-all ${
+              activeTab === tab.key
+                ? 'bg-[oklch(0.45_0.15_195)] text-white shadow-pharma-sm'
+                : 'bg-white text-[oklch(0.3_0.03_220)] border border-[oklch(0.88_0.01_200)] hover:bg-[oklch(0.95_0.02_200)]'
             }`}
           >
-            {t === 'all' ? 'All Customers' : t === 'repeat' ? 'Repeat Customers' : 'Enquiry History'}
+            {tab.label}
+            <span className={`ml-2 px-1.5 py-0.5 rounded-full text-xs ${
+              activeTab === tab.key ? 'bg-white/20 text-white' : 'bg-[oklch(0.92_0.01_200)] text-[oklch(0.4_0.03_220)]'
+            }`}>
+              {tab.count}
+            </span>
           </button>
         ))}
       </div>
 
       {/* Search */}
-      {tab !== 'enquiries' && (
-        <div className="relative mb-6">
-          <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-gray-500" />
+      {activeTab !== 'enquiries' && (
+        <div className="relative mb-5">
+          <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-[oklch(0.6_0.03_200)]" />
           <input
             type="text"
             placeholder="Search customers..."
             value={search}
             onChange={(e) => setSearch(e.target.value)}
-            className="w-full pl-10 pr-4 py-2.5 neon-input rounded-md font-mono text-sm"
+            className="w-full pl-10 pr-4 py-2.5 border border-[oklch(0.88_0.01_200)] rounded-lg text-[oklch(0.15_0.02_220)] placeholder-[oklch(0.65_0.02_200)] bg-white focus:outline-none focus:ring-2 focus:ring-[oklch(0.45_0.15_195)] focus:border-transparent text-sm"
           />
         </div>
       )}
 
       {/* Content */}
-      {tab === 'enquiries' ? (
-        <div className="space-y-3">
+      {activeTab === 'enquiries' ? (
+        <div className="bg-white rounded-xl border border-[oklch(0.88_0.01_200)] shadow-card overflow-hidden">
           {enquiries.length === 0 ? (
-            <div className="text-center py-16">
-              <MessageSquare className="w-12 h-12 text-gray-700 mx-auto mb-3" />
-              <p className="text-gray-500 font-mono text-sm">No enquiries yet</p>
+            <div className="flex flex-col items-center justify-center py-16 text-[oklch(0.5_0.03_200)]">
+              <MessageSquare className="w-12 h-12 mb-3 opacity-30" />
+              <p className="font-medium">No enquiries yet</p>
             </div>
           ) : (
-            enquiries.map((enq) => (
-              <div key={enq.id} className="neon-card rounded-lg p-4">
-                <div className="flex items-start justify-between">
-                  <div>
-                    <p className="font-rajdhani font-semibold text-white text-sm">{enq.customerName}</p>
-                    <p className="text-neon-green text-xs font-mono mt-0.5">{enq.product}</p>
-                    {enq.message && <p className="text-gray-500 text-xs font-mono mt-1">{enq.message}</p>}
-                  </div>
-                  <span className="text-xs font-mono text-gray-600">{enq.date}</span>
-                </div>
-              </div>
-            ))
+            <div className="overflow-x-auto">
+              <table className="w-full">
+                <thead>
+                  <tr className="bg-[oklch(0.97_0.01_200)] border-b border-[oklch(0.88_0.01_200)]">
+                    <th className="text-left px-4 py-3 text-xs font-semibold text-[oklch(0.4_0.03_220)] uppercase tracking-wider">Customer</th>
+                    <th className="text-left px-4 py-3 text-xs font-semibold text-[oklch(0.4_0.03_220)] uppercase tracking-wider">Product</th>
+                    <th className="text-left px-4 py-3 text-xs font-semibold text-[oklch(0.4_0.03_220)] uppercase tracking-wider">Message</th>
+                    <th className="text-left px-4 py-3 text-xs font-semibold text-[oklch(0.4_0.03_220)] uppercase tracking-wider">Date</th>
+                  </tr>
+                </thead>
+                <tbody className="divide-y divide-[oklch(0.94_0.01_200)]">
+                  {enquiries.map((enq) => (
+                    <tr key={enq.id} className="hover:bg-[oklch(0.98_0.005_200)] transition-colors">
+                      <td className="px-4 py-3 text-sm font-medium text-[oklch(0.15_0.02_220)]">{enq.customerName}</td>
+                      <td className="px-4 py-3 text-sm text-[oklch(0.3_0.03_220)]">{enq.product}</td>
+                      <td className="px-4 py-3 text-sm text-[oklch(0.4_0.03_220)] max-w-xs truncate">{enq.message || '—'}</td>
+                      <td className="px-4 py-3 text-sm text-[oklch(0.5_0.03_200)]">{enq.date}</td>
+                    </tr>
+                  ))}
+                </tbody>
+              </table>
+            </div>
           )}
         </div>
       ) : (
-        <div className="space-y-3">
-          {displayList.length === 0 ? (
-            <div className="text-center py-16">
-              <Users className="w-12 h-12 text-gray-700 mx-auto mb-3" />
-              <p className="text-gray-500 font-mono text-sm">No customers found</p>
+        <div className="bg-white rounded-xl border border-[oklch(0.88_0.01_200)] shadow-card overflow-hidden">
+          {filteredCustomers.length === 0 ? (
+            <div className="flex flex-col items-center justify-center py-16 text-[oklch(0.5_0.03_200)]">
+              <Users className="w-12 h-12 mb-3 opacity-30" />
+              <p className="font-medium">No customers found</p>
+              <button onClick={handleOpenAdd} className="mt-3 text-sm text-[oklch(0.45_0.15_195)] hover:underline">
+                Add your first customer
+              </button>
             </div>
           ) : (
-            displayList.map((customer) => (
-              <div key={customer.id} className="neon-card rounded-lg p-4 flex items-center justify-between gap-4">
-                <div className="flex-1 min-w-0">
-                  <div className="flex items-center gap-2 mb-1">
-                    <p className="font-rajdhani font-semibold text-white text-sm">{customer.name}</p>
-                    {customer.visitCount > 1 && (
-                      <span className="px-1.5 py-0.5 rounded text-xs font-mono bg-neon-green/10 text-neon-green border border-neon-green/30">
-                        ×{customer.visitCount}
-                      </span>
-                    )}
-                  </div>
-                  <div className="flex flex-wrap gap-3 text-xs font-mono text-gray-500">
-                    {customer.phone && <span>{customer.phone}</span>}
-                    {customer.email && <span>{customer.email}</span>}
-                    <span>Last: {customer.lastVisit}</span>
-                  </div>
-                </div>
-                <div className="flex items-center gap-1">
-                  <button
-                    onClick={() => { setEnquiryCustomer(customer); setEnquiryForm({ product: '', message: '' }); setShowEnquiryForm(true); }}
-                    title="Add Enquiry"
-                    className="p-1.5 text-gray-500 hover:text-neon-green hover:bg-neon-green/10 rounded transition-all"
-                  >
-                    <MessageSquare className="w-3.5 h-3.5" />
-                  </button>
-                  <button
-                    onClick={() => { setEditCustomer(customer); setForm({ name: customer.name, phone: customer.phone, email: customer.email, address: customer.address, notes: customer.notes }); setShowForm(true); }}
-                    title="Edit"
-                    className="p-1.5 text-gray-500 hover:text-neon-green hover:bg-neon-green/10 rounded transition-all"
-                  >
-                    <Edit className="w-3.5 h-3.5" />
-                  </button>
-                  <button
-                    onClick={() => handleDeleteCustomer(customer.id)}
-                    title="Delete"
-                    className="p-1.5 text-gray-500 hover:text-red-400 hover:bg-red-500/10 rounded transition-all"
-                  >
-                    <Trash2 className="w-3.5 h-3.5" />
-                  </button>
-                </div>
-              </div>
-            ))
+            <div className="overflow-x-auto">
+              <table className="w-full">
+                <thead>
+                  <tr className="bg-[oklch(0.97_0.01_200)] border-b border-[oklch(0.88_0.01_200)]">
+                    <th className="text-left px-4 py-3 text-xs font-semibold text-[oklch(0.4_0.03_220)] uppercase tracking-wider">Name</th>
+                    <th className="text-left px-4 py-3 text-xs font-semibold text-[oklch(0.4_0.03_220)] uppercase tracking-wider">Phone</th>
+                    <th className="text-left px-4 py-3 text-xs font-semibold text-[oklch(0.4_0.03_220)] uppercase tracking-wider">Email</th>
+                    <th className="text-left px-4 py-3 text-xs font-semibold text-[oklch(0.4_0.03_220)] uppercase tracking-wider">Visits</th>
+                    <th className="text-left px-4 py-3 text-xs font-semibold text-[oklch(0.4_0.03_220)] uppercase tracking-wider">Last Visit</th>
+                    <th className="text-right px-4 py-3 text-xs font-semibold text-[oklch(0.4_0.03_220)] uppercase tracking-wider">Actions</th>
+                  </tr>
+                </thead>
+                <tbody className="divide-y divide-[oklch(0.94_0.01_200)]">
+                  {filteredCustomers.map((customer) => (
+                    <tr key={customer.id} className="hover:bg-[oklch(0.98_0.005_200)] transition-colors">
+                      <td className="px-4 py-3">
+                        <div className="flex items-center gap-2">
+                          <div className="w-8 h-8 rounded-full bg-[oklch(0.92_0.05_195)] flex items-center justify-center flex-shrink-0">
+                            <span className="text-xs font-bold text-[oklch(0.35_0.15_195)]">
+                              {customer.name.charAt(0).toUpperCase()}
+                            </span>
+                          </div>
+                          <span className="font-medium text-[oklch(0.15_0.02_220)] text-sm">{customer.name}</span>
+                        </div>
+                      </td>
+                      <td className="px-4 py-3 text-sm text-[oklch(0.3_0.03_220)]">{customer.phone || '—'}</td>
+                      <td className="px-4 py-3 text-sm text-[oklch(0.3_0.03_220)]">{customer.email || '—'}</td>
+                      <td className="px-4 py-3">
+                        <span className={`inline-flex items-center px-2 py-0.5 rounded-full text-xs font-medium ${
+                          customer.visitCount > 1
+                            ? 'bg-[oklch(0.92_0.06_155)] text-[oklch(0.35_0.15_155)]'
+                            : 'bg-[oklch(0.92_0.01_200)] text-[oklch(0.4_0.03_220)]'
+                        }`}>
+                          {customer.visitCount}
+                        </span>
+                      </td>
+                      <td className="px-4 py-3 text-sm text-[oklch(0.5_0.03_200)]">{customer.lastVisit}</td>
+                      <td className="px-4 py-3">
+                        <div className="flex items-center justify-end gap-1">
+                          <button
+                            onClick={() => handleOpenEdit(customer)}
+                            className="p-1.5 rounded-lg text-[oklch(0.45_0.15_230)] hover:bg-[oklch(0.92_0.05_230)] transition-colors"
+                          >
+                            <Edit className="w-4 h-4" />
+                          </button>
+                          <button
+                            onClick={() => handleDelete(customer.id)}
+                            className="p-1.5 rounded-lg text-[oklch(0.5_0.18_25)] hover:bg-[oklch(0.95_0.05_25)] transition-colors"
+                          >
+                            <Trash2 className="w-4 h-4" />
+                          </button>
+                        </div>
+                      </td>
+                    </tr>
+                  ))}
+                </tbody>
+              </table>
+            </div>
           )}
         </div>
       )}
 
-      {/* Customer Form Modal */}
+      {/* Add/Edit Customer Modal */}
       {showForm && (
-        <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/80 backdrop-blur-sm p-4">
-          <div className="neon-card rounded-xl p-6 w-full max-w-md">
-            <h2 className="font-orbitron text-sm font-bold text-neon-green mb-5">
-              {editCustomer ? 'EDIT CUSTOMER' : 'ADD CUSTOMER'}
-            </h2>
-            <div className="space-y-4">
-              {[
-                { key: 'name', label: 'Name *', placeholder: 'Customer name' },
-                { key: 'phone', label: 'Phone', placeholder: 'Phone number' },
-                { key: 'email', label: 'Email', placeholder: 'Email address' },
-                { key: 'address', label: 'Address', placeholder: 'Address' },
-                { key: 'notes', label: 'Notes', placeholder: 'Additional notes' },
-              ].map((field) => (
-                <div key={field.key}>
-                  <label className="block text-xs font-mono text-gray-400 mb-1.5 uppercase tracking-widest">{field.label}</label>
-                  <input
-                    type="text"
-                    value={form[field.key as keyof typeof form]}
-                    onChange={(e) => setForm(prev => ({ ...prev, [field.key]: e.target.value }))}
-                    placeholder={field.placeholder}
-                    className="w-full px-3 py-2.5 neon-input rounded-md font-mono text-sm"
-                  />
-                </div>
-              ))}
-            </div>
-            <div className="flex gap-3 mt-6">
-              <button onClick={handleSaveCustomer} className="flex-1 py-2.5 neon-btn-solid rounded-md font-orbitron text-xs font-bold tracking-wider">
-                SAVE
+        <div className="fixed inset-0 z-50 flex items-center justify-center p-4">
+          <div className="absolute inset-0 bg-black/50" onClick={() => setShowForm(false)} />
+          <div className="relative bg-white rounded-2xl shadow-modal border border-[oklch(0.88_0.01_200)] w-full max-w-lg max-h-[90vh] overflow-y-auto">
+            <div className="flex items-center justify-between px-6 py-4 border-b border-[oklch(0.92_0.01_200)]">
+              <h2 className="text-lg font-bold text-[oklch(0.15_0.02_220)] font-heading">
+                {editCustomer ? 'Edit Customer' : 'Add New Customer'}
+              </h2>
+              <button
+                onClick={() => setShowForm(false)}
+                className="p-2 rounded-lg hover:bg-[oklch(0.95_0.02_200)] text-[oklch(0.4_0.03_220)] transition-colors"
+              >
+                <X className="w-4 h-4" />
               </button>
-              <button onClick={() => { setShowForm(false); setEditCustomer(null); }} className="flex-1 py-2.5 neon-btn rounded-md font-orbitron text-xs font-bold tracking-wider">
-                CANCEL
+            </div>
+            <div className="p-6 space-y-4">
+              <div>
+                <label className={labelClass}>Full Name *</label>
+                <input
+                  type="text"
+                  value={formData.name}
+                  onChange={(e) => setFormData({ ...formData, name: e.target.value })}
+                  placeholder="Enter customer name"
+                  className={inputClass}
+                />
+              </div>
+              <div>
+                <label className={labelClass}>Phone Number</label>
+                <input
+                  type="tel"
+                  value={formData.phone}
+                  onChange={(e) => setFormData({ ...formData, phone: e.target.value })}
+                  placeholder="Enter phone number"
+                  className={inputClass}
+                />
+              </div>
+              <div>
+                <label className={labelClass}>Email Address</label>
+                <input
+                  type="email"
+                  value={formData.email}
+                  onChange={(e) => setFormData({ ...formData, email: e.target.value })}
+                  placeholder="Enter email address"
+                  className={inputClass}
+                />
+              </div>
+              <div>
+                <label className={labelClass}>Address</label>
+                <textarea
+                  value={formData.address}
+                  onChange={(e) => setFormData({ ...formData, address: e.target.value })}
+                  placeholder="Enter address"
+                  rows={2}
+                  className={inputClass}
+                />
+              </div>
+              <div>
+                <label className={labelClass}>Notes</label>
+                <textarea
+                  value={formData.notes}
+                  onChange={(e) => setFormData({ ...formData, notes: e.target.value })}
+                  placeholder="Additional notes"
+                  rows={2}
+                  className={inputClass}
+                />
+              </div>
+            </div>
+            <div className="flex gap-3 px-6 py-4 border-t border-[oklch(0.92_0.01_200)]">
+              <button
+                onClick={() => setShowForm(false)}
+                className="flex-1 px-4 py-2.5 border border-[oklch(0.88_0.01_200)] text-[oklch(0.3_0.03_220)] font-medium rounded-lg hover:bg-[oklch(0.95_0.02_200)] transition-colors text-sm"
+              >
+                Cancel
+              </button>
+              <button
+                onClick={handleSaveCustomer}
+                className="flex-1 px-4 py-2.5 bg-[oklch(0.45_0.15_195)] hover:bg-[oklch(0.4_0.15_195)] text-white font-semibold rounded-lg transition-colors text-sm flex items-center justify-center gap-2"
+              >
+                <Save className="w-4 h-4" />
+                {editCustomer ? 'Save Changes' : 'Add Customer'}
               </button>
             </div>
           </div>
         </div>
       )}
 
-      {/* Enquiry Form Modal */}
-      {showEnquiryForm && enquiryCustomer && (
-        <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/80 backdrop-blur-sm p-4">
-          <div className="neon-card rounded-xl p-6 w-full max-w-md">
-            <h2 className="font-orbitron text-sm font-bold text-neon-green mb-1">ADD ENQUIRY</h2>
-            <p className="text-gray-500 font-mono text-xs mb-5">For: {enquiryCustomer.name}</p>
-            <div className="space-y-4">
+      {/* Add Enquiry Modal */}
+      {showEnquiryForm && (
+        <div className="fixed inset-0 z-50 flex items-center justify-center p-4">
+          <div className="absolute inset-0 bg-black/50" onClick={() => setShowEnquiryForm(false)} />
+          <div className="relative bg-white rounded-2xl shadow-modal border border-[oklch(0.88_0.01_200)] w-full max-w-md">
+            <div className="flex items-center justify-between px-6 py-4 border-b border-[oklch(0.92_0.01_200)]">
+              <h2 className="text-lg font-bold text-[oklch(0.15_0.02_220)] font-heading">Add Enquiry</h2>
+              <button
+                onClick={() => setShowEnquiryForm(false)}
+                className="p-2 rounded-lg hover:bg-[oklch(0.95_0.02_200)] text-[oklch(0.4_0.03_220)] transition-colors"
+              >
+                <X className="w-4 h-4" />
+              </button>
+            </div>
+            <div className="p-6 space-y-4">
               <div>
-                <label className="block text-xs font-mono text-gray-400 mb-1.5 uppercase tracking-widest">Product *</label>
+                <label className={labelClass}>Customer *</label>
+                <select
+                  value={enquiryData.customerId}
+                  onChange={(e) => setEnquiryData({ ...enquiryData, customerId: e.target.value })}
+                  className={inputClass}
+                >
+                  <option value="">Select customer</option>
+                  {customers.map((c) => (
+                    <option key={c.id} value={c.id}>{c.name}</option>
+                  ))}
+                </select>
+              </div>
+              <div>
+                <label className={labelClass}>Product *</label>
                 <input
                   type="text"
-                  value={enquiryForm.product}
-                  onChange={(e) => setEnquiryForm(prev => ({ ...prev, product: e.target.value }))}
+                  value={enquiryData.product}
+                  onChange={(e) => setEnquiryData({ ...enquiryData, product: e.target.value })}
                   placeholder="Product name"
-                  className="w-full px-3 py-2.5 neon-input rounded-md font-mono text-sm"
+                  className={inputClass}
                 />
               </div>
               <div>
-                <label className="block text-xs font-mono text-gray-400 mb-1.5 uppercase tracking-widest">Message</label>
+                <label className={labelClass}>Message</label>
                 <textarea
-                  value={enquiryForm.message}
-                  onChange={(e) => setEnquiryForm(prev => ({ ...prev, message: e.target.value }))}
-                  placeholder="Enquiry details..."
+                  value={enquiryData.message}
+                  onChange={(e) => setEnquiryData({ ...enquiryData, message: e.target.value })}
+                  placeholder="Enquiry details"
                   rows={3}
-                  className="w-full px-3 py-2.5 neon-input rounded-md font-mono text-sm resize-none"
+                  className={inputClass}
                 />
               </div>
             </div>
-            <div className="flex gap-3 mt-6">
-              <button onClick={handleAddEnquiry} className="flex-1 py-2.5 neon-btn-solid rounded-md font-orbitron text-xs font-bold tracking-wider">
-                SAVE
+            <div className="flex gap-3 px-6 py-4 border-t border-[oklch(0.92_0.01_200)]">
+              <button
+                onClick={() => setShowEnquiryForm(false)}
+                className="flex-1 px-4 py-2.5 border border-[oklch(0.88_0.01_200)] text-[oklch(0.3_0.03_220)] font-medium rounded-lg hover:bg-[oklch(0.95_0.02_200)] transition-colors text-sm"
+              >
+                Cancel
               </button>
-              <button onClick={() => { setShowEnquiryForm(false); setEnquiryCustomer(null); }} className="flex-1 py-2.5 neon-btn rounded-md font-orbitron text-xs font-bold tracking-wider">
-                CANCEL
+              <button
+                onClick={handleAddEnquiry}
+                className="flex-1 px-4 py-2.5 bg-[oklch(0.45_0.15_195)] hover:bg-[oklch(0.4_0.15_195)] text-white font-semibold rounded-lg transition-colors text-sm flex items-center justify-center gap-2"
+              >
+                <Save className="w-4 h-4" />
+                Add Enquiry
               </button>
             </div>
           </div>

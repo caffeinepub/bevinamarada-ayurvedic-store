@@ -1,186 +1,166 @@
-import { useState } from 'react';
-import { Outlet, Link, useNavigate, useRouterState } from '@tanstack/react-router';
+import React, { useState } from 'react';
+import { Link, Outlet, useNavigate, useRouterState } from '@tanstack/react-router';
 import {
-  LayoutDashboard,
-  Package,
-  TrendingUp,
-  DollarSign,
-  Users,
-  MessageSquare,
-  BarChart3,
-  ShoppingCart,
-  FileText,
-  Menu,
-  X,
-  LogOut,
-  Zap,
-  Home,
-  ChevronRight,
+  LayoutDashboard, Package, Users, BarChart3, ShoppingCart,
+  TrendingUp, DollarSign, Menu, X, LogOut, ChevronRight,
+  Shield,
 } from 'lucide-react';
+import { useInternetIdentity } from '../hooks/useInternetIdentity';
+import { useQueryClient } from '@tanstack/react-query';
 
-const navItems = [
-  { path: '/admin/owner-dashboard', label: 'Dashboard', icon: LayoutDashboard },
+interface NavItem {
+  path: string;
+  label: string;
+  icon: React.ComponentType<{ className?: string }>;
+  exact?: boolean;
+}
+
+const navItems: NavItem[] = [
+  { path: '/admin', label: 'Dashboard', icon: LayoutDashboard, exact: true },
+  { path: '/admin/owner-dashboard', label: 'Overview', icon: BarChart3 },
   { path: '/admin/stock', label: 'Stock Management', icon: Package },
   { path: '/admin/products', label: 'Products', icon: ShoppingCart },
-  { path: '/admin/sales', label: 'Sales', icon: TrendingUp },
-  { path: '/admin/revenue', label: 'Revenue', icon: DollarSign },
-  { path: '/admin/income', label: 'Income', icon: BarChart3 },
   { path: '/admin/customers', label: 'Customers', icon: Users },
-  { path: '/admin/enquiries', label: 'Enquiries', icon: MessageSquare },
+  { path: '/admin/reports', label: 'Sales Reports', icon: TrendingUp },
+  { path: '/admin/sales', label: "Today's Sales", icon: DollarSign },
+  { path: '/admin/revenue', label: 'Revenue', icon: BarChart3 },
+  { path: '/admin/income', label: 'Income', icon: DollarSign },
   { path: '/admin/trending', label: 'Trending', icon: TrendingUp },
-  { path: '/admin/reports', label: 'Reports', icon: FileText },
 ];
-
-function handleLogout(navigate: ReturnType<typeof useNavigate>) {
-  sessionStorage.removeItem('admin-session');
-  sessionStorage.removeItem('adminSessionActive');
-  localStorage.removeItem('admin-session');
-  localStorage.removeItem('adminSessionActive');
-  navigate({ to: '/admin-login' });
-}
 
 export default function AdminLayout() {
   const [mobileOpen, setMobileOpen] = useState(false);
   const navigate = useNavigate();
+  const { clear } = useInternetIdentity();
+  const queryClient = useQueryClient();
   const routerState = useRouterState();
   const currentPath = routerState.location.pathname;
 
-  const isActive = (path: string) => currentPath === path || currentPath.startsWith(path + '/');
+  const handleLogout = async () => {
+    sessionStorage.removeItem('admin-session');
+    sessionStorage.removeItem('adminSessionActive');
+    await clear();
+    queryClient.clear();
+    navigate({ to: '/admin-login' });
+  };
+
+  const isActive = (path: string, exact?: boolean) => {
+    if (exact) return currentPath === path;
+    return currentPath.startsWith(path);
+  };
 
   return (
-    <div className="min-h-screen bg-neon-black flex">
+    <div className="min-h-screen bg-[oklch(0.97_0.01_200)] flex">
       {/* Desktop Sidebar */}
-      <aside className="hidden lg:flex flex-col w-64 admin-sidebar fixed inset-y-0 left-0 z-30">
+      <aside className="hidden lg:flex flex-col w-64 bg-[oklch(0.18_0.03_220)] text-white fixed inset-y-0 left-0 z-30 shadow-xl">
         {/* Logo */}
-        <div className="flex items-center gap-3 px-6 py-5 border-b border-neon-border">
-          <div className="w-8 h-8 rounded-md border border-neon-green flex items-center justify-center neon-glow-sm">
-            <Zap className="w-4 h-4 text-neon-green" />
+        <div className="flex items-center gap-3 px-6 py-5 border-b border-white/10">
+          <div className="w-9 h-9 rounded-lg bg-[oklch(0.45_0.15_195)] flex items-center justify-center flex-shrink-0">
+            <Shield className="w-5 h-5 text-white" />
           </div>
           <div>
-            <p className="font-orbitron text-xs font-bold text-neon-green neon-text-sm">ADMIN PORTAL</p>
-            <p className="text-xs text-gray-600 font-mono">Bevinamarada</p>
+            <p className="font-bold text-white text-sm font-heading">BASL Pharma</p>
+            <p className="text-white/50 text-xs">Admin Portal</p>
           </div>
         </div>
 
         {/* Navigation */}
-        <nav className="flex-1 px-3 py-4 overflow-y-auto space-y-1">
+        <nav className="flex-1 px-3 py-4 overflow-y-auto">
+          <p className="text-white/30 text-xs font-semibold uppercase tracking-wider px-3 mb-2">Navigation</p>
           {navItems.map((item) => {
             const Icon = item.icon;
-            const active = isActive(item.path);
+            const active = isActive(item.path, item.exact);
             return (
               <Link
                 key={item.path}
-                to={item.path}
-                className={`flex items-center gap-3 px-3 py-2.5 rounded-md text-sm font-rajdhani font-medium transition-all duration-200 ${
+                to={item.path as '/admin'}
+                className={`flex items-center gap-3 px-3 py-2.5 rounded-lg mb-0.5 transition-all duration-150 text-sm font-medium ${
                   active
-                    ? 'text-neon-green bg-neon-green/10 border-l-2 border-neon-green pl-[10px]'
-                    : 'text-gray-500 hover:text-neon-green hover:bg-neon-green/5 border-l-2 border-transparent'
+                    ? 'bg-[oklch(0.45_0.15_195)] text-white shadow-sm'
+                    : 'text-white/70 hover:bg-white/10 hover:text-white'
                 }`}
+                onClick={() => setMobileOpen(false)}
               >
-                <Icon className={`w-4 h-4 flex-shrink-0 ${active ? 'text-neon-green' : ''}`} />
+                <Icon className="w-4 h-4 flex-shrink-0" />
                 <span>{item.label}</span>
-                {active && <ChevronRight className="w-3 h-3 ml-auto text-neon-green" />}
+                {active && <ChevronRight className="w-3 h-3 ml-auto" />}
               </Link>
             );
           })}
         </nav>
 
-        {/* Footer */}
-        <div className="px-3 py-4 border-t border-neon-border space-y-2">
-          <Link
-            to="/"
-            className="flex items-center gap-3 px-3 py-2.5 rounded-md text-sm text-gray-500 hover:text-neon-green hover:bg-neon-green/5 transition-all duration-200 font-rajdhani"
-          >
-            <Home className="w-4 h-4" />
-            <span>Back to Store</span>
-          </Link>
+        {/* Sidebar Footer */}
+        <div className="px-3 py-4 border-t border-white/10 space-y-1">
           <button
-            onClick={() => handleLogout(navigate)}
-            className="w-full flex items-center gap-3 px-3 py-2.5 rounded-md text-sm text-red-500 hover:text-red-400 hover:bg-red-500/10 transition-all duration-200 font-rajdhani"
+            onClick={handleLogout}
+            className="w-full flex items-center gap-3 px-3 py-2.5 rounded-lg text-white/70 hover:bg-red-500/20 hover:text-red-300 transition-all text-sm font-medium"
           >
             <LogOut className="w-4 h-4" />
-            <span>Logout</span>
+            <span>Exit Admin Portal</span>
           </button>
         </div>
       </aside>
 
       {/* Mobile Header */}
-      <div className="lg:hidden fixed top-0 left-0 right-0 z-40 flex items-center justify-between px-4 py-3 bg-neon-black border-b border-neon-border">
+      <div className="lg:hidden fixed top-0 left-0 right-0 z-40 bg-[oklch(0.18_0.03_220)] text-white px-4 py-3 flex items-center justify-between shadow-lg">
         <div className="flex items-center gap-2">
-          <div className="w-7 h-7 rounded border border-neon-green flex items-center justify-center neon-glow-sm">
-            <Zap className="w-3.5 h-3.5 text-neon-green" />
+          <div className="w-8 h-8 rounded-lg bg-[oklch(0.45_0.15_195)] flex items-center justify-center">
+            <Shield className="w-4 h-4 text-white" />
           </div>
-          <span className="font-orbitron text-xs font-bold text-neon-green">ADMIN PORTAL</span>
+          <span className="font-bold text-sm font-heading">BASL Pharma Admin</span>
         </div>
         <button
-          onClick={() => setMobileOpen(true)}
-          className="p-2 text-gray-400 hover:text-neon-green transition-colors"
+          onClick={() => setMobileOpen(!mobileOpen)}
+          className="p-2 rounded-lg hover:bg-white/10 transition-colors"
         >
-          <Menu className="w-5 h-5" />
+          {mobileOpen ? <X className="w-5 h-5" /> : <Menu className="w-5 h-5" />}
         </button>
       </div>
 
       {/* Mobile Drawer */}
       {mobileOpen && (
-        <div className="lg:hidden fixed inset-0 z-50 flex">
-          <div
-            className="absolute inset-0 bg-black/80 backdrop-blur-sm"
-            onClick={() => setMobileOpen(false)}
-          />
-          <div className="relative w-72 bg-neon-black border-r border-neon-border flex flex-col h-full">
-            {/* Drawer Header */}
-            <div className="flex items-center justify-between px-5 py-4 border-b border-neon-border">
+        <div className="lg:hidden fixed inset-0 z-50">
+          <div className="absolute inset-0 bg-black/50" onClick={() => setMobileOpen(false)} />
+          <div className="absolute left-0 top-0 bottom-0 w-72 bg-[oklch(0.18_0.03_220)] text-white flex flex-col shadow-2xl">
+            <div className="flex items-center justify-between px-5 py-4 border-b border-white/10">
               <div className="flex items-center gap-2">
-                <Zap className="w-5 h-5 text-neon-green" />
-                <span className="font-orbitron text-sm font-bold text-neon-green">ADMIN PORTAL</span>
+                <div className="w-8 h-8 rounded-lg bg-[oklch(0.45_0.15_195)] flex items-center justify-center">
+                  <Shield className="w-4 h-4 text-white" />
+                </div>
+                <span className="font-bold text-sm font-heading">BASL Pharma Admin</span>
               </div>
-              <button
-                onClick={() => setMobileOpen(false)}
-                className="p-1 text-gray-500 hover:text-neon-green transition-colors"
-              >
-                <X className="w-5 h-5" />
+              <button onClick={() => setMobileOpen(false)} className="p-1.5 rounded-lg hover:bg-white/10">
+                <X className="w-4 h-4" />
               </button>
             </div>
-
-            {/* Drawer Nav */}
-            <nav className="flex-1 px-3 py-4 overflow-y-auto space-y-1">
+            <nav className="flex-1 px-3 py-4 overflow-y-auto">
               {navItems.map((item) => {
                 const Icon = item.icon;
-                const active = isActive(item.path);
+                const active = isActive(item.path, item.exact);
                 return (
                   <Link
                     key={item.path}
-                    to={item.path}
-                    onClick={() => setMobileOpen(false)}
-                    className={`flex items-center gap-3 px-3 py-2.5 rounded-md text-sm font-rajdhani font-medium transition-all duration-200 ${
+                    to={item.path as '/admin'}
+                    className={`flex items-center gap-3 px-3 py-2.5 rounded-lg mb-0.5 transition-all text-sm font-medium ${
                       active
-                        ? 'text-neon-green bg-neon-green/10 border-l-2 border-neon-green pl-[10px]'
-                        : 'text-gray-500 hover:text-neon-green hover:bg-neon-green/5 border-l-2 border-transparent'
+                        ? 'bg-[oklch(0.45_0.15_195)] text-white'
+                        : 'text-white/70 hover:bg-white/10 hover:text-white'
                     }`}
+                    onClick={() => setMobileOpen(false)}
                   >
-                    <Icon className={`w-4 h-4 flex-shrink-0 ${active ? 'text-neon-green' : ''}`} />
+                    <Icon className="w-4 h-4" />
                     <span>{item.label}</span>
                   </Link>
                 );
               })}
             </nav>
-
-            {/* Drawer Footer */}
-            <div className="px-3 py-4 border-t border-neon-border space-y-2">
-              <Link
-                to="/"
-                onClick={() => setMobileOpen(false)}
-                className="flex items-center gap-3 px-3 py-2.5 rounded-md text-sm text-gray-500 hover:text-neon-green hover:bg-neon-green/5 transition-all duration-200 font-rajdhani"
-              >
-                <Home className="w-4 h-4" />
-                <span>Back to Store</span>
-              </Link>
+            <div className="px-3 py-4 border-t border-white/10">
               <button
-                onClick={() => handleLogout(navigate)}
-                className="w-full flex items-center gap-3 px-3 py-2.5 rounded-md text-sm text-red-500 hover:text-red-400 hover:bg-red-500/10 transition-all duration-200 font-rajdhani"
+                onClick={handleLogout}
+                className="w-full flex items-center gap-3 px-3 py-2.5 rounded-lg text-white/70 hover:bg-red-500/20 hover:text-red-300 transition-all text-sm font-medium"
               >
                 <LogOut className="w-4 h-4" />
-                <span>Logout</span>
+                <span>Exit Admin Portal</span>
               </button>
             </div>
           </div>
@@ -188,8 +168,8 @@ export default function AdminLayout() {
       )}
 
       {/* Main Content */}
-      <main className="flex-1 lg:ml-64 min-h-screen">
-        <div className="lg:hidden h-14" /> {/* Mobile header spacer */}
+      <main className="flex-1 lg:ml-64 pt-0 lg:pt-0">
+        <div className="lg:hidden h-14" />
         <Outlet />
       </main>
     </div>

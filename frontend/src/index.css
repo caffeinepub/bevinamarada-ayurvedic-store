@@ -1,4 +1,4 @@
-@import url('https://fonts.googleapis.com/css2?family=Orbitron:wght@400;500;600;700;800;900&family=Rajdhani:wght@300;400;500;600;700&family=Share+Tech+Mono&display=swap');
+@import url('https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&family=Poppins:wght@400;500;600;700;800&display=swap');
 
 @tailwind base;
 @tailwind components;
@@ -6,75 +6,52 @@
 
 @layer base {
   :root {
-    /* Neon Dark Theme - Black & Green */
-    --background: oklch(0.08 0.005 145);
-    --foreground: oklch(0.92 0.02 145);
-
-    --card: oklch(0.12 0.008 145);
-    --card-foreground: oklch(0.92 0.02 145);
-
-    --popover: oklch(0.10 0.006 145);
-    --popover-foreground: oklch(0.92 0.02 145);
-
-    --primary: oklch(0.75 0.22 145);
-    --primary-foreground: oklch(0.08 0.005 145);
-
-    --secondary: oklch(0.16 0.01 145);
-    --secondary-foreground: oklch(0.85 0.05 145);
-
-    --muted: oklch(0.15 0.008 145);
-    --muted-foreground: oklch(0.55 0.03 145);
-
-    --accent: oklch(0.75 0.22 145);
-    --accent-foreground: oklch(0.08 0.005 145);
-
-    --destructive: oklch(0.55 0.22 25);
-    --destructive-foreground: oklch(0.95 0.01 25);
-
-    --border: oklch(0.22 0.015 145);
-    --input: oklch(0.16 0.01 145);
-    --ring: oklch(0.75 0.22 145);
-
-    --success: oklch(0.70 0.20 145);
-    --warning: oklch(0.75 0.18 85);
-
+    --background: oklch(0.98 0.005 200);
+    --foreground: oklch(0.15 0.02 220);
+    --card: oklch(1 0 0);
+    --card-foreground: oklch(0.15 0.02 220);
+    --popover: oklch(1 0 0);
+    --popover-foreground: oklch(0.15 0.02 220);
+    --primary: oklch(0.45 0.15 195);
+    --primary-foreground: oklch(0.98 0.005 200);
+    --secondary: oklch(0.92 0.03 195);
+    --secondary-foreground: oklch(0.25 0.05 195);
+    --muted: oklch(0.94 0.01 200);
+    --muted-foreground: oklch(0.5 0.03 200);
+    --accent: oklch(0.88 0.06 160);
+    --accent-foreground: oklch(0.2 0.08 160);
+    --destructive: oklch(0.55 0.2 25);
+    --destructive-foreground: oklch(0.98 0.005 25);
+    --border: oklch(0.88 0.01 200);
+    --input: oklch(0.88 0.01 200);
+    --ring: oklch(0.45 0.15 195);
     --radius: 0.5rem;
-
-    /* Neon glow colors */
-    --neon-green: oklch(0.85 0.28 145);
-    --neon-green-dim: oklch(0.65 0.20 145);
-    --neon-surface: oklch(0.12 0.008 145);
-    --neon-surface-2: oklch(0.16 0.012 145);
+    --success: oklch(0.55 0.15 155);
+    --success-foreground: oklch(0.98 0.005 155);
+    --warning: oklch(0.75 0.15 75);
+    --warning-foreground: oklch(0.2 0.05 75);
   }
 
   .dark {
-    --background: oklch(0.08 0.005 145);
-    --foreground: oklch(0.92 0.02 145);
-
-    --card: oklch(0.12 0.008 145);
-    --card-foreground: oklch(0.92 0.02 145);
-
-    --popover: oklch(0.10 0.006 145);
-    --popover-foreground: oklch(0.92 0.02 145);
-
-    --primary: oklch(0.75 0.22 145);
-    --primary-foreground: oklch(0.08 0.005 145);
-
-    --secondary: oklch(0.16 0.01 145);
-    --secondary-foreground: oklch(0.85 0.05 145);
-
-    --muted: oklch(0.15 0.008 145);
-    --muted-foreground: oklch(0.55 0.03 145);
-
-    --accent: oklch(0.75 0.22 145);
-    --accent-foreground: oklch(0.08 0.005 145);
-
-    --destructive: oklch(0.55 0.22 25);
-    --destructive-foreground: oklch(0.95 0.01 25);
-
-    --border: oklch(0.22 0.015 145);
-    --input: oklch(0.16 0.01 145);
-    --ring: oklch(0.75 0.22 145);
+    --background: oklch(0.12 0.02 220);
+    --foreground: oklch(0.95 0.01 200);
+    --card: oklch(0.17 0.02 220);
+    --card-foreground: oklch(0.95 0.01 200);
+    --popover: oklch(0.17 0.02 220);
+    --popover-foreground: oklch(0.95 0.01 200);
+    --primary: oklch(0.6 0.15 195);
+    --primary-foreground: oklch(0.1 0.02 220);
+    --secondary: oklch(0.22 0.03 220);
+    --secondary-foreground: oklch(0.9 0.01 200);
+    --muted: oklch(0.22 0.02 220);
+    --muted-foreground: oklch(0.65 0.03 200);
+    --accent: oklch(0.3 0.06 160);
+    --accent-foreground: oklch(0.9 0.05 160);
+    --destructive: oklch(0.55 0.2 25);
+    --destructive-foreground: oklch(0.98 0.005 25);
+    --border: oklch(0.28 0.02 220);
+    --input: oklch(0.28 0.02 220);
+    --ring: oklch(0.6 0.15 195);
   }
 }
 
@@ -82,214 +59,49 @@
   * {
     @apply border-border;
   }
-
-  html {
-    @apply bg-background text-foreground;
-    color-scheme: dark;
-  }
-
   body {
     @apply bg-background text-foreground;
-    font-family: 'Rajdhani', sans-serif;
-    min-height: 100vh;
+    font-family: 'Inter', sans-serif;
   }
-
   h1, h2, h3, h4, h5, h6 {
-    font-family: 'Orbitron', sans-serif;
+    font-family: 'Poppins', sans-serif;
   }
 }
 
 @layer utilities {
-  /* Neon text glow */
-  .neon-text {
-    color: #00ff88;
-    text-shadow: 0 0 7px #00ff88, 0 0 10px #00ff88, 0 0 21px #00ff88;
+  .pharma-card {
+    @apply bg-white rounded-xl border border-border shadow-sm;
   }
 
-  .neon-text-sm {
-    color: #00ff88;
-    text-shadow: 0 0 4px #00ff88, 0 0 8px #00ff88;
+  .pharma-gradient {
+    background: linear-gradient(135deg, oklch(0.45 0.15 195), oklch(0.55 0.12 160));
   }
 
-  .neon-text-glow {
-    text-shadow: 0 0 7px #00ff88, 0 0 10px #00ff88, 0 0 21px #00ff88;
+  .pharma-hero-gradient {
+    background: linear-gradient(135deg, oklch(0.35 0.12 195) 0%, oklch(0.45 0.1 160) 50%, oklch(0.4 0.12 195) 100%);
   }
 
-  /* Neon box glow */
-  .neon-glow {
-    box-shadow: 0 0 5px #00ff88, 0 0 10px #00ff88, 0 0 20px #00ff88;
+  .pharma-section-bg {
+    background: oklch(0.97 0.01 200);
   }
 
-  .neon-glow-sm {
-    box-shadow: 0 0 3px #00ff88, 0 0 6px #00ff88;
-  }
-
-  .neon-glow-lg {
-    box-shadow: 0 0 10px #00ff88, 0 0 20px #00ff88, 0 0 40px #00ff88, 0 0 80px rgba(0, 255, 136, 0.3);
-  }
-
-  .neon-border {
-    border: 1px solid #00ff88;
-    box-shadow: 0 0 5px #00ff88, inset 0 0 5px rgba(0, 255, 136, 0.1);
-  }
-
-  .neon-border-dim {
-    border: 1px solid rgba(0, 255, 136, 0.3);
-  }
-
-  /* Grid background */
-  .bg-grid-neon {
-    background-image:
-      linear-gradient(rgba(0, 255, 136, 0.05) 1px, transparent 1px),
-      linear-gradient(90deg, rgba(0, 255, 136, 0.05) 1px, transparent 1px);
-    background-size: 40px 40px;
-  }
-
-  /* Scanline effect */
-  .scanlines::after {
-    content: '';
-    position: absolute;
-    inset: 0;
-    background: repeating-linear-gradient(
-      0deg,
-      transparent,
-      transparent 2px,
-      rgba(0, 0, 0, 0.1) 2px,
-      rgba(0, 0, 0, 0.1) 4px
-    );
-    pointer-events: none;
-  }
-
-  /* Neon card */
-  .neon-card {
-    background: oklch(0.12 0.008 145);
-    border: 1px solid rgba(0, 255, 136, 0.2);
-    box-shadow: 0 0 10px rgba(0, 255, 136, 0.05), inset 0 0 20px rgba(0, 255, 136, 0.02);
-  }
-
-  .neon-card:hover {
-    border-color: rgba(0, 255, 136, 0.5);
-    box-shadow: 0 0 15px rgba(0, 255, 136, 0.15), inset 0 0 20px rgba(0, 255, 136, 0.05);
-  }
-
-  /* Neon button */
-  .neon-btn {
-    background: transparent;
-    color: #00ff88;
-    border: 1px solid #00ff88;
-    box-shadow: 0 0 5px #00ff88, inset 0 0 5px rgba(0, 255, 136, 0.1);
-    transition: all 0.2s ease;
-  }
-
-  .neon-btn:hover {
-    background: rgba(0, 255, 136, 0.1);
-    box-shadow: 0 0 10px #00ff88, 0 0 20px #00ff88, inset 0 0 10px rgba(0, 255, 136, 0.2);
-  }
-
-  .neon-btn-solid {
-    background: #00ff88;
-    color: #0a0a0a;
-    border: 1px solid #00ff88;
-    box-shadow: 0 0 10px #00ff88, 0 0 20px rgba(0, 255, 136, 0.5);
-    transition: all 0.2s ease;
-    font-weight: 700;
-  }
-
-  .neon-btn-solid:hover {
-    background: #00ffaa;
-    box-shadow: 0 0 15px #00ff88, 0 0 30px rgba(0, 255, 136, 0.7);
-  }
-
-  /* Neon input */
-  .neon-input {
-    background: oklch(0.10 0.006 145);
-    border: 1px solid rgba(0, 255, 136, 0.3);
-    color: #e0ffe8;
-    transition: all 0.2s ease;
-  }
-
-  .neon-input:focus {
-    border-color: #00ff88;
-    box-shadow: 0 0 5px rgba(0, 255, 136, 0.5), inset 0 0 5px rgba(0, 255, 136, 0.05);
-    outline: none;
-  }
-
-  /* Pulse glow animation */
-  @keyframes pulseGlow {
-    0%, 100% {
-      box-shadow: 0 0 5px #00ff88, 0 0 10px #00ff88;
-    }
-    50% {
-      box-shadow: 0 0 10px #00ff88, 0 0 20px #00ff88, 0 0 40px rgba(0, 255, 136, 0.5);
-    }
-  }
-
-  .animate-pulse-glow {
-    animation: pulseGlow 2s ease-in-out infinite;
-  }
-
-  @keyframes neonFlicker {
-    0%, 19%, 21%, 23%, 25%, 54%, 56%, 100% {
-      opacity: 1;
-    }
-    20%, 24%, 55% {
-      opacity: 0.8;
-    }
-  }
-
-  .animate-neon-flicker {
-    animation: neonFlicker 3s infinite;
-  }
-
-  /* Gradient text */
-  .gradient-text-neon {
-    background: linear-gradient(135deg, #00ff88, #00ffcc, #00ff88);
-    -webkit-background-clip: text;
-    -webkit-text-fill-color: transparent;
-    background-clip: text;
-  }
-
-  /* Admin sidebar */
   .admin-sidebar {
-    background: oklch(0.07 0.004 145);
-    border-right: 1px solid rgba(0, 255, 136, 0.15);
+    background: linear-gradient(180deg, oklch(0.2 0.04 220) 0%, oklch(0.15 0.03 220) 100%);
   }
 
-  .admin-nav-item {
-    color: oklch(0.65 0.05 145);
-    transition: all 0.2s ease;
-    border-left: 2px solid transparent;
+  .stat-card-blue {
+    background: linear-gradient(135deg, oklch(0.45 0.15 230), oklch(0.5 0.12 220));
   }
 
-  .admin-nav-item:hover {
-    color: #00ff88;
-    background: rgba(0, 255, 136, 0.08);
-    border-left-color: #00ff88;
+  .stat-card-green {
+    background: linear-gradient(135deg, oklch(0.45 0.15 155), oklch(0.5 0.12 160));
   }
 
-  .admin-nav-item.active {
-    color: #00ff88;
-    background: rgba(0, 255, 136, 0.12);
-    border-left-color: #00ff88;
-    text-shadow: 0 0 8px rgba(0, 255, 136, 0.5);
+  .stat-card-teal {
+    background: linear-gradient(135deg, oklch(0.45 0.15 195), oklch(0.5 0.12 185));
   }
 
-  /* Scrollbar */
-  ::-webkit-scrollbar {
-    width: 6px;
-    height: 6px;
-  }
-
-  ::-webkit-scrollbar-track {
-    background: oklch(0.08 0.005 145);
-  }
-
-  ::-webkit-scrollbar-thumb {
-    background: rgba(0, 255, 136, 0.3);
-    border-radius: 3px;
-  }
-
-  ::-webkit-scrollbar-thumb:hover {
-    background: rgba(0, 255, 136, 0.6);
+  .stat-card-purple {
+    background: linear-gradient(135deg, oklch(0.45 0.15 290), oklch(0.5 0.12 280));
   }
 }

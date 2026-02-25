@@ -1,60 +1,113 @@
+import React from 'react';
 import { Link } from '@tanstack/react-router';
 import {
-  Package,
-  TrendingUp,
-  DollarSign,
-  Users,
-  MessageSquare,
-  BarChart3,
-  ShoppingCart,
-  FileText,
-  Zap,
-  ArrowRight,
+  Package, Users, BarChart3, ShoppingCart, TrendingUp,
+  DollarSign, ArrowRight, Activity
 } from 'lucide-react';
 
-const modules = [
-  { path: '/admin/owner-dashboard', label: 'Owner Dashboard', icon: Zap, desc: 'Main overview & metrics' },
-  { path: '/admin/stock', label: 'Stock Management', icon: Package, desc: 'Manage inventory levels' },
-  { path: '/admin/products', label: 'Products', icon: ShoppingCart, desc: 'Product catalog management' },
-  { path: '/admin/sales', label: "Today's Sales", icon: TrendingUp, desc: 'Daily sales transactions' },
-  { path: '/admin/revenue', label: 'Revenue', icon: DollarSign, desc: 'Revenue analytics' },
-  { path: '/admin/income', label: 'Income', icon: BarChart3, desc: 'Income tracking' },
-  { path: '/admin/customers', label: 'Customers', icon: Users, desc: 'Customer management' },
-  { path: '/admin/enquiries', label: 'Enquiries', icon: MessageSquare, desc: 'Customer enquiries' },
-  { path: '/admin/trending', label: 'Trending', icon: TrendingUp, desc: 'Trending products' },
-  { path: '/admin/reports', label: 'Reports', icon: FileText, desc: 'Sales reports & exports' },
+const navCards = [
+  {
+    title: 'Stock Management',
+    description: 'Manage inventory, add new items, and track stock levels',
+    icon: Package,
+    path: '/admin/stock',
+    color: 'bg-[oklch(0.92_0.05_230)]',
+    iconColor: 'text-[oklch(0.4_0.15_230)]',
+    borderColor: 'border-[oklch(0.85_0.08_230)]',
+  },
+  {
+    title: 'Products',
+    description: 'View and manage all products in the catalog',
+    icon: ShoppingCart,
+    path: '/admin/products',
+    color: 'bg-[oklch(0.92_0.05_195)]',
+    iconColor: 'text-[oklch(0.4_0.15_195)]',
+    borderColor: 'border-[oklch(0.85_0.08_195)]',
+  },
+  {
+    title: 'Customers',
+    description: 'Manage customer records and enquiry history',
+    icon: Users,
+    path: '/admin/customers',
+    color: 'bg-[oklch(0.92_0.05_155)]',
+    iconColor: 'text-[oklch(0.4_0.15_155)]',
+    borderColor: 'border-[oklch(0.85_0.08_155)]',
+  },
+  {
+    title: 'Sales Reports',
+    description: 'View detailed sales analytics and download reports',
+    icon: BarChart3,
+    path: '/admin/reports',
+    color: 'bg-[oklch(0.92_0.05_75)]',
+    iconColor: 'text-[oklch(0.5_0.15_75)]',
+    borderColor: 'border-[oklch(0.85_0.08_75)]',
+  },
+  {
+    title: "Today's Sales",
+    description: 'Track daily sales transactions and revenue',
+    icon: DollarSign,
+    path: '/admin/sales',
+    color: 'bg-[oklch(0.92_0.05_155)]',
+    iconColor: 'text-[oklch(0.4_0.15_155)]',
+    borderColor: 'border-[oklch(0.85_0.08_155)]',
+  },
+  {
+    title: 'Revenue Overview',
+    description: 'Analyze revenue trends and financial performance',
+    icon: Activity,
+    path: '/admin/revenue',
+    color: 'bg-[oklch(0.92_0.05_195)]',
+    iconColor: 'text-[oklch(0.4_0.15_195)]',
+    borderColor: 'border-[oklch(0.85_0.08_195)]',
+  },
+  {
+    title: 'Income Tracking',
+    description: 'Monitor income streams and financial summaries',
+    icon: TrendingUp,
+    path: '/admin/income',
+    color: 'bg-[oklch(0.92_0.05_230)]',
+    iconColor: 'text-[oklch(0.4_0.15_230)]',
+    borderColor: 'border-[oklch(0.85_0.08_230)]',
+  },
+  {
+    title: 'Trending Products',
+    description: 'View and manage trending product listings',
+    icon: TrendingUp,
+    path: '/admin/trending',
+    color: 'bg-[oklch(0.92_0.05_75)]',
+    iconColor: 'text-[oklch(0.5_0.15_75)]',
+    borderColor: 'border-[oklch(0.85_0.08_75)]',
+  },
 ];
 
 export default function AdminDashboard() {
   return (
-    <div className="min-h-screen bg-neon-black p-6 lg:p-8">
+    <div className="p-6 lg:p-8">
       {/* Header */}
-      <div className="mb-8 text-center">
-        <div className="inline-flex items-center justify-center w-14 h-14 rounded-full border-2 border-neon-green neon-glow mb-4 animate-pulse-glow">
-          <Zap className="w-7 h-7 text-neon-green" />
-        </div>
-        <h1 className="font-orbitron text-3xl font-black text-white mb-2">ADMIN PORTAL</h1>
-        <p className="text-gray-500 font-mono text-sm">Bevinamarada Ayurvedic Store — Control Center</p>
+      <div className="mb-8">
+        <h1 className="text-2xl font-bold text-[oklch(0.15_0.02_220)] font-heading">Admin Dashboard</h1>
+        <p className="text-[oklch(0.5_0.03_200)] mt-1">Manage all aspects of your pharmaceutical business</p>
       </div>
 
-      {/* Modules Grid */}
-      <div className="max-w-4xl mx-auto grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
-        {modules.map((mod) => {
-          const Icon = mod.icon;
+      {/* Navigation Cards */}
+      <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-5">
+        {navCards.map((card) => {
+          const Icon = card.icon;
           return (
             <Link
-              key={mod.path}
-              to={mod.path}
-              className="neon-card rounded-lg p-5 flex items-center gap-4 group hover:border-neon-green/50 transition-all duration-300"
+              key={card.path}
+              to={card.path}
+              className={`group block p-5 bg-white rounded-xl border ${card.borderColor} shadow-card hover:shadow-card-hover transition-all duration-200 hover:-translate-y-0.5`}
             >
-              <div className="w-12 h-12 rounded-lg border border-neon-green/20 bg-neon-green/5 flex items-center justify-center group-hover:border-neon-green/60 group-hover:bg-neon-green/10 group-hover:neon-glow-sm transition-all duration-300 flex-shrink-0">
-                <Icon className="w-6 h-6 text-neon-green" />
+              <div className={`w-11 h-11 rounded-xl ${card.color} flex items-center justify-center mb-4`}>
+                <Icon className={`w-5 h-5 ${card.iconColor}`} />
               </div>
-              <div className="flex-1 min-w-0">
-                <p className="font-rajdhani font-bold text-white text-sm group-hover:text-neon-green transition-colors">{mod.label}</p>
-                <p className="text-gray-600 text-xs font-mono mt-0.5">{mod.desc}</p>
+              <h3 className="font-semibold text-[oklch(0.15_0.02_220)] mb-1.5 font-heading text-sm">{card.title}</h3>
+              <p className="text-[oklch(0.5_0.03_200)] text-xs leading-relaxed mb-3">{card.description}</p>
+              <div className="flex items-center gap-1 text-[oklch(0.45_0.15_195)] text-xs font-medium group-hover:gap-2 transition-all">
+                <span>Open</span>
+                <ArrowRight className="w-3 h-3" />
               </div>
-              <ArrowRight className="w-4 h-4 text-gray-700 group-hover:text-neon-green group-hover:translate-x-1 transition-all duration-300 flex-shrink-0" />
             </Link>
           );
         })}

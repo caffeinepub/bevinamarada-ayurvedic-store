@@ -1,27 +1,62 @@
 {
   "schemaVersion": "1.0.0",
   "projectStateVersion": 3,
-  "summary": "Project involves a web app with an admin portal and a neon dark black-and-green theme with light effects.",
-  "architectural_notes": [],
+  "summary": "Pharmacy management app with admin portal. Switching from cyber/neon theme to a pharma theme with high-quality UI. Admin login: username 'baslxr', password 'bas12345'.",
+  "architectural_notes": [
+    "Admin portal credentials: username = baslxr, password = bas12345"
+  ],
   "known_issues": [
-    "Admin portal not appearing despite multiple deployment attempts",
-    "Neon dark black-and-green theme not applying correctly"
+    "Text color blends into background in several UI areas making text unreadable",
+    "'Add Items' and 'Add Customer' UI elements overlap with background elements"
   ],
   "isFixRequest": true,
+  "imageRequirements": "## Required Images\n- Clean pharma-style logo mark — a green cross or leaf combined with a minimalist pill or mortar icon, suitable for a light white header background (pharma-logo.dim_200x60.png)\n- Soft light green and white abstract background pattern with subtle medical/herbal motifs for hero section (pharma-hero-bg.dim_1440x600.png)",
   "existing_features": [
     {
-      "id": "feature-ensure-the-admin-portal-is-fully-accessible-and-visible-the-route-admin-login-must-render-the-adminlogin-page-and-after-successful-login-with-credentials-admin-admin123-the-user-must-be-redirected-to-owner-dashboard-all-admin-routes-owner-dashboard-admin-stock-admin-sales-admin-revenue-admin-customers-admin-enquiries-admin-income-admin-trending-admin-products-admin-reports-must-be-protected-by-adminguard-and-render-correctly-inside-adminlayout-with-the-full-sidebar-navigation-verify-that-adminguard-correctly-reads-sessionstorage-keys-admin-session-and-adminsessionactive-and-does-not-redirect-authenticated-users-away",
-      "title": "Ensure the admin portal is fully accessible and visible. The route /admin-login must render the AdminLogin page, and after successful login with credentials (admin/admin123), the user must be redirected to /owner-dashboard. All admin routes (/owner-dashboard, /admin/stock, /admin/sales, /admin/revenue, /admin/customers, /admin/enquiries, /admin/income, /admin/trending, /admin/products, /admin/reports) must be protected by AdminGuard and render correctly inside AdminLayout with the full sidebar navigation. Verify that AdminGuard correctly reads sessionStorage keys 'admin-session' and 'adminSessionActive' and does not redirect authenticated users away.",
+      "id": "feature-replace-the-entire-cyber-neon-dark-theme-with-a-clean-professional-pharma-grade-ui-theme-the-new-theme-should-use-a-light-clinical-color-palette-e-g-white-soft-greens-muted-teals-light-grays-and-accent-blues-typical-of-pharmaceutical-health-brands-remove-all-neon-glows-scanline-effects-grid-backgrounds-neonflicker-pulseglow-animations-and-neon-border-utilities-update-frontend-index-css-frontend-src-index-css-and-frontend-tailwind-config-js-to-reflect-the-new-pharma-color-tokens-removing-all-neon-specific-utilities-and-cyber-style-design-tokens",
+      "title": "Replace the entire cyber/neon dark theme with a clean, professional pharma-grade UI theme. The new theme should use a light, clinical color palette (e.g., white, soft greens, muted teals, light grays, and accent blues typical of pharmaceutical/health brands). Remove all neon glows, scanline effects, grid backgrounds, neonFlicker/pulseGlow animations, and neon border utilities. Update frontend/index.css, frontend/src/index.css, and frontend/tailwind.config.js to reflect the new pharma color tokens, removing all neon-specific utilities and cyber-style design tokens.",
       "reqIds": [
         "REQ-1"
       ],
       "version": 1
     },
     {
-      "id": "feature-apply-and-enforce-a-neon-dark-black-and-green-theme-consistently-across-the-entire-application-both-the-admin-portal-and-public-facing-pages-the-theme-must-use-a-near-black-background-e-g-0a0a0a-or-0d0d0d-bright-neon-green-accents-e-g-00ff88-or-39ff14-dark-card-surfaces-and-glowing-neon-light-effects-on-key-interactive-elements-buttons-nav-links-cards-headings-update-frontend-src-index-css-css-custom-properties-and-frontend-tailwind-config-js-color-tokens-so-the-neon-palette-is-applied-globally-ensure-all-pages-home-products-about-contact-adminlogin-admindashboard-ownerdashboard-stockmanagement-salespage-etc-reflect-this-theme-with-no-remnants-of-conflicting-or-default-light-blue-themes",
-      "title": "Apply and enforce a neon dark black-and-green theme consistently across the entire application — both the admin portal and public-facing pages. The theme must use a near-black background (e.g., #0a0a0a or #0d0d0d), bright neon green accents (e.g., #00ff88 or #39ff14), dark card surfaces, and glowing neon light effects on key interactive elements (buttons, nav links, cards, headings). Update frontend/src/index.css CSS custom properties and frontend/tailwind.config.js color tokens so the neon palette is applied globally. Ensure all pages (Home, Products, About, Contact, AdminLogin, AdminDashboard, OwnerDashboard, StockManagement, SalesPage, etc.) reflect this theme with no remnants of conflicting or default light/blue themes.",
+      "id": "feature-replace-the-current-font-stack-orbitron-rajdhani-share-tech-mono-cyber-sci-fi-fonts-with-pharma-appropriate-professional-fonts-use-a-clean-sans-serif-combination-such-as-inter-or-nunito-for-body-text-and-dm-sans-or-poppins-for-headings-update-the-google-fonts-import-in-frontend-src-index-css-and-the-fontfamily-configuration-in-frontend-tailwind-config-js-accordingly-apply-the-new-fonts-globally-across-all-pages-and-components",
+      "title": "Replace the current font stack (Orbitron, Rajdhani, Share Tech Mono — cyber/sci-fi fonts) with pharma-appropriate professional fonts. Use a clean sans-serif combination such as Inter or Nunito for body text and DM Sans or Poppins for headings. Update the Google Fonts import in frontend/src/index.css and the fontFamily configuration in frontend/tailwind.config.js accordingly. Apply the new fonts globally across all pages and components.",
       "reqIds": [
         "REQ-2"
+      ],
+      "version": 1
+    },
+    {
+      "id": "feature-fix-all-text-and-ui-contrast-issues-where-text-color-blends-into-or-is-not-readable-against-the-background-audit-and-update-text-colors-across-all-pages-and-components-including-admindashboard-ownerdashboard-stockmanagement-customermanagement-productmanagement-salesreports-adminlogin-home-and-all-admin-layout-components-to-ensure-sufficient-contrast-ratios-wcag-aa-minimum-all-headings-labels-table-text-card-text-button-labels-and-form-field-text-must-be-clearly-legible-against-their-respective-backgrounds",
+      "title": "Fix all text and UI contrast issues where text color blends into or is not readable against the background. Audit and update text colors across all pages and components — including AdminDashboard, OwnerDashboard, StockManagement, CustomerManagement, ProductManagement, SalesReports, AdminLogin, Home, and all admin layout components — to ensure sufficient contrast ratios (WCAG AA minimum). All headings, labels, table text, card text, button labels, and form field text must be clearly legible against their respective backgrounds.",
+      "reqIds": [
+        "REQ-3"
+      ],
+      "version": 1
+    },
+    {
+      "id": "feature-fix-the-add-items-stockitemform-dialog-stockmanagement-page-and-add-customer-customermanagement-page-ui-elements-that-overlap-with-background-content-ensure-modal-dialog-backdrops-are-fully-opaque-with-a-proper-overlay-dialog-containers-have-solid-white-or-light-colored-backgrounds-with-visible-borders-or-shadows-and-z-index-layering-is-correct-so-dialogs-render-fully-above-all-page-content-apply-the-same-fix-to-any-other-dialog-or-overlay-in-the-admin-panel",
+      "title": "Fix the 'Add Items' (StockItemForm dialog / StockManagement page) and 'Add Customer' (CustomerManagement page) UI elements that overlap with background content. Ensure modal/dialog backdrops are fully opaque with a proper overlay, dialog containers have solid white or light-colored backgrounds with visible borders or shadows, and z-index layering is correct so dialogs render fully above all page content. Apply the same fix to any other dialog or overlay in the admin panel.",
+      "reqIds": [
+        "REQ-4"
+      ],
+      "version": 1
+    },
+    {
+      "id": "feature-update-the-admin-login-credentials-in-frontend-src-pages-adminlogin-tsx-change-the-hardcoded-username-from-admin-to-baslxr-and-the-hardcoded-password-from-admin123-to-bas12345-ensure-the-login-page-ui-matches-the-new-pharma-theme-with-proper-contrast-and-readable-form-fields",
+      "title": "Update the admin login credentials in frontend/src/pages/AdminLogin.tsx. Change the hardcoded username from 'admin' to 'baslxr' and the hardcoded password from 'admin123' to 'bas12345'. Ensure the login page UI matches the new pharma theme with proper contrast and readable form fields.",
+      "reqIds": [
+        "REQ-5"
+      ],
+      "version": 1
+    },
+    {
+      "id": "feature-apply-the-pharma-theme-consistently-to-all-public-facing-pages-home-products-aboutus-contact-and-all-admin-pages-ownerdashboard-admindashboard-stockmanagement-productmanagement-customermanagement-enquirymanagement-salesreports-salespage-revenuepage-incomepage-trendingpage-profilepage-use-consistent-card-styles-with-white-light-backgrounds-subtle-box-shadows-rounded-corners-and-clear-section-separation-navigation-headers-and-sidebars-should-use-the-pharma-color-palette-with-proper-contrast-for-all-nav-labels-and-icons",
+      "title": "Apply the pharma theme consistently to all public-facing pages (Home, Products, AboutUs, Contact) and all admin pages (OwnerDashboard, AdminDashboard, StockManagement, ProductManagement, CustomerManagement, EnquiryManagement, SalesReports, SalesPage, RevenuePage, IncomePage, TrendingPage, ProfilePage). Use consistent card styles with white/light backgrounds, subtle box shadows, rounded corners, and clear section separation. Navigation headers and sidebars should use the pharma color palette with proper contrast for all nav labels and icons.",
+      "reqIds": [
+        "REQ-6"
       ],
       "version": 1
     }
@@ -29,19 +64,31 @@
   "new_feature_requests": [
     {
       "id": "AR-1",
-      "summary": "Add admin portal to the application",
+      "summary": "Switch from cyber/neon theme to a clean pharma theme with high-rated UI",
       "reqIds": [],
       "status": "pending"
     },
     {
       "id": "AR-2",
-      "summary": "Apply neon dark black-and-green theme with light effects",
+      "summary": "Fix text and UI color contrast issues where text is not visible against background",
+      "reqIds": [],
+      "status": "pending"
+    },
+    {
+      "id": "AR-3",
+      "summary": "Fix 'Add Items' and 'Add Customer' options overlapping with background",
+      "reqIds": [],
+      "status": "pending"
+    },
+    {
+      "id": "AR-4",
+      "summary": "Change font style to match pharma theme",
       "reqIds": [],
       "status": "pending"
     }
   ],
   "gameProjectType": "none",
-  "projectName": "Bevinamarada Ayurvedic Store",
+  "projectName": "Pharmacy Management App",
   "clarification_mode": "instant",
   "clarification_rounds": 0
 }
