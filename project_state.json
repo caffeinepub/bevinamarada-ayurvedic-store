@@ -1,48 +1,51 @@
 {
   "schemaVersion": "1.0.0",
   "projectStateVersion": 3,
-  "summary": "Dashboard project with pharmacy-inspired look, Indian rupee currency, smooth animations, and bold styling. Mobile sidebar overlap fix in progress.",
+  "summary": "Complete website and business management system for Bevinamarada Ayurvedic Store. Includes customer-facing pages (Home, About, Products, Contact) with Ayurvedic green/brown theme, and a secure admin dashboard for stock management, income tracking, sales reports, and customer enquiries. Mobile-first design is a top priority.",
   "architectural_notes": [
-    "Mobile layout: sidebar should be hidden by default on small screens, accessible via slide-out menu; main content takes full width"
+    "Mobile-first design is critical — all features must work perfectly on mobile phones",
+    "Admin panel requires secure login (username/password); customers need no login",
+    "Ayurvedic theme: green and brown colors inspired by Neem tree (Bevinamarada)"
   ],
   "known_issues": [
-    "On mobile screens, left sidebar overlaps dashboard content"
+    "Mobile nav menu overlay broken: overlaps header, items misaligned, background still scrollable, close button ineffective — needs full-screen drawer behavior"
   ],
   "isFixRequest": true,
   "existing_features": [
     {
-      "id": "feature-on-mobile-screens-below-md-breakpoint-hide-the-left-sidebar-by-default-so-it-does-not-overlap-the-main-dashboard-content-add-a-hamburger-menu-toggle-button-visible-only-on-mobile-that-opens-and-closes-the-sidebar-as-a-slide-in-drawer-from-the-left-side-of-the-screen",
-      "title": "On mobile screens (below md breakpoint), hide the left sidebar by default so it does not overlap the main dashboard content. Add a hamburger/menu toggle button visible only on mobile that opens and closes the sidebar as a slide-in drawer from the left side of the screen.",
+      "id": "feature-rebuild-the-mobile-navigation-menu-in-publiclayout-tsx-as-a-proper-full-screen-overlay-drawer-when-open-the-menu-must-cover-the-entire-viewport-position-fixed-top-0-left-0-width-100vw-height-100vh-with-a-solid-background-so-no-page-content-behind-it-is-visible",
+      "title": "Rebuild the mobile navigation menu in PublicLayout.tsx as a proper full-screen overlay drawer. When open, the menu must cover the entire viewport (position fixed, top-0 left-0, width 100vw, height 100vh) with a solid background so no page content behind it is visible.",
       "reqIds": [
         "REQ-1"
       ],
       "version": 1
     },
     {
-      "id": "feature-on-mobile-screens-the-main-content-area-must-occupy-the-full-width-of-the-viewport-when-the-sidebar-is-closed-remove-any-left-margin-or-offset-that-was-previously-reserved-for-the-sidebar-on-small-screens",
-      "title": "On mobile screens, the main content area must occupy the full width of the viewport when the sidebar is closed. Remove any left margin or offset that was previously reserved for the sidebar on small screens.",
+      "id": "feature-fix-the-layout-of-menu-items-inside-the-mobile-overlay-all-navigation-links-home-about-products-contact-etc-must-be-vertically-stacked-centered-both-horizontally-and-vertically-with-adequate-spacing-between-each-item-no-items-should-overlap-with-each-other-with-the-logo-or-with-any-header-elements",
+      "title": "Fix the layout of menu items inside the mobile overlay. All navigation links (Home, About, Products, Contact, etc.) must be vertically stacked, centered both horizontally and vertically, with adequate spacing between each item. No items should overlap with each other, with the logo, or with any header elements.",
       "reqIds": [
         "REQ-2"
       ],
       "version": 1
     },
     {
-      "id": "feature-when-the-mobile-sidebar-drawer-is-open-add-a-semi-transparent-dark-backdrop-overlay-behind-the-drawer-and-on-top-of-the-main-content-tapping-the-backdrop-should-close-the-drawer",
-      "title": "When the mobile sidebar drawer is open, add a semi-transparent dark backdrop overlay behind the drawer and on top of the main content. Tapping the backdrop should close the drawer.",
+      "id": "feature-ensure-the-close-x-button-in-the-mobile-menu-fully-dismisses-the-overlay-the-button-must-be-clearly-positioned-e-g-top-right-corner-of-the-overlay-visually-distinct-and-clicking-it-must-set-the-menu-state-to-closed-and-restore-all-normal-page-behavior",
+      "title": "Ensure the close (X) button in the mobile menu fully dismisses the overlay. The button must be clearly positioned (e.g., top-right corner of the overlay), visually distinct, and clicking it must set the menu state to closed and restore all normal page behavior.",
       "reqIds": [
         "REQ-3"
       ],
       "version": 1
-    }
-  ],
-  "new_feature_requests": [
+    },
     {
-      "id": "AR-1",
-      "summary": "On mobile, hide sidebar by default and show as slide-out menu; main content should be full width",
-      "reqIds": [],
-      "status": "pending"
+      "id": "feature-lock-the-body-scroll-when-the-mobile-menu-is-open-when-the-menu-overlay-is-active-apply-overflow-hidden-or-equivalent-to-the-document-body-so-the-background-page-content-cannot-be-scrolled-restore-normal-scroll-behavior-when-the-menu-is-closed",
+      "title": "Lock the body scroll when the mobile menu is open. When the menu overlay is active, apply overflow-hidden (or equivalent) to the document body so the background page content cannot be scrolled. Restore normal scroll behavior when the menu is closed.",
+      "reqIds": [
+        "REQ-4"
+      ],
+      "version": 1
     }
   ],
+  "new_feature_requests": [],
   "gameProjectType": "none",
   "projectName": "Bevinamarada Ayurvedic Store",
   "clarification_mode": "instant",

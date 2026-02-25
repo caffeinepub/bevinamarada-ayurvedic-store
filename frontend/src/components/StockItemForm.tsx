@@ -1,209 +1,311 @@
-import React, { useState, useRef } from 'react';
-import {
-  Dialog,
-  DialogContent,
-  DialogHeader,
-  DialogTitle,
-  DialogFooter,
-} from '@/components/ui/dialog';
+import React, { useState, useEffect } from 'react';
+import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogFooter } from '@/components/ui/dialog';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
-import { Loader2, Upload, X, ImageIcon } from 'lucide-react';
+import { Loader2, Upload, X } from 'lucide-react';
 import { useAddStockItem, useUpdateStockItem } from '../hooks/useQueries';
 import { ExternalBlob } from '../backend';
 import type { StockItem } from '../backend';
 
-interface StockItemFormProps {
-  item?: StockItem;
-  onClose: () => void;
+export interface StockItemFormProps {
+  open: boolean;
+  onOpenChange: (open: boolean) => void;
+  editItem?: StockItem | null;
+  trialExpired?: boolean;
 }
 
-export default function StockItemForm({ item, onClose }: StockItemFormProps) {
-  const [name, setName] = useState(item?.name ?? '');
-  const [category, setCategory] = useState(item?.category ?? '');
-  const [quantity, setQuantity] = useState(item ? item.quantity.toString() : '');
-  const [unitPrice, setUnitPrice] = useState(item ? item.unitPrice.toString() : '');
-  const [lowStockThreshold, setLowStockThreshold] = useState(item ? item.lowStockThreshold.toString() : '10');
-  const [imageFile, setImageFile] = useState<File | null>(null);
-  const [imagePreview, setImagePreview] = useState<string | null>(
-    item?.image ? item.image.getDirectURL() : null
-  );
-  const [uploadProgress, setUploadProgress] = useState(0);
-  const fileInputRef = useRef<HTMLInputElement>(null);
+export default function StockItemForm({ open, onOpenChange, editItem, trialExpired = false }: StockItemFormProps) {
+  const addMutation = useAddStockItem();
+  const updateMutation = useUpdateStockItem();
 
-  const addItem = useAddStockItem();
-  const updateItem = useUpdateStockItem();
-  const isPending = addItem.isPending || updateItem.isPending;
+  const [name, setName] = useState('');
+  const [category, setCategory] = useState('');
+  const [quantity, setQuantity] = useState('');
+  const [unitPrice, setUnitPrice] = useState('');
+  const [lowStockThreshold, setLowStockThreshold] = useState('5');
+  const [expiryDate, setExpiryDate] = useState('');
+  const [imageFile, setImageFile] = useState<File | null>(null);
+  const [imagePreview, setImagePreview] = useState<string | null>(null);
+  const [error, setError] = useState('');
+
+  const isEditing = !!editItem;
+  const isPending = addMutation.isPending || updateMutation.isPending;
+
+  useEffect(() => {
+    if (open) {
+      if (editItem) {
+        setName(editItem.name);
+        setCategory(editItem.category);
+        setQuantity(String(editItem.quantity));
+        setUnitPrice(String(editItem.unitPrice));
+        setLowStockThreshold(String(editItem.lowStockThreshold));
+        if (editItem.expiryDate) {
+          const ms = Number(editItem.expiryDate) / 1_000_000;
+          const d = new Date(ms);
+          setExpiryDate(d.toISOString().split('T')[0]);
+        } else {
+          setExpiryDate('');
+        }
+        if (editItem.image) {
+          setImagePreview(editItem.image.getDirectURL());
+        } else {
+          setImagePreview(null);
+        }
+        setImageFile(null);
+      } else {
+        setName('');
+        setCategory('');
+        setQuantity('');
+        setUnitPrice('');
+        setLowStockThreshold('5');
+        setExpiryDate('');
+        setImageFile(null);
+        setImagePreview(null);
+      }
+      setError('');
+    }
+  }, [open, editItem]);
 
   const handleImageChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     const file = e.target.files?.[0];
-    if (!file) return;
-    setImageFile(file);
-    const reader = new FileReader();
-    reader.onload = (ev) => setImagePreview(ev.target?.result as string);
-    reader.readAsDataURL(file);
+    if (file) {
+      setImageFile(file);
+      const reader = new FileReader();
+      reader.onloadend = () => {
+        setImagePreview(reader.result as string);
+      };
+      reader.readAsDataURL(file);
+    }
   };
 
-  const handleSubmit = async () => {
-    if (!name.trim() || !category.trim() || !quantity || !unitPrice) return;
+  const handleRemoveImage = () => {
+    setImageFile(null);
+    setImagePreview(null);
+  };
+
+  const handleSubmit = async (e: React.FormEvent) => {
+    e.preventDefault();
+    setError('');
+
+    if (trialExpired) {
+      setError('Your trial has expired. Please contact support to continue.');
+      return;
+    }
+
+    if (!name.trim() || !category.trim() || !quantity || !unitPrice) {
+      setError('Please fill in all required fields.');
+      return;
+    }
+
+    const qty = parseInt(quantity, 10);
+    const price = parseInt(unitPrice, 10);
+    const threshold = parseInt(lowStockThreshold, 10) || 5;
+
+    if (isNaN(qty) || qty < 0) {
+      setError('Quantity must be a valid non-negative number.');
+      return;
+    }
+    if (isNaN(price) || price < 0) {
+      setError('Unit price must be a valid non-negative number.');
+      return;
+    }
 
     let imageBlob: ExternalBlob | null = null;
     if (imageFile) {
-      const bytes = new Uint8Array(await imageFile.arrayBuffer());
-      imageBlob = ExternalBlob.fromBytes(bytes).withUploadProgress((pct) => setUploadProgress(pct));
-    } else if (item?.image) {
-      imageBlob = item.image;
+      const arrayBuffer = await imageFile.arrayBuffer();
+      imageBlob = ExternalBlob.fromBytes(new Uint8Array(arrayBuffer));
+    } else if (editItem?.image && !imageFile && imagePreview) {
+      imageBlob = editItem.image;
     }
 
-    const params = {
-      name: name.trim(),
-      category: category.trim(),
-      quantity: BigInt(parseInt(quantity)),
-      unitPrice: BigInt(parseInt(unitPrice)),
-      lowStockThreshold: BigInt(parseInt(lowStockThreshold) || 10),
-      image: imageBlob,
-    };
-
-    if (item) {
-      await updateItem.mutateAsync({ id: item.id, ...params });
-    } else {
-      await addItem.mutateAsync(params);
+    let expiryDateNanos: bigint | null = null;
+    if (expiryDate) {
+      const ms = new Date(expiryDate).getTime();
+      expiryDateNanos = BigInt(ms) * 1_000_000n;
     }
-    onClose();
+
+    try {
+      if (isEditing && editItem) {
+        await updateMutation.mutateAsync({
+          id: editItem.id,
+          name: name.trim(),
+          category: category.trim(),
+          quantity: BigInt(qty),
+          unitPrice: BigInt(price),
+          lowStockThreshold: BigInt(threshold),
+          image: imageBlob,
+          expiryDate: expiryDateNanos,
+        });
+      } else {
+        await addMutation.mutateAsync({
+          name: name.trim(),
+          category: category.trim(),
+          quantity: BigInt(qty),
+          unitPrice: BigInt(price),
+          lowStockThreshold: BigInt(threshold),
+          image: imageBlob,
+          expiryDate: expiryDateNanos,
+        });
+      }
+      onOpenChange(false);
+    } catch (err: unknown) {
+      const msg = err instanceof Error ? err.message : 'An error occurred. Please try again.';
+      setError(msg);
+    }
   };
 
   return (
-    <Dialog open onOpenChange={(open) => !open && onClose()}>
-      <DialogContent className="bg-card border-border rounded-2xl max-w-md animate-scale-in">
+    <Dialog open={open} onOpenChange={onOpenChange}>
+      <DialogContent className="max-w-lg max-h-[90vh] overflow-y-auto">
         <DialogHeader>
-          <DialogTitle className="font-display font-bold text-xl text-foreground">
-            {item ? 'Edit Stock Item' : 'Add New Stock Item'}
+          <DialogTitle className="text-xl font-bold">
+            {isEditing ? 'Edit Stock Item' : 'Add New Stock Item'}
           </DialogTitle>
         </DialogHeader>
 
-        <div className="space-y-4 py-2">
-          {/* Image Upload */}
-          <div>
-            <Label className="font-bold text-sm text-foreground mb-1.5 block">Product Image (Optional)</Label>
-            <div
-              onClick={() => fileInputRef.current?.click()}
-              className="relative h-32 bg-muted/30 border-2 border-dashed border-border rounded-xl flex items-center justify-center cursor-pointer hover:border-primary hover:bg-primary/5 transition-all duration-200 overflow-hidden"
-            >
-              {imagePreview ? (
-                <>
-                  <img src={imagePreview} alt="Preview" className="w-full h-full object-cover" />
-                  <button
-                    onClick={(e) => { e.stopPropagation(); setImageFile(null); setImagePreview(null); }}
-                    className="absolute top-2 right-2 w-6 h-6 bg-destructive text-destructive-foreground rounded-full flex items-center justify-center hover:scale-110 transition-transform"
-                  >
-                    <X className="w-3 h-3" />
-                  </button>
-                </>
-              ) : (
-                <div className="text-center">
-                  <ImageIcon className="w-8 h-8 text-muted-foreground/40 mx-auto mb-1" />
-                  <p className="text-muted-foreground text-xs font-semibold">Click to upload image</p>
-                </div>
-              )}
-            </div>
-            <input ref={fileInputRef} type="file" accept="image/*" onChange={handleImageChange} className="hidden" />
-            {uploadProgress > 0 && uploadProgress < 100 && (
-              <div className="mt-2">
-                <div className="h-1.5 bg-muted rounded-full overflow-hidden">
-                  <div
-                    className="h-full bg-primary rounded-full transition-all duration-300"
-                    style={{ width: `${uploadProgress}%` }}
-                  />
-                </div>
-                <p className="text-xs text-muted-foreground font-medium mt-1">Uploading... {uploadProgress}%</p>
-              </div>
-            )}
+        {trialExpired && (
+          <div className="bg-destructive/10 border border-destructive/30 rounded-lg p-3 text-sm text-destructive">
+            Your 7-day trial has expired. All admin actions are disabled.
           </div>
+        )}
 
-          {/* Name */}
-          <div>
-            <Label className="font-bold text-sm text-foreground mb-1.5 block">Product Name *</Label>
+        <form onSubmit={handleSubmit} className="space-y-4">
+          <div className="space-y-1">
+            <Label htmlFor="item-name">Name *</Label>
             <Input
+              id="item-name"
               value={name}
               onChange={(e) => setName(e.target.value)}
-              placeholder="e.g., Ashwagandha Powder"
-              className="h-11 bg-muted/50 border-border rounded-xl font-medium focus:border-primary"
+              placeholder="e.g. Ashwagandha Powder"
+              disabled={isPending || trialExpired}
+              required
             />
           </div>
 
-          {/* Category */}
-          <div>
-            <Label className="font-bold text-sm text-foreground mb-1.5 block">Category *</Label>
+          <div className="space-y-1">
+            <Label htmlFor="item-category">Category *</Label>
             <Input
+              id="item-category"
               value={category}
               onChange={(e) => setCategory(e.target.value)}
-              placeholder="e.g., Herbs, Oils, Supplements"
-              className="h-11 bg-muted/50 border-border rounded-xl font-medium focus:border-primary"
+              placeholder="e.g. Herbs & Powders"
+              disabled={isPending || trialExpired}
+              required
             />
           </div>
 
-          {/* Quantity & Price */}
           <div className="grid grid-cols-2 gap-3">
-            <div>
-              <Label className="font-bold text-sm text-foreground mb-1.5 block">Quantity *</Label>
+            <div className="space-y-1">
+              <Label htmlFor="item-quantity">Quantity *</Label>
               <Input
+                id="item-quantity"
                 type="number"
                 min="0"
                 value={quantity}
                 onChange={(e) => setQuantity(e.target.value)}
                 placeholder="0"
-                className="h-11 bg-muted/50 border-border rounded-xl font-medium focus:border-primary"
+                disabled={isPending || trialExpired}
+                required
               />
             </div>
-            <div>
-              <Label className="font-bold text-sm text-foreground mb-1.5 block">Unit Price (₹) *</Label>
+            <div className="space-y-1">
+              <Label htmlFor="item-price">Unit Price (₹) *</Label>
               <Input
+                id="item-price"
                 type="number"
                 min="0"
                 value={unitPrice}
                 onChange={(e) => setUnitPrice(e.target.value)}
                 placeholder="0"
-                className="h-11 bg-muted/50 border-border rounded-xl font-medium focus:border-primary"
+                disabled={isPending || trialExpired}
+                required
               />
             </div>
           </div>
 
-          {/* Low Stock Threshold */}
-          <div>
-            <Label className="font-bold text-sm text-foreground mb-1.5 block">Low Stock Threshold</Label>
+          <div className="space-y-1">
+            <Label htmlFor="item-threshold">Low Stock Threshold</Label>
             <Input
+              id="item-threshold"
               type="number"
               min="0"
               value={lowStockThreshold}
               onChange={(e) => setLowStockThreshold(e.target.value)}
-              placeholder="10"
-              className="h-11 bg-muted/50 border-border rounded-xl font-medium focus:border-primary"
+              placeholder="5"
+              disabled={isPending || trialExpired}
             />
           </div>
-        </div>
 
-        <DialogFooter className="gap-2">
-          <Button
-            variant="outline"
-            onClick={onClose}
-            disabled={isPending}
-            className="font-bold border-border rounded-xl hover:bg-muted"
-          >
-            Cancel
-          </Button>
-          <Button
-            onClick={handleSubmit}
-            disabled={isPending || !name.trim() || !category.trim() || !quantity || !unitPrice}
-            className="btn-transition bg-primary hover:bg-primary/90 text-primary-foreground font-bold rounded-xl shadow-green"
-          >
-            {isPending ? (
-              <><Loader2 className="w-4 h-4 mr-2 animate-spin" /> {item ? 'Updating...' : 'Adding...'}</>
+          <div className="space-y-1">
+            <Label htmlFor="item-expiry">Expiry Date</Label>
+            <Input
+              id="item-expiry"
+              type="date"
+              value={expiryDate}
+              onChange={(e) => setExpiryDate(e.target.value)}
+              disabled={isPending || trialExpired}
+            />
+          </div>
+
+          <div className="space-y-1">
+            <Label>Product Image</Label>
+            {imagePreview ? (
+              <div className="relative w-full h-40 rounded-lg overflow-hidden border border-border">
+                <img src={imagePreview} alt="Preview" className="w-full h-full object-cover" />
+                <button
+                  type="button"
+                  onClick={handleRemoveImage}
+                  disabled={isPending || trialExpired}
+                  className="absolute top-2 right-2 bg-background/80 rounded-full p-1 hover:bg-background transition-colors"
+                >
+                  <X className="w-4 h-4" />
+                </button>
+              </div>
             ) : (
-              item ? 'Update Item' : 'Add Item'
+              <label
+                className={`flex flex-col items-center justify-center w-full h-32 border-2 border-dashed border-border rounded-lg cursor-pointer hover:bg-muted/50 transition-colors ${trialExpired ? 'opacity-50 cursor-not-allowed' : ''}`}
+              >
+                <Upload className="w-6 h-6 text-muted-foreground mb-2" />
+                <span className="text-sm text-muted-foreground">Click to upload image</span>
+                <input
+                  type="file"
+                  accept="image/*"
+                  className="hidden"
+                  onChange={handleImageChange}
+                  disabled={isPending || trialExpired}
+                />
+              </label>
             )}
-          </Button>
-        </DialogFooter>
+          </div>
+
+          {error && (
+            <div className="text-sm text-destructive bg-destructive/10 rounded-lg p-3">
+              {error}
+            </div>
+          )}
+
+          <DialogFooter>
+            <Button
+              type="button"
+              variant="outline"
+              onClick={() => onOpenChange(false)}
+              disabled={isPending}
+            >
+              Cancel
+            </Button>
+            <Button type="submit" disabled={isPending || trialExpired}>
+              {isPending ? (
+                <>
+                  <Loader2 className="w-4 h-4 mr-2 animate-spin" />
+                  {isEditing ? 'Updating...' : 'Adding...'}
+                </>
+              ) : (
+                isEditing ? 'Update Item' : 'Add Item'
+              )}
+            </Button>
+          </DialogFooter>
+        </form>
       </DialogContent>
     </Dialog>
   );

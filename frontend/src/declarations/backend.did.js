@@ -28,6 +28,7 @@ export const UserRole = IDL.Variant({
 export const StockItem = IDL.Record({
   'id' : IDL.Nat,
   'lowStockThreshold' : IDL.Nat,
+  'expiryDate' : IDL.Opt(IDL.Int),
   'name' : IDL.Text,
   'isLowStock' : IDL.Bool,
   'quantity' : IDL.Nat,
@@ -36,16 +37,17 @@ export const StockItem = IDL.Record({
   'unitPrice' : IDL.Nat,
   'isTrending' : IDL.Bool,
 });
-export const UserProfile = IDL.Record({ 'name' : IDL.Text });
-export const IncomeSummary = IDL.Record({
-  'todaysIncome' : IDL.Nat,
-  'totalIncome' : IDL.Nat,
-  'monthlyIncome' : IDL.Nat,
+export const UserProfile = IDL.Record({
+  'name' : IDL.Text,
+  'role' : UserRole,
+  'trialStartTime' : IDL.Int,
 });
-export const RevenueOverview = IDL.Record({
+export const SalesReports = IDL.Record({
   'productBreakdown' : IDL.Vec(IDL.Tuple(IDL.Nat, IDL.Nat)),
+  'monthlySales' : IDL.Vec(IDL.Tuple(IDL.Text, IDL.Nat)),
+  'dailySales' : IDL.Vec(IDL.Tuple(IDL.Int, IDL.Nat)),
+  'totalSales' : IDL.Nat,
   'totalRevenue' : IDL.Nat,
-  'monthlyRevenue' : IDL.Nat,
 });
 export const Sale = IDL.Record({
   'id' : IDL.Nat,
@@ -53,6 +55,11 @@ export const Sale = IDL.Record({
   'timestamp' : IDL.Int,
   'quantity' : IDL.Nat,
   'totalPrice' : IDL.Nat,
+});
+export const TrialStatus = IDL.Record({
+  'trialActive' : IDL.Bool,
+  'daysRemaining' : IDL.Nat,
+  'trialStartTime' : IDL.Int,
 });
 
 export const idlService = IDL.Service({
@@ -85,7 +92,15 @@ export const idlService = IDL.Service({
   '_initializeAccessControlWithSecret' : IDL.Func([IDL.Text], [], []),
   'addSale' : IDL.Func([IDL.Nat, IDL.Nat], [IDL.Nat], []),
   'addStockItem' : IDL.Func(
-      [IDL.Text, IDL.Text, IDL.Nat, IDL.Nat, IDL.Nat, IDL.Opt(ExternalBlob)],
+      [
+        IDL.Text,
+        IDL.Text,
+        IDL.Nat,
+        IDL.Nat,
+        IDL.Nat,
+        IDL.Opt(ExternalBlob),
+        IDL.Opt(IDL.Int),
+      ],
       [IDL.Nat],
       [],
     ),
@@ -94,11 +109,13 @@ export const idlService = IDL.Service({
   'getAllStockItems' : IDL.Func([], [IDL.Vec(StockItem)], ['query']),
   'getCallerUserProfile' : IDL.Func([], [IDL.Opt(UserProfile)], ['query']),
   'getCallerUserRole' : IDL.Func([], [UserRole], ['query']),
-  'getIncomeSummary' : IDL.Func([], [IncomeSummary], ['query']),
+  'getExpiredStockItems' : IDL.Func([], [IDL.Vec(StockItem)], ['query']),
+  'getExpiringStockItems' : IDL.Func([], [IDL.Vec(StockItem)], ['query']),
   'getLowStockItems' : IDL.Func([], [IDL.Vec(StockItem)], ['query']),
-  'getRevenueOverview' : IDL.Func([], [RevenueOverview], ['query']),
+  'getSalesReports' : IDL.Func([], [SalesReports], ['query']),
   'getTodaysSales' : IDL.Func([], [IDL.Vec(Sale)], ['query']),
   'getTrendingStockItems' : IDL.Func([], [IDL.Vec(StockItem)], ['query']),
+  'getTrialStatus' : IDL.Func([], [TrialStatus], ['query']),
   'getUserProfile' : IDL.Func(
       [IDL.Principal],
       [IDL.Opt(UserProfile)],
@@ -116,6 +133,7 @@ export const idlService = IDL.Service({
         IDL.Nat,
         IDL.Nat,
         IDL.Opt(ExternalBlob),
+        IDL.Opt(IDL.Int),
       ],
       [],
       [],
@@ -145,6 +163,7 @@ export const idlFactory = ({ IDL }) => {
   const StockItem = IDL.Record({
     'id' : IDL.Nat,
     'lowStockThreshold' : IDL.Nat,
+    'expiryDate' : IDL.Opt(IDL.Int),
     'name' : IDL.Text,
     'isLowStock' : IDL.Bool,
     'quantity' : IDL.Nat,
@@ -153,16 +172,17 @@ export const idlFactory = ({ IDL }) => {
     'unitPrice' : IDL.Nat,
     'isTrending' : IDL.Bool,
   });
-  const UserProfile = IDL.Record({ 'name' : IDL.Text });
-  const IncomeSummary = IDL.Record({
-    'todaysIncome' : IDL.Nat,
-    'totalIncome' : IDL.Nat,
-    'monthlyIncome' : IDL.Nat,
+  const UserProfile = IDL.Record({
+    'name' : IDL.Text,
+    'role' : UserRole,
+    'trialStartTime' : IDL.Int,
   });
-  const RevenueOverview = IDL.Record({
+  const SalesReports = IDL.Record({
     'productBreakdown' : IDL.Vec(IDL.Tuple(IDL.Nat, IDL.Nat)),
+    'monthlySales' : IDL.Vec(IDL.Tuple(IDL.Text, IDL.Nat)),
+    'dailySales' : IDL.Vec(IDL.Tuple(IDL.Int, IDL.Nat)),
+    'totalSales' : IDL.Nat,
     'totalRevenue' : IDL.Nat,
-    'monthlyRevenue' : IDL.Nat,
   });
   const Sale = IDL.Record({
     'id' : IDL.Nat,
@@ -170,6 +190,11 @@ export const idlFactory = ({ IDL }) => {
     'timestamp' : IDL.Int,
     'quantity' : IDL.Nat,
     'totalPrice' : IDL.Nat,
+  });
+  const TrialStatus = IDL.Record({
+    'trialActive' : IDL.Bool,
+    'daysRemaining' : IDL.Nat,
+    'trialStartTime' : IDL.Int,
   });
   
   return IDL.Service({
@@ -202,7 +227,15 @@ export const idlFactory = ({ IDL }) => {
     '_initializeAccessControlWithSecret' : IDL.Func([IDL.Text], [], []),
     'addSale' : IDL.Func([IDL.Nat, IDL.Nat], [IDL.Nat], []),
     'addStockItem' : IDL.Func(
-        [IDL.Text, IDL.Text, IDL.Nat, IDL.Nat, IDL.Nat, IDL.Opt(ExternalBlob)],
+        [
+          IDL.Text,
+          IDL.Text,
+          IDL.Nat,
+          IDL.Nat,
+          IDL.Nat,
+          IDL.Opt(ExternalBlob),
+          IDL.Opt(IDL.Int),
+        ],
         [IDL.Nat],
         [],
       ),
@@ -211,11 +244,13 @@ export const idlFactory = ({ IDL }) => {
     'getAllStockItems' : IDL.Func([], [IDL.Vec(StockItem)], ['query']),
     'getCallerUserProfile' : IDL.Func([], [IDL.Opt(UserProfile)], ['query']),
     'getCallerUserRole' : IDL.Func([], [UserRole], ['query']),
-    'getIncomeSummary' : IDL.Func([], [IncomeSummary], ['query']),
+    'getExpiredStockItems' : IDL.Func([], [IDL.Vec(StockItem)], ['query']),
+    'getExpiringStockItems' : IDL.Func([], [IDL.Vec(StockItem)], ['query']),
     'getLowStockItems' : IDL.Func([], [IDL.Vec(StockItem)], ['query']),
-    'getRevenueOverview' : IDL.Func([], [RevenueOverview], ['query']),
+    'getSalesReports' : IDL.Func([], [SalesReports], ['query']),
     'getTodaysSales' : IDL.Func([], [IDL.Vec(Sale)], ['query']),
     'getTrendingStockItems' : IDL.Func([], [IDL.Vec(StockItem)], ['query']),
+    'getTrialStatus' : IDL.Func([], [TrialStatus], ['query']),
     'getUserProfile' : IDL.Func(
         [IDL.Principal],
         [IDL.Opt(UserProfile)],
@@ -233,6 +268,7 @@ export const idlFactory = ({ IDL }) => {
           IDL.Nat,
           IDL.Nat,
           IDL.Opt(ExternalBlob),
+          IDL.Opt(IDL.Int),
         ],
         [],
         [],

@@ -2,293 +2,291 @@ import React from 'react';
 import { Link } from '@tanstack/react-router';
 import {
   Package,
-  AlertTriangle,
   TrendingUp,
   ShoppingCart,
-  BarChart2,
   DollarSign,
+  PieChart,
+  BarChart3,
+  AlertTriangle,
   ArrowRight,
-  Leaf,
+  Users,
 } from 'lucide-react';
 import {
   useGetAllStockItems,
   useGetLowStockItems,
-  useGetTrendingStockItems,
   useGetTodaysSales,
-  useGetIncomeSummary,
+  useGetSalesReports,
 } from '../hooks/useQueries';
-import TrendingStocksPanel from '../components/TrendingStocksPanel';
-import TodaysSalesPanel from '../components/TodaysSalesPanel';
-import IncomeTracking from '../components/IncomeTracking';
-import RevenueOverview from '../components/RevenueOverview';
+import { Skeleton } from '@/components/ui/skeleton';
 
-function formatINR(value: number): string {
+const formatINR = (amount: bigint | number) => {
+  const num = typeof amount === 'bigint' ? Number(amount) : amount;
   return new Intl.NumberFormat('en-IN', {
     style: 'currency',
     currency: 'INR',
     maximumFractionDigits: 0,
-  }).format(value);
+  }).format(num);
+};
+
+type ValidAdminPath =
+  | '/admin'
+  | '/admin/stocks'
+  | '/admin/customers'
+  | '/admin/sales'
+  | '/admin/revenue'
+  | '/admin/income'
+  | '/admin/trending'
+  | '/admin/sales-reports'
+  | '/admin/profile';
+
+interface MetricCardProps {
+  title: string;
+  value: string | number;
+  subtitle?: string;
+  icon: React.ReactNode;
+  gradientClass: string;
+  shadowClass: string;
+  linkTo: ValidAdminPath;
+  isLoading?: boolean;
+  delay?: number;
+}
+
+function MetricCard({
+  title,
+  value,
+  subtitle,
+  icon,
+  gradientClass,
+  shadowClass,
+  linkTo,
+  isLoading,
+  delay = 0,
+}: MetricCardProps) {
+  return (
+    <Link
+      to={linkTo}
+      className="admin-card p-5 flex flex-col gap-4 cursor-pointer group"
+      style={{ animationDelay: `${delay}ms` }}
+    >
+      <div className="flex items-start justify-between">
+        <div
+          className={`w-12 h-12 rounded-xl ${gradientClass} flex items-center justify-center ${shadowClass}`}
+        >
+          {icon}
+        </div>
+        <ArrowRight
+          size={16}
+          className="text-muted-foreground group-hover:text-foreground group-hover:translate-x-1 transition-all"
+        />
+      </div>
+      <div>
+        <p className="text-muted-foreground text-sm font-medium">{title}</p>
+        {isLoading ? (
+          <Skeleton className="h-8 w-28 mt-1" />
+        ) : (
+          <p className="text-2xl font-bold text-foreground mt-0.5">{value}</p>
+        )}
+        {subtitle && <p className="text-xs text-muted-foreground mt-1">{subtitle}</p>}
+      </div>
+    </Link>
+  );
 }
 
 export default function OwnerDashboard() {
-  const { data: allStock } = useGetAllStockItems();
-  const { data: lowStock } = useGetLowStockItems();
-  const { data: trending } = useGetTrendingStockItems();
-  const { data: todaysSales } = useGetTodaysSales();
-  const { data: income } = useGetIncomeSummary();
+  const { data: stockItems = [], isLoading: stockLoading } = useGetAllStockItems();
+  const { data: lowStockItems = [], isLoading: lowStockLoading } = useGetLowStockItems();
+  const { data: todaysSales = [], isLoading: salesLoading } = useGetTodaysSales();
+  const { data: reports, isLoading: reportsLoading } = useGetSalesReports();
 
-  const totalStock = allStock?.length ?? 0;
-  const lowStockCount = lowStock?.length ?? 0;
-  const trendingCount = trending?.length ?? 0;
-  const todaySalesCount = todaysSales?.length ?? 0;
-  const todayRevenue =
-    todaysSales?.reduce((sum, s) => sum + Number(s.totalPrice), 0) ?? 0;
-  const monthlyIncome = income ? Number(income.monthlyIncome) : 0;
-
-  const metrics = [
-    {
-      label: 'Total Stock Items',
-      value: totalStock.toString(),
-      icon: Package,
-      color: 'text-primary',
-      bg: 'bg-primary/10',
-      border: 'border-primary/20',
-      link: '/admin/stocks' as const,
-    },
-    {
-      label: 'Low Stock Alerts',
-      value: lowStockCount.toString(),
-      icon: AlertTriangle,
-      color: 'text-destructive',
-      bg: 'bg-destructive/10',
-      border: 'border-destructive/20',
-      link: '/admin/stocks' as const,
-    },
-    {
-      label: 'Trending Products',
-      value: trendingCount.toString(),
-      icon: TrendingUp,
-      color: 'text-accent',
-      bg: 'bg-accent/10',
-      border: 'border-accent/20',
-      link: '/admin/trending' as const,
-    },
-    {
-      label: "Today's Sales",
-      value: todaySalesCount.toString(),
-      icon: ShoppingCart,
-      color: 'text-chart-1',
-      bg: 'bg-chart-1/10',
-      border: 'border-chart-1/20',
-      link: '/admin/sales' as const,
-    },
-    {
-      label: "Today's Revenue",
-      value: formatINR(todayRevenue),
-      icon: BarChart2,
-      color: 'text-chart-2',
-      bg: 'bg-chart-2/10',
-      border: 'border-chart-2/20',
-      link: '/admin/revenue' as const,
-    },
-    {
-      label: 'Monthly Income',
-      value: formatINR(monthlyIncome),
-      icon: DollarSign,
-      color: 'text-chart-3',
-      bg: 'bg-chart-3/10',
-      border: 'border-chart-3/20',
-      link: '/admin/income' as const,
-    },
-  ];
+  const todaysRevenue = todaysSales.reduce((sum, s) => sum + Number(s.totalPrice), 0);
+  const trendingCount = stockItems.filter((s) => s.isTrending).length;
 
   return (
-    <div className="min-h-screen bg-background">
-      {/* Hero Banner */}
-      <div className="relative overflow-hidden bg-sidebar border-b border-border">
-        <div
-          className="absolute inset-0 opacity-10"
-          style={{
-            backgroundImage:
-              'url(/assets/generated/dashboard-hero.dim_1200x400.png)',
-            backgroundSize: 'cover',
-            backgroundPosition: 'center',
-          }}
-        />
-        <div className="relative px-6 py-8 animate-fade-in-up">
-          <div className="flex items-center gap-3 mb-2">
-            <div className="w-10 h-10 rounded-xl bg-sidebar-primary/20 flex items-center justify-center">
-              <Leaf className="w-5 h-5 text-sidebar-primary" />
-            </div>
-            <div>
-              <h1 className="font-display text-3xl font-extrabold text-sidebar-foreground">
-                Owner Dashboard
-              </h1>
-              <p className="text-sidebar-foreground/60 text-sm font-semibold">
-                Bevinamarada Ayurvedic Store — Real-time Overview
-              </p>
-            </div>
+    <div className="space-y-8 animate-fade-in-up">
+      {/* Welcome Banner */}
+      <div className="gradient-hero rounded-2xl p-6 text-white shadow-lg">
+        <div className="flex items-center justify-between">
+          <div>
+            <h1 className="text-2xl font-bold">Welcome back! 👋</h1>
+            <p className="text-white/70 mt-1 text-sm">
+              Here's what's happening at your store today.
+            </p>
+          </div>
+          <div className="hidden sm:block">
+            <p className="text-white/60 text-sm">
+              {new Date().toLocaleDateString('en-IN', {
+                weekday: 'long',
+                year: 'numeric',
+                month: 'long',
+                day: 'numeric',
+              })}
+            </p>
           </div>
         </div>
       </div>
 
-      <div className="p-6 space-y-8">
-        {/* Metric Cards */}
-        <section>
-          <h2 className="font-display text-xl font-bold text-foreground mb-4">
-            Key Metrics
-          </h2>
-          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
-            {metrics.map((metric, i) => (
-              <Link
-                key={metric.label}
-                to={metric.link}
-                className={`
-                  block bg-card border ${metric.border} rounded-2xl p-5
-                  card-hover cursor-pointer
-                  animate-fade-in-up
-                `}
-                style={{ animationDelay: `${i * 80}ms` }}
-              >
-                <div className="flex items-start justify-between mb-3">
-                  <div
-                    className={`w-11 h-11 rounded-xl ${metric.bg} flex items-center justify-center`}
-                  >
-                    <metric.icon className={`w-5 h-5 ${metric.color}`} />
-                  </div>
-                  <ArrowRight className="w-4 h-4 text-muted-foreground/50 mt-1" />
-                </div>
-                <p className="text-muted-foreground text-sm font-semibold mb-1">
-                  {metric.label}
-                </p>
-                <p className={`metric-value text-2xl ${metric.color}`}>
-                  {metric.value}
-                </p>
-              </Link>
-            ))}
-          </div>
-        </section>
+      {/* Metric Cards */}
+      <div>
+        <h2 className="text-xl font-bold text-foreground mb-4">Overview</h2>
+        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
+          <MetricCard
+            title="Total Products"
+            value={stockItems.length}
+            subtitle={`${lowStockItems.length} low stock`}
+            icon={<Package size={22} className="text-white" />}
+            gradientClass="gradient-saffron"
+            shadowClass="shadow-saffron"
+            linkTo="/admin/stocks"
+            isLoading={stockLoading}
+            delay={0}
+          />
+          <MetricCard
+            title="Today's Revenue"
+            value={formatINR(todaysRevenue)}
+            subtitle={`${todaysSales.length} transactions`}
+            icon={<ShoppingCart size={22} className="text-white" />}
+            gradientClass="gradient-teal"
+            shadowClass="shadow-teal"
+            linkTo="/admin/sales"
+            isLoading={salesLoading}
+            delay={50}
+          />
+          <MetricCard
+            title="Total Revenue"
+            value={formatINR(reports?.totalRevenue ?? 0n)}
+            subtitle={`${Number(reports?.totalSales ?? 0n)} total sales`}
+            icon={<DollarSign size={22} className="text-white" />}
+            gradientClass="gradient-coral"
+            shadowClass="shadow-coral"
+            linkTo="/admin/income"
+            isLoading={reportsLoading}
+            delay={100}
+          />
+          <MetricCard
+            title="Trending Products"
+            value={trendingCount}
+            subtitle="Currently trending"
+            icon={<TrendingUp size={22} className="text-white" />}
+            gradientClass="gradient-gold"
+            shadowClass="shadow-gold"
+            linkTo="/admin/trending"
+            isLoading={stockLoading}
+            delay={150}
+          />
+          <MetricCard
+            title="Revenue Overview"
+            value={formatINR(reports?.totalRevenue ?? 0n)}
+            subtitle="All-time revenue"
+            icon={<PieChart size={22} className="text-white" />}
+            gradientClass="gradient-violet"
+            shadowClass=""
+            linkTo="/admin/revenue"
+            isLoading={reportsLoading}
+            delay={200}
+          />
+          <MetricCard
+            title="Sales Reports"
+            value={`${Number(reports?.totalSales ?? 0n)} Sales`}
+            subtitle="View detailed reports"
+            icon={<BarChart3 size={22} className="text-white" />}
+            gradientClass="gradient-coral"
+            shadowClass="shadow-coral"
+            linkTo="/admin/sales-reports"
+            isLoading={reportsLoading}
+            delay={250}
+          />
+        </div>
+      </div>
 
-        {/* Low Stock Alerts */}
-        {lowStockCount > 0 && (
-          <section
-            className="animate-fade-in-up"
-            style={{ animationDelay: '500ms' }}
-          >
-            <div className="bg-destructive/10 border border-destructive/30 rounded-2xl p-5">
-              <div className="flex items-center gap-2 mb-3">
-                <AlertTriangle className="w-5 h-5 text-destructive" />
-                <h2 className="font-display text-lg font-bold text-destructive">
-                  Low Stock Alerts
-                </h2>
-              </div>
-              <div className="flex flex-wrap gap-2">
-                {lowStock?.map((item) => (
-                  <span
-                    key={item.id.toString()}
-                    className="badge-red px-3 py-1 rounded-full text-sm"
-                  >
-                    {item.name} — {item.quantity.toString()} left
-                  </span>
-                ))}
-              </div>
+      {/* Low Stock Alerts */}
+      {!lowStockLoading && lowStockItems.length > 0 && (
+        <div className="admin-card overflow-hidden">
+          <div className="gradient-coral px-6 py-4 flex items-center justify-between">
+            <div className="flex items-center gap-2 text-white">
+              <AlertTriangle size={18} />
+              <h2 className="font-bold text-lg">Low Stock Alerts</h2>
             </div>
-          </section>
-        )}
-
-        {/* Trending Stocks */}
-        <section
-          className="animate-fade-in-up"
-          style={{ animationDelay: '600ms' }}
-        >
-          <div className="flex items-center justify-between mb-4">
-            <h2 className="font-display text-xl font-bold text-foreground">
-              Trending Products
-            </h2>
-            <Link
-              to="/admin/trending"
-              className="text-primary font-bold text-sm hover:text-primary/80 flex items-center gap-1 transition-colors"
-            >
-              View All <ArrowRight className="w-4 h-4" />
-            </Link>
+            <span className="bg-white/20 text-white text-xs font-bold px-2.5 py-1 rounded-full">
+              {lowStockItems.length} items
+            </span>
           </div>
-          <TrendingStocksPanel />
-        </section>
-
-        {/* Today's Sales */}
-        <section
-          className="animate-fade-in-up"
-          style={{ animationDelay: '700ms' }}
-        >
-          <div className="flex items-center justify-between mb-4">
-            <h2 className="font-display text-xl font-bold text-foreground">
-              Today's Sales
-            </h2>
-            <Link
-              to="/admin/sales"
-              className="text-primary font-bold text-sm hover:text-primary/80 flex items-center gap-1 transition-colors"
-            >
-              View All <ArrowRight className="w-4 h-4" />
-            </Link>
+          <div className="p-4 space-y-2">
+            {lowStockItems.slice(0, 5).map((item) => (
+              <div
+                key={String(item.id)}
+                className="flex items-center justify-between p-3 rounded-xl bg-coral-light border border-coral/20"
+              >
+                <div className="flex items-center gap-3">
+                  <div className="w-8 h-8 rounded-lg gradient-coral flex items-center justify-center">
+                    <Package size={14} className="text-white" />
+                  </div>
+                  <div>
+                    <p className="font-semibold text-sm text-foreground">{item.name}</p>
+                    <p className="text-xs text-muted-foreground">{item.category}</p>
+                  </div>
+                </div>
+                <div className="text-right">
+                  <p className="text-coral font-bold text-sm">{Number(item.quantity)} left</p>
+                  <p className="text-xs text-muted-foreground">Min: {Number(item.lowStockThreshold)}</p>
+                </div>
+              </div>
+            ))}
+            {lowStockItems.length > 5 && (
+              <Link
+                to="/admin/stocks"
+                className="flex items-center justify-center gap-2 py-2 text-sm text-coral font-medium hover:underline"
+              >
+                View all {lowStockItems.length} low stock items <ArrowRight size={14} />
+              </Link>
+            )}
           </div>
-          <TodaysSalesPanel />
-        </section>
+        </div>
+      )}
 
-        {/* Income */}
-        <section
-          className="animate-fade-in-up"
-          style={{ animationDelay: '800ms' }}
-        >
-          <div className="flex items-center justify-between mb-4">
-            <h2 className="font-display text-xl font-bold text-foreground">
-              Income Overview
-            </h2>
+      {/* Quick Actions */}
+      <div className="admin-card overflow-hidden">
+        <div className="gradient-teal px-6 py-4">
+          <h2 className="font-bold text-lg text-white">Quick Actions</h2>
+        </div>
+        <div className="p-4 grid grid-cols-2 sm:grid-cols-4 gap-3">
+          {(
+            [
+              {
+                label: 'Add Stock',
+                icon: <Package size={18} />,
+                to: '/admin/stocks' as ValidAdminPath,
+                color: 'gradient-saffron shadow-saffron',
+              },
+              {
+                label: 'Customers',
+                icon: <Users size={18} />,
+                to: '/admin/customers' as ValidAdminPath,
+                color: 'gradient-teal shadow-teal',
+              },
+              {
+                label: 'Sales',
+                icon: <ShoppingCart size={18} />,
+                to: '/admin/sales' as ValidAdminPath,
+                color: 'gradient-coral shadow-coral',
+              },
+              {
+                label: 'Reports',
+                icon: <BarChart3 size={18} />,
+                to: '/admin/sales-reports' as ValidAdminPath,
+                color: 'gradient-gold shadow-gold',
+              },
+            ] as { label: string; icon: React.ReactNode; to: ValidAdminPath; color: string }[]
+          ).map((action) => (
             <Link
-              to="/admin/income"
-              className="text-primary font-bold text-sm hover:text-primary/80 flex items-center gap-1 transition-colors"
+              key={action.to}
+              to={action.to}
+              className={`flex flex-col items-center gap-2 p-4 rounded-xl ${action.color} text-white font-semibold text-sm hover:opacity-90 transition-opacity`}
             >
-              Details <ArrowRight className="w-4 h-4" />
+              {action.icon}
+              {action.label}
             </Link>
-          </div>
-          <IncomeTracking />
-        </section>
-
-        {/* Revenue */}
-        <section
-          className="animate-fade-in-up"
-          style={{ animationDelay: '900ms' }}
-        >
-          <div className="flex items-center justify-between mb-4">
-            <h2 className="font-display text-xl font-bold text-foreground">
-              Revenue Overview
-            </h2>
-            <Link
-              to="/admin/revenue"
-              className="text-primary font-bold text-sm hover:text-primary/80 flex items-center gap-1 transition-colors"
-            >
-              Details <ArrowRight className="w-4 h-4" />
-            </Link>
-          </div>
-          <RevenueOverview />
-        </section>
-
-        {/* Footer */}
-        <footer className="text-center py-6 border-t border-border">
-          <p className="text-muted-foreground text-sm font-medium">
-            Built with ❤️ using{' '}
-            <a
-              href={`https://caffeine.ai/?utm_source=Caffeine-footer&utm_medium=referral&utm_content=${encodeURIComponent(
-                window.location.hostname
-              )}`}
-              target="_blank"
-              rel="noopener noreferrer"
-              className="text-primary font-bold hover:underline"
-            >
-              caffeine.ai
-            </a>{' '}
-            · © {new Date().getFullYear()} Bevinamarada Ayurvedic Store
-          </p>
-        </footer>
+          ))}
+        </div>
       </div>
     </div>
   );

@@ -1,22 +1,15 @@
 import Map "mo:core/Map";
 import List "mo:core/List";
-import Iter "mo:core/Iter";
-import Array "mo:core/Array";
-import Runtime "mo:core/Runtime";
-
-import Time "mo:core/Time";
-import Text "mo:core/Text";
-import Int "mo:core/Int";
 import Nat "mo:core/Nat";
+import Int "mo:core/Int";
+import Time "mo:core/Time";
+import Runtime "mo:core/Runtime";
 import Principal "mo:core/Principal";
-import Order "mo:core/Order";
 
-import MixinAuthorization "authorization/MixinAuthorization";
-import AccessControl "authorization/access-control";
 import Storage "blob-storage/Storage";
 import MixinStorage "blob-storage/Mixin";
-
-// Declare persistent data store types (Maps)
+import MixinAuthorization "authorization/MixinAuthorization";
+import AccessControl "authorization/access-control";
 
 actor {
   let accessControlState = AccessControl.initState();
@@ -25,6 +18,8 @@ actor {
 
   public type UserProfile = {
     name : Text;
+    role : AccessControl.UserRole;
+    trialStartTime : Int;
   };
 
   type StockItem = {
@@ -37,6 +32,7 @@ actor {
     isLowStock : Bool;
     isTrending : Bool;
     image : ?Storage.ExternalBlob;
+    expiryDate : ?Int;
   };
 
   type Sale = {
@@ -47,26 +43,21 @@ actor {
     timestamp : Int;
   };
 
-  type RevenueOverview = {
+  type SalesReports = {
     totalRevenue : Nat;
-    monthlyRevenue : Nat;
+    totalSales : Nat;
+    dailySales : [(Int, Nat)];
+    monthlySales : [(Text, Nat)];
     productBreakdown : [(Nat, Nat)];
   };
 
-  type IncomeSummary = {
-    totalIncome : Nat;
-    monthlyIncome : Nat;
-    todaysIncome : Nat;
-  };
+  var nextStockItemId = 1;
+  var nextSaleId = 1;
 
   let userProfiles = Map.empty<Principal, UserProfile>();
   let stockItems = Map.empty<Nat, StockItem>();
   let sales = Map.empty<Nat, Sale>();
 
-  var nextStockItemId = 1;
-  var nextSaleId = 1;
-
-  // User Profile Management
   public query ({ caller }) func getCallerUserProfile() : async ?UserProfile {
     if (not (AccessControl.hasPermission(accessControlState, caller, #user))) {
       Runtime.trap("Unauthorized: Only users can get profiles");
@@ -85,11 +76,68 @@ actor {
     if (not (AccessControl.hasPermission(accessControlState, caller, #user))) {
       Runtime.trap("Unauthorized: Only users can save profiles");
     };
-    userProfiles.add(caller, profile);
+
+    let updatedProfile = switch (userProfiles.get(caller)) {
+      case (null) {
+        let now = Time.now();
+        { profile with trialStartTime = now };
+      };
+      case (?existing) {
+        { profile with trialStartTime = existing.trialStartTime };
+      };
+    };
+
+    userProfiles.add(caller, updatedProfile);
   };
 
-  // Stock Management
-  public shared ({ caller }) func addStockItem(name : Text, category : Text, quantity : Nat, unitPrice : Nat, lowStockThreshold : Nat, image : ?Storage.ExternalBlob) : async Nat {
+  public type TrialStatus = {
+    trialStartTime : Int;
+    trialActive : Bool;
+    daysRemaining : Nat;
+  };
+
+  public query ({ caller }) func getTrialStatus() : async TrialStatus {
+    if (not (AccessControl.hasPermission(accessControlState, caller, #user))) {
+      Runtime.trap("Unauthorized: Only users can get trial status");
+    };
+    switch (userProfiles.get(caller)) {
+      case (null) {
+        {
+          trialStartTime = 0;
+          trialActive = false;
+          daysRemaining = 0;
+        };
+      };
+      case (?profile) {
+        let now = Time.now();
+        let trialStartTime = profile.trialStartTime;
+        let sevenDaysNanos : Int = 7 * 24 * 60 * 60 * 1_000_000_000;
+        let trialActive = now < trialStartTime + sevenDaysNanos;
+        let daysRemaining : Nat = if (trialActive) {
+          let remaining : Int = (trialStartTime + sevenDaysNanos - now);
+          let oneDayNanos : Int = 24 * 60 * 60 * 1_000_000_000;
+          Int.abs(remaining / oneDayNanos);
+        } else {
+          0;
+        };
+        {
+          trialStartTime;
+          trialActive;
+          daysRemaining;
+        };
+      };
+    };
+  };
+
+  public shared ({ caller }) func addStockItem(
+    name : Text,
+    category : Text,
+    quantity : Nat,
+    unitPrice : Nat,
+    lowStockThreshold : Nat,
+    image : ?Storage.ExternalBlob,
+    expiryDate : ?Int,
+  ) : async Nat {
     if (not (AccessControl.hasPermission(accessControlState, caller, #admin))) {
       Runtime.trap("Access denied: Only owners/admins can access this functionality");
     };
@@ -104,6 +152,7 @@ actor {
       isLowStock = quantity <= lowStockThreshold;
       isTrending = false;
       image;
+      expiryDate;
     };
 
     stockItems.add(item.id, item);
@@ -111,7 +160,16 @@ actor {
     item.id;
   };
 
-  public shared ({ caller }) func updateStockItem(id : Nat, name : Text, category : Text, quantity : Nat, unitPrice : Nat, lowStockThreshold : Nat, image : ?Storage.ExternalBlob) : async () {
+  public shared ({ caller }) func updateStockItem(
+    id : Nat,
+    name : Text,
+    category : Text,
+    quantity : Nat,
+    unitPrice : Nat,
+    lowStockThreshold : Nat,
+    image : ?Storage.ExternalBlob,
+    expiryDate : ?Int,
+  ) : async () {
     if (not (AccessControl.hasPermission(accessControlState, caller, #admin))) {
       Runtime.trap("Access denied: Only owners/admins can access this functionality");
     };
@@ -129,6 +187,7 @@ actor {
           isLowStock = quantity <= lowStockThreshold;
           isTrending = existing.isTrending;
           image;
+          expiryDate;
         };
         stockItems.add(id, updated);
       };
@@ -164,13 +223,13 @@ actor {
           isLowStock = item.isLowStock;
           isTrending;
           image = item.image;
+          expiryDate = item.expiryDate;
         };
         stockItems.add(id, updated);
       };
     };
   };
 
-  // Sales Management
   public shared ({ caller }) func addSale(stockItemId : Nat, quantity : Nat) : async Nat {
     if (not (AccessControl.hasPermission(accessControlState, caller, #admin))) {
       Runtime.trap("Access denied: Only owners/admins can access this functionality");
@@ -201,6 +260,7 @@ actor {
           isLowStock = (item.quantity - quantity) <= item.lowStockThreshold;
           isTrending = item.isTrending;
           image = item.image;
+          expiryDate = item.expiryDate;
         };
 
         stockItems.add(item.id, updatedItem);
@@ -211,7 +271,6 @@ actor {
     };
   };
 
-  // Queries
   public query ({ caller }) func getAllStockItems() : async [StockItem] {
     if (not (AccessControl.hasPermission(accessControlState, caller, #admin))) {
       Runtime.trap("Access denied: Only owners/admins can access this functionality");
@@ -224,8 +283,7 @@ actor {
       Runtime.trap("Access denied: Only owners/admins can access this functionality");
     };
 
-    let trending = stockItems.values().toArray().filter(func(item) { item.isTrending });
-    trending;
+    stockItems.values().toArray().filter(func(item) { item.isTrending });
   };
 
   public query ({ caller }) func getLowStockItems() : async [StockItem] {
@@ -233,8 +291,7 @@ actor {
       Runtime.trap("Access denied: Only owners/admins can access this functionality");
     };
 
-    let lowStock = stockItems.values().toArray().filter(func(item) { item.isLowStock });
-    lowStock;
+    stockItems.values().toArray().filter(func(item) { item.isLowStock });
   };
 
   public query ({ caller }) func getTodaysSales() : async [Sale] {
@@ -243,51 +300,100 @@ actor {
     };
 
     let now = Time.now();
-    let todaysSales = sales.values().toArray().filter(func(sale) { now - sale.timestamp <= 86400000000000 });
-    todaysSales;
+    sales.values().toArray().filter(func(sale) { now - sale.timestamp <= 86400000000000 });
   };
 
-  public query ({ caller }) func getRevenueOverview() : async RevenueOverview {
+  public query ({ caller }) func getSalesReports() : async SalesReports {
     if (not (AccessControl.hasPermission(accessControlState, caller, #admin))) {
       Runtime.trap("Access denied: Only owners/admins can access this functionality");
     };
 
     let now = Time.now();
-    let monthlySales = sales.values().toArray().filter(func(sale) { now - sale.timestamp <= 2592000000000000 });
+    let oneDayNanos : Int = 24 * 60 * 60 * 1_000_000_000;
+    let thirtyDaysNanos : Int = 30 * 24 * 60 * 60 * 1_000_000_000;
 
-    let productBreakdownList = List.empty<(Nat, Nat)>();
-    for ((productId, _) in stockItems.entries()) {
-      let salesCount = sales.values().toArray().filter(func(sale) { sale.stockItemId == productId }).size();
-      productBreakdownList.add((productId, salesCount));
+    let allSales = sales.values().toArray();
+    let dailySalesMap = Map.empty<Int, Nat>();
+    let monthlySalesMap = Map.empty<Text, Nat>();
+    let productBreakdownMap = Map.empty<Nat, Nat>();
+
+    let totalRevenue = allSales.foldLeft(0, func(acc, sale) { acc + sale.totalPrice });
+    let totalSales = allSales.size();
+
+    for (sale in allSales.values()) {
+      let day = Int.abs((now - sale.timestamp) / oneDayNanos);
+      switch (dailySalesMap.get(day)) {
+        case (null) {
+          dailySalesMap.add(day, sale.totalPrice);
+        };
+        case (?amount) {
+          dailySalesMap.add(day, amount + sale.totalPrice);
+        };
+      };
+
+      let month = Int.abs((now - sale.timestamp) / thirtyDaysNanos);
+      let monthKey = (if (month < 10) { "0" } else { "" }) # month.toText();
+      switch (monthlySalesMap.get(monthKey)) {
+        case (null) {
+          monthlySalesMap.add(monthKey, sale.totalPrice);
+        };
+        case (?amount) {
+          monthlySalesMap.add(monthKey, amount + sale.totalPrice);
+        };
+      };
+
+      switch (productBreakdownMap.get(sale.stockItemId)) {
+        case (null) {
+          productBreakdownMap.add(sale.stockItemId, sale.quantity);
+        };
+        case (?count) {
+          productBreakdownMap.add(sale.stockItemId, count + sale.quantity);
+        };
+      };
     };
 
-    let totalRevenue = sales.values().toArray().foldLeft(0, func(acc, sale) { acc + sale.totalPrice });
-    let monthlyRevenue = monthlySales.foldLeft(0, func(acc, sale) { acc + sale.totalPrice });
+    let dailySales = dailySalesMap.toArray();
+    let monthlySales = monthlySalesMap.toArray();
+    let productBreakdown = productBreakdownMap.toArray();
 
     {
       totalRevenue;
-      monthlyRevenue;
-      productBreakdown = productBreakdownList.toArray();
+      totalSales;
+      dailySales;
+      monthlySales;
+      productBreakdown;
     };
   };
 
-  public query ({ caller }) func getIncomeSummary() : async IncomeSummary {
+  public query ({ caller }) func getExpiringStockItems() : async [StockItem] {
     if (not (AccessControl.hasPermission(accessControlState, caller, #admin))) {
-      Runtime.trap("Access denied: Only owners/admins can access this functionality");
+      Runtime.trap("Access denied: Only admins can access this functionality");
     };
 
     let now = Time.now();
-    let todaysSales = sales.values().toArray().filter(func(sale) { now - sale.timestamp <= 86400000000000 });
-    let monthlySales = sales.values().toArray().filter(func(sale) { now - sale.timestamp <= 2592000000000000 });
+    stockItems.values().toArray().filter(
+      func(item) {
+        switch (item.expiryDate) {
+          case (null) { false };
+          case (?expiry) { expiry > now and expiry - now <= 30 * 24 * 60 * 60 * 1_000_000_000 };
+        };
+      }
+    );
+  };
 
-    let totalIncome = sales.values().toArray().foldLeft(0, func(acc, sale) { acc + sale.totalPrice });
-    let monthlyIncome = monthlySales.foldLeft(0, func(acc, sale) { acc + sale.totalPrice });
-    let todaysIncome = todaysSales.foldLeft(0, func(acc, sale) { acc + sale.totalPrice });
-
-    {
-      totalIncome;
-      monthlyIncome;
-      todaysIncome;
+  public query ({ caller }) func getExpiredStockItems() : async [StockItem] {
+    if (not (AccessControl.hasPermission(accessControlState, caller, #admin))) {
+      Runtime.trap("Access denied: Only admins can access this functionality");
     };
+
+    let now = Time.now();
+    stockItems.values().toArray().filter(
+      func(item) {
+        switch (item.expiryDate) {
+          case (null) { false };
+          case (?expiry) { expiry <= now };
+        };
+      }
+    );
   };
 };

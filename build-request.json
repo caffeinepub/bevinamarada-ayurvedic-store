@@ -1,75 +1,98 @@
 {
   "kind": "build_request",
-  "title": "Fix mobile sidebar overlap with slide-out menu",
-  "projectName": "Bevinamarada Ayurvedic Store",
+  "title": "Fix mobile navigation menu overlay behavior",
   "priority": "high",
   "requirements": [
     {
       "id": "REQ-1",
-      "text": "On mobile screens (below md breakpoint), hide the left sidebar by default so it does not overlap the main dashboard content. Add a hamburger/menu toggle button visible only on mobile that opens and closes the sidebar as a slide-in drawer from the left side of the screen.",
+      "text": "Rebuild the mobile navigation menu in PublicLayout.tsx as a proper full-screen overlay drawer. When open, the menu must cover the entire viewport (position fixed, top-0 left-0, width 100vw, height 100vh) with a solid background so no page content behind it is visible.",
       "target": "frontend",
       "source": {
         "messageIds": [
-          "msg-6"
+          "msg-latest"
         ],
         "quotes": [
-          "On mobile screens, the left sidebar overlaps the dashboard content. The sidebar should be hidden or shown as a slide menu"
+          "The menu does not behave like a proper full-screen mobile drawer.",
+          "Mobile menu should open as a clean full-screen overlay."
         ]
       },
       "acceptanceCriteria": [
-        "On screens narrower than the md breakpoint, the sidebar is hidden by default and does not overlap any content",
-        "A visible hamburger/menu icon button appears in the top bar on mobile screens",
-        "Tapping the menu button slides the sidebar in from the left as a drawer overlay",
-        "Tapping the menu button again, or tapping outside the drawer, slides the sidebar back out and hides it",
-        "On desktop (md and above), the sidebar remains always visible in its original layout, unchanged"
+        "On mobile viewports, tapping the hamburger icon opens a full-screen overlay that completely covers the viewport.",
+        "No background page content (e.g., Admin Login, Why Choose Bevinamarada sections) is visible through or behind the open menu.",
+        "The overlay has a solid opaque background consistent with the site's Ayurvedic green/brown theme."
       ]
     },
     {
       "id": "REQ-2",
-      "text": "On mobile screens, the main content area must occupy the full width of the viewport when the sidebar is closed. Remove any left margin or offset that was previously reserved for the sidebar on small screens.",
+      "text": "Fix the layout of menu items inside the mobile overlay. All navigation links (Home, About, Products, Contact, etc.) must be vertically stacked, centered both horizontally and vertically, with adequate spacing between each item. No items should overlap with each other, with the logo, or with any header elements.",
       "target": "frontend",
       "source": {
         "messageIds": [
-          "msg-6"
+          "msg-latest"
         ],
         "quotes": [
-          "the main content should be full width"
+          "The menu popup overlaps the header content instead of aligning properly.",
+          "The 'Home / Contact Us' button is overlapping with the logo and other menu items.",
+          "The 'Our Story' button is misaligned and partially hidden.",
+          "Menu items should be vertically stacked and centered.",
+          "No overlapping between logo, buttons, and links."
         ]
       },
       "acceptanceCriteria": [
-        "When the sidebar is closed on mobile, the main content stretches to full viewport width with no sidebar-sized gap or margin on the left",
-        "When the sidebar drawer is open on mobile, it overlays the content rather than pushing it aside",
-        "On desktop, the main content layout is unaffected"
+        "All menu items are displayed in a single vertical column, centered on screen.",
+        "No menu item overlaps with any other menu item, the logo, or the close button.",
+        "The 'Our Story' / About link is fully visible and not clipped or hidden."
       ]
     },
     {
       "id": "REQ-3",
-      "text": "When the mobile sidebar drawer is open, add a semi-transparent dark backdrop overlay behind the drawer and on top of the main content. Tapping the backdrop should close the drawer.",
+      "text": "Ensure the close (X) button in the mobile menu fully dismisses the overlay. The button must be clearly positioned (e.g., top-right corner of the overlay), visually distinct, and clicking it must set the menu state to closed and restore all normal page behavior.",
       "target": "frontend",
       "source": {
         "messageIds": [
-          "msg-6"
+          "msg-latest"
         ],
         "quotes": [
-          "The sidebar should be hidden or shown as a slide menu"
+          "The close (X) button does not properly clear the overlay area.",
+          "Close (X) button should fully dismiss the menu."
         ]
       },
       "acceptanceCriteria": [
-        "A semi-transparent overlay appears over the main content when the sidebar drawer is open on mobile",
-        "Tapping the overlay closes the sidebar drawer",
-        "The overlay is not present on desktop"
+        "A clearly visible close (X) button is present in the top-right corner of the open mobile menu overlay.",
+        "Clicking the X button closes the menu overlay completely.",
+        "After closing, the page returns to its normal scrollable state with no residual overlay elements visible."
+      ]
+    },
+    {
+      "id": "REQ-4",
+      "text": "Lock the body scroll when the mobile menu is open. When the menu overlay is active, apply overflow-hidden (or equivalent) to the document body so the background page content cannot be scrolled. Restore normal scroll behavior when the menu is closed.",
+      "target": "frontend",
+      "source": {
+        "messageIds": [
+          "msg-latest"
+        ],
+        "quotes": [
+          "When the menu is open, background content (Admin Login / Why Choose Bevinamarada) is still visible and scrollable, which should not happen.",
+          "Background page should be locked (no scroll) when menu is open."
+        ]
+      },
+      "acceptanceCriteria": [
+        "When the mobile menu is open, the page behind it cannot be scrolled.",
+        "When the mobile menu is closed, normal page scrolling resumes immediately.",
+        "No layout shift or jump occurs when scroll lock is applied or removed."
       ]
     }
   ],
   "constraints": [
-    "Do not modify any files under frontend/src/hooks/ or frontend/src/components/ui/",
-    "Desktop sidebar layout must remain unchanged",
-    "All changes must be confined to AdminLayout.tsx and related layout styles"
+    "Do not modify any files under frontend/src/hooks/ or frontend/src/components/ui/.",
+    "Fix must be scoped to the public-facing layout (PublicLayout.tsx) and must not affect the AdminLayout mobile menu.",
+    "Maintain the existing Ayurvedic green and brown color theme in the mobile menu overlay."
   ],
   "nonGoals": [
-    "Adding new navigation items to the sidebar",
-    "Changing sidebar content or styling beyond mobile responsiveness",
-    "Modifying backend logic"
+    "Redesigning the desktop navigation.",
+    "Adding new navigation links or pages.",
+    "Changing the AdminLayout or admin panel navigation.",
+    "Any backend changes."
   ],
   "imageRequirements": {
     "required": [],

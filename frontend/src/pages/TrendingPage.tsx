@@ -5,30 +5,15 @@ import TrendingStocksPanel from '../components/TrendingStocksPanel';
 
 export default function TrendingPage() {
   return (
-    <div className="min-h-screen bg-background p-6">
-      <div className="mb-6 animate-fade-in-up">
-        <Link
-          to="/admin"
-          className="inline-flex items-center gap-2 text-primary font-bold text-sm hover:text-primary/80 transition-colors mb-4"
-        >
-          <ArrowLeft className="w-4 h-4" />
-          Back to Dashboard
+    <div className="p-4 md:p-6 space-y-5 bg-white min-h-full">
+      <div className="flex items-center gap-3">
+        <Link to="/admin" className="p-2 rounded-xl hover:bg-gray-100 transition-colors">
+          <ArrowLeft className="w-5 h-5 text-gray-600" />
         </Link>
-        <div className="flex items-center gap-3">
-          <div className="w-10 h-10 rounded-xl bg-accent/10 flex items-center justify-center">
-            <TrendingUp className="w-5 h-5 text-accent" />
-          </div>
-          <div>
-            <h1 className="font-display text-3xl font-extrabold text-foreground">
-              Trending Products
-            </h1>
-            <p className="text-muted-foreground font-semibold text-sm mt-0.5">
-              Products currently marked as trending
-            </p>
-          </div>
-        </div>
+        <TrendingUp className="w-6 h-6 text-amber-500" />
+        <h1 className="text-2xl font-black text-gray-900">Trending Products</h1>
       </div>
-      <div className="animate-fade-in-up" style={{ animationDelay: '100ms' }}>
+      <div className="bg-white rounded-2xl shadow-md border border-gray-100 p-6">
         <TrendingStocksPanel />
       </div>
     </div>

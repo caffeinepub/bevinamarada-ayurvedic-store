@@ -11,16 +11,6 @@ import type { IDL } from '@icp-sdk/core/candid';
 import type { Principal } from '@icp-sdk/core/principal';
 
 export type ExternalBlob = Uint8Array;
-export interface IncomeSummary {
-  'todaysIncome' : bigint,
-  'totalIncome' : bigint,
-  'monthlyIncome' : bigint,
-}
-export interface RevenueOverview {
-  'productBreakdown' : Array<[bigint, bigint]>,
-  'totalRevenue' : bigint,
-  'monthlyRevenue' : bigint,
-}
 export interface Sale {
   'id' : bigint,
   'stockItemId' : bigint,
@@ -28,9 +18,17 @@ export interface Sale {
   'quantity' : bigint,
   'totalPrice' : bigint,
 }
+export interface SalesReports {
+  'productBreakdown' : Array<[bigint, bigint]>,
+  'monthlySales' : Array<[string, bigint]>,
+  'dailySales' : Array<[bigint, bigint]>,
+  'totalSales' : bigint,
+  'totalRevenue' : bigint,
+}
 export interface StockItem {
   'id' : bigint,
   'lowStockThreshold' : bigint,
+  'expiryDate' : [] | [bigint],
   'name' : string,
   'isLowStock' : boolean,
   'quantity' : bigint,
@@ -39,7 +37,16 @@ export interface StockItem {
   'unitPrice' : bigint,
   'isTrending' : boolean,
 }
-export interface UserProfile { 'name' : string }
+export interface TrialStatus {
+  'trialActive' : boolean,
+  'daysRemaining' : bigint,
+  'trialStartTime' : bigint,
+}
+export interface UserProfile {
+  'name' : string,
+  'role' : UserRole,
+  'trialStartTime' : bigint,
+}
 export type UserRole = { 'admin' : null } |
   { 'user' : null } |
   { 'guest' : null };
@@ -73,7 +80,15 @@ export interface _SERVICE {
   '_initializeAccessControlWithSecret' : ActorMethod<[string], undefined>,
   'addSale' : ActorMethod<[bigint, bigint], bigint>,
   'addStockItem' : ActorMethod<
-    [string, string, bigint, bigint, bigint, [] | [ExternalBlob]],
+    [
+      string,
+      string,
+      bigint,
+      bigint,
+      bigint,
+      [] | [ExternalBlob],
+      [] | [bigint],
+    ],
     bigint
   >,
   'assignCallerUserRole' : ActorMethod<[Principal, UserRole], undefined>,
@@ -81,17 +96,28 @@ export interface _SERVICE {
   'getAllStockItems' : ActorMethod<[], Array<StockItem>>,
   'getCallerUserProfile' : ActorMethod<[], [] | [UserProfile]>,
   'getCallerUserRole' : ActorMethod<[], UserRole>,
-  'getIncomeSummary' : ActorMethod<[], IncomeSummary>,
+  'getExpiredStockItems' : ActorMethod<[], Array<StockItem>>,
+  'getExpiringStockItems' : ActorMethod<[], Array<StockItem>>,
   'getLowStockItems' : ActorMethod<[], Array<StockItem>>,
-  'getRevenueOverview' : ActorMethod<[], RevenueOverview>,
+  'getSalesReports' : ActorMethod<[], SalesReports>,
   'getTodaysSales' : ActorMethod<[], Array<Sale>>,
   'getTrendingStockItems' : ActorMethod<[], Array<StockItem>>,
+  'getTrialStatus' : ActorMethod<[], TrialStatus>,
   'getUserProfile' : ActorMethod<[Principal], [] | [UserProfile]>,
   'isCallerAdmin' : ActorMethod<[], boolean>,
   'markTrendingStockItem' : ActorMethod<[bigint, boolean], undefined>,
   'saveCallerUserProfile' : ActorMethod<[UserProfile], undefined>,
   'updateStockItem' : ActorMethod<
-    [bigint, string, string, bigint, bigint, bigint, [] | [ExternalBlob]],
+    [
+      bigint,
+      string,
+      string,
+      bigint,
+      bigint,
+      bigint,
+      [] | [ExternalBlob],
+      [] | [bigint],
+    ],
     undefined
   >,
 }

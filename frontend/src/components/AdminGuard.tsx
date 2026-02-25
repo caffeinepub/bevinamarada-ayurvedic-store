@@ -1,31 +1,123 @@
 import React, { useState } from 'react';
 import { useInternetIdentity } from '../hooks/useInternetIdentity';
-import { useQueryClient } from '@tanstack/react-query';
-import { Leaf, Loader2, ShieldX, LogIn } from 'lucide-react';
-import { Button } from '@/components/ui/button';
-import { Input } from '@/components/ui/input';
-import { Label } from '@/components/ui/label';
-import { useGetCallerUserProfile, useSaveCallerUserProfile, useIsCallerAdmin } from '../hooks/useQueries';
+import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
+import { useActor } from '../hooks/useActor';
+import { UserRole } from '../backend';
+import { Leaf, Lock, User } from 'lucide-react';
 
-export default function AdminGuard({ children }: { children: React.ReactNode }) {
-  const { login, clear, loginStatus, identity, isInitializing } = useInternetIdentity();
+interface AdminGuardProps {
+  children: React.ReactNode;
+}
+
+function ProfileSetupModal({ onComplete }: { onComplete: () => void }) {
+  const { actor } = useActor();
   const queryClient = useQueryClient();
-  const [profileName, setProfileName] = useState('');
+  const [name, setName] = useState('');
+  const [error, setError] = useState('');
+
+  const saveMutation = useMutation({
+    mutationFn: async (displayName: string) => {
+      if (!actor) throw new Error('Actor not available');
+      await actor.saveCallerUserProfile({
+        name: displayName,
+        role: UserRole.user,
+        trialStartTime: 0n,
+      });
+    },
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ['currentUserProfile'] });
+      queryClient.invalidateQueries({ queryKey: ['trialStatus'] });
+      onComplete();
+    },
+    onError: (err: any) => {
+      setError(err.message || 'Failed to save profile');
+    },
+  });
+
+  const handleSubmit = (e: React.FormEvent) => {
+    e.preventDefault();
+    if (!name.trim()) { setError('Please enter your name'); return; }
+    saveMutation.mutate(name.trim());
+  };
+
+  return (
+    <div className="fixed inset-0 z-50 flex items-center justify-center p-4" style={{ backgroundColor: 'rgba(0,0,0,0.6)' }}>
+      <div className="w-full max-w-md rounded-2xl shadow-warm-xl p-8 animate-scale-in" style={{ backgroundColor: 'var(--warm-cream)' }}>
+        <div className="text-center mb-6">
+          <div className="w-16 h-16 rounded-full mx-auto mb-4 flex items-center justify-center" style={{ backgroundColor: 'var(--forest-green)' }}>
+            <Leaf size={28} style={{ color: 'var(--gold-accent)' }} />
+          </div>
+          <h2 className="font-display text-2xl font-bold" style={{ color: 'var(--forest-green)' }}>Welcome!</h2>
+          <p className="text-sm mt-1" style={{ color: 'var(--earthy-brown)' }}>Please enter your name to continue</p>
+        </div>
+        <form onSubmit={handleSubmit} className="space-y-4">
+          <input
+            type="text"
+            value={name}
+            onChange={e => setName(e.target.value)}
+            placeholder="Your full name"
+            className="w-full px-4 py-3 rounded-xl border-2 text-sm outline-none transition-colors"
+            style={{ borderColor: 'var(--forest-green)', backgroundColor: 'white', color: 'var(--earthy-brown)' }}
+          />
+          {error && <p className="text-sm text-red-600">{error}</p>}
+          <button
+            type="submit"
+            disabled={saveMutation.isPending}
+            className="w-full py-3 rounded-xl font-semibold text-sm transition-all duration-200 disabled:opacity-60"
+            style={{ backgroundColor: 'var(--forest-green)', color: 'var(--warm-cream)' }}
+          >
+            {saveMutation.isPending ? 'Saving...' : 'Continue to Admin Panel'}
+          </button>
+        </form>
+      </div>
+    </div>
+  );
+}
+
+export default function AdminGuard({ children }: AdminGuardProps) {
+  const { login, clear, loginStatus, identity, isInitializing } = useInternetIdentity();
+  const { actor, isFetching: actorFetching } = useActor();
+  const queryClient = useQueryClient();
+  const [loginError, setLoginError] = useState('');
 
   const isAuthenticated = !!identity;
   const isLoggingIn = loginStatus === 'logging-in';
 
-  const { data: userProfile, isLoading: profileLoading, isFetched: profileFetched } = useGetCallerUserProfile();
-  const { data: isAdmin, isLoading: adminLoading } = useIsCallerAdmin();
-  const saveProfile = useSaveCallerUserProfile();
+  const profileQuery = useQuery({
+    queryKey: ['currentUserProfile'],
+    queryFn: async () => {
+      if (!actor) throw new Error('Actor not available');
+      return actor.getCallerUserProfile();
+    },
+    enabled: !!actor && !actorFetching && isAuthenticated,
+    retry: false,
+  });
+
+  const adminQuery = useQuery({
+    queryKey: ['isAdmin'],
+    queryFn: async () => {
+      if (!actor) throw new Error('Actor not available');
+      return actor.isCallerAdmin();
+    },
+    enabled: !!actor && !actorFetching && isAuthenticated,
+    retry: false,
+  });
+
+  const profileLoading = actorFetching || profileQuery.isLoading;
+  const profileFetched = !!actor && profileQuery.isFetched;
+  const showProfileSetup = isAuthenticated && !profileLoading && profileFetched && profileQuery.data === null;
+  const isAdmin = adminQuery.data === true;
 
   const handleLogin = async () => {
+    setLoginError('');
     try {
       await login();
     } catch (error: any) {
       if (error.message === 'User is already authenticated') {
         await clear();
         setTimeout(() => login(), 300);
+      } else {
+        setLoginError('Login failed. Please try again.');
       }
     }
   };
@@ -35,71 +127,103 @@ export default function AdminGuard({ children }: { children: React.ReactNode }) 
     queryClient.clear();
   };
 
-  const handleSaveProfile = async () => {
-    if (!profileName.trim()) return;
-    await saveProfile.mutateAsync({ name: profileName.trim() });
-  };
-
   // Loading state
-  if (isInitializing || (isAuthenticated && (profileLoading || adminLoading))) {
+  if (isInitializing || (isAuthenticated && actorFetching)) {
     return (
-      <div className="min-h-screen bg-background flex items-center justify-center animate-fade-in">
-        <div className="text-center space-y-4">
-          <div className="w-16 h-16 rounded-2xl bg-primary/20 flex items-center justify-center mx-auto animate-pulse">
-            <Leaf className="w-8 h-8 text-primary" />
+      <div className="min-h-screen flex items-center justify-center" style={{ backgroundColor: 'var(--warm-cream)' }}>
+        <div className="text-center">
+          <div className="w-16 h-16 rounded-full mx-auto mb-4 flex items-center justify-center animate-pulse" style={{ backgroundColor: 'var(--forest-green)' }}>
+            <Leaf size={28} style={{ color: 'var(--gold-accent)' }} />
           </div>
-          <div className="flex items-center gap-2 text-muted-foreground">
-            <Loader2 className="w-5 h-5 animate-spin text-primary" />
-            <span className="font-semibold text-lg">Loading...</span>
-          </div>
+          <p className="font-display text-lg" style={{ color: 'var(--forest-green)' }}>Loading...</p>
         </div>
       </div>
     );
   }
 
-  // Not authenticated
+  // Not authenticated - show login
   if (!isAuthenticated) {
     return (
-      <div className="min-h-screen bg-background flex items-center justify-center p-4 animate-fade-in">
+      <div
+        className="min-h-screen flex items-center justify-center p-4"
+        style={{
+          backgroundColor: 'var(--warm-cream)',
+          backgroundImage: 'url(/assets/generated/leaf-pattern-bg.dim_400x400.png)',
+          backgroundRepeat: 'repeat',
+          backgroundSize: '200px',
+        }}
+      >
         <div className="w-full max-w-md">
-          <div className="bg-card border border-border rounded-2xl p-8 shadow-card animate-scale-in">
-            {/* Logo */}
-            <div className="text-center mb-8">
-              <div className="w-20 h-20 rounded-2xl bg-primary/20 flex items-center justify-center mx-auto mb-4 shadow-green">
-                <Leaf className="w-10 h-10 text-primary" />
+          <div className="rounded-2xl shadow-warm-xl overflow-hidden animate-scale-in">
+            {/* Header */}
+            <div className="p-8 text-center" style={{ backgroundColor: 'var(--forest-green)' }}>
+              <div className="w-20 h-20 rounded-full mx-auto mb-4 overflow-hidden border-4" style={{ borderColor: 'var(--gold-accent)' }}>
+                <img
+                  src="/assets/generated/neem-leaf-logo.dim_256x256.png"
+                  alt="Logo"
+                  className="w-full h-full object-cover"
+                  onError={(e) => { (e.target as HTMLImageElement).style.display = 'none'; }}
+                />
               </div>
-              <h1 className="font-display text-3xl font-bold text-foreground mb-2">
+              <h1 className="font-display text-2xl font-bold" style={{ color: 'var(--warm-cream)' }}>
                 Bevinamarada
               </h1>
-              <p className="text-primary font-bold text-lg">Ayurvedic Store</p>
-              <p className="text-muted-foreground text-sm mt-2 font-medium">Owner Dashboard</p>
+              <p className="text-sm mt-1" style={{ color: 'var(--gold-accent-light)' }}>
+                Ayurvedic Store — Admin Panel
+              </p>
             </div>
 
-            <div className="space-y-4">
-              <div className="bg-muted/50 rounded-xl p-4 border border-border">
-                <p className="text-foreground/80 text-sm font-semibold text-center">
-                  🌿 Sign in to manage your store inventory, track sales, and monitor revenue
+            {/* Login form */}
+            <div className="p-8" style={{ backgroundColor: 'var(--warm-cream)' }}>
+              <h2 className="font-display text-xl font-semibold mb-6 text-center" style={{ color: 'var(--forest-green)' }}>
+                Secure Admin Login
+              </h2>
+
+              <div className="space-y-4">
+                <div className="flex items-center gap-3 p-4 rounded-xl border-2" style={{ borderColor: 'var(--forest-green)', backgroundColor: 'white' }}>
+                  <Lock size={18} style={{ color: 'var(--forest-green)' }} />
+                  <span className="text-sm" style={{ color: 'var(--earthy-brown)' }}>
+                    This admin panel is secured with Internet Identity — a cryptographic authentication system.
+                  </span>
+                </div>
+
+                {loginError && (
+                  <div className="p-3 rounded-lg text-sm text-red-700 bg-red-50 border border-red-200">
+                    {loginError}
+                  </div>
+                )}
+
+                <button
+                  onClick={handleLogin}
+                  disabled={isLoggingIn}
+                  className="w-full py-3 rounded-xl font-semibold text-sm transition-all duration-200 disabled:opacity-60 flex items-center justify-center gap-2"
+                  style={{ backgroundColor: 'var(--forest-green)', color: 'var(--warm-cream)' }}
+                >
+                  {isLoggingIn ? (
+                    <>
+                      <div className="w-4 h-4 border-2 border-white/30 border-t-white rounded-full animate-spin" />
+                      Authenticating...
+                    </>
+                  ) : (
+                    <>
+                      <User size={18} />
+                      Login with Internet Identity
+                    </>
+                  )}
+                </button>
+
+                <p className="text-xs text-center" style={{ color: 'var(--earthy-brown)', opacity: 0.7 }}>
+                  Powered by Internet Computer's decentralized identity system
                 </p>
               </div>
-
-              <Button
-                onClick={handleLogin}
-                disabled={isLoggingIn}
-                className="w-full h-12 text-base font-bold btn-transition bg-primary hover:bg-primary/90 text-primary-foreground rounded-xl shadow-green"
-              >
-                {isLoggingIn ? (
-                  <>
-                    <Loader2 className="w-5 h-5 mr-2 animate-spin" />
-                    Signing In...
-                  </>
-                ) : (
-                  <>
-                    <LogIn className="w-5 h-5 mr-2" />
-                    Sign In to Dashboard
-                  </>
-                )}
-              </Button>
             </div>
+          </div>
+
+          {/* Back to store */}
+          <div className="text-center mt-4">
+            <a href="/" className="text-sm hover:underline" style={{ color: 'var(--forest-green)' }}>
+              ← Back to Store
+            </a>
           </div>
         </div>
       </div>
@@ -107,74 +231,29 @@ export default function AdminGuard({ children }: { children: React.ReactNode }) 
   }
 
   // Profile setup
-  const showProfileSetup = isAuthenticated && !profileLoading && profileFetched && userProfile === null;
   if (showProfileSetup) {
-    return (
-      <div className="min-h-screen bg-background flex items-center justify-center p-4 animate-fade-in">
-        <div className="w-full max-w-md">
-          <div className="bg-card border border-border rounded-2xl p-8 shadow-card animate-scale-in">
-            <div className="text-center mb-6">
-              <div className="w-16 h-16 rounded-2xl bg-accent/20 flex items-center justify-center mx-auto mb-4">
-                <Leaf className="w-8 h-8 text-accent" />
-              </div>
-              <h2 className="font-display text-2xl font-bold text-foreground">Welcome!</h2>
-              <p className="text-muted-foreground text-sm mt-1 font-medium">Set up your profile to continue</p>
-            </div>
-
-            <div className="space-y-4">
-              <div>
-                <Label htmlFor="name" className="text-foreground font-semibold text-sm mb-1.5 block">
-                  Your Name
-                </Label>
-                <Input
-                  id="name"
-                  value={profileName}
-                  onChange={(e) => setProfileName(e.target.value)}
-                  placeholder="Enter your name"
-                  className="h-11 bg-muted/50 border-border focus:border-primary rounded-xl font-medium"
-                  onKeyDown={(e) => e.key === 'Enter' && handleSaveProfile()}
-                />
-              </div>
-
-              <Button
-                onClick={handleSaveProfile}
-                disabled={!profileName.trim() || saveProfile.isPending}
-                className="w-full h-11 font-bold btn-transition bg-primary hover:bg-primary/90 text-primary-foreground rounded-xl"
-              >
-                {saveProfile.isPending ? (
-                  <><Loader2 className="w-4 h-4 mr-2 animate-spin" /> Saving...</>
-                ) : (
-                  'Continue to Dashboard'
-                )}
-              </Button>
-
-              <Button variant="ghost" onClick={handleLogout} className="w-full font-semibold text-muted-foreground hover:text-foreground">
-                Sign Out
-              </Button>
-            </div>
-          </div>
-        </div>
-      </div>
-    );
+    return <ProfileSetupModal onComplete={() => profileQuery.refetch()} />;
   }
 
-  // Access denied
-  if (!adminLoading && isAdmin === false) {
+  // Not admin
+  if (profileFetched && adminQuery.isFetched && !isAdmin) {
     return (
-      <div className="min-h-screen bg-background flex items-center justify-center p-4 animate-fade-in">
-        <div className="w-full max-w-md text-center">
-          <div className="bg-card border border-destructive/30 rounded-2xl p-8 shadow-card animate-scale-in">
-            <div className="w-16 h-16 rounded-2xl bg-destructive/20 flex items-center justify-center mx-auto mb-4">
-              <ShieldX className="w-8 h-8 text-destructive" />
-            </div>
-            <h2 className="font-display text-2xl font-bold text-foreground mb-2">Access Denied</h2>
-            <p className="text-muted-foreground font-medium mb-6">
-              You don't have permission to access the owner dashboard.
-            </p>
-            <Button onClick={handleLogout} variant="outline" className="font-bold border-border hover:bg-muted rounded-xl">
-              Sign Out
-            </Button>
+      <div className="min-h-screen flex items-center justify-center p-4" style={{ backgroundColor: 'var(--warm-cream)' }}>
+        <div className="text-center max-w-md">
+          <div className="w-16 h-16 rounded-full mx-auto mb-4 flex items-center justify-center" style={{ backgroundColor: 'var(--red-danger)' }}>
+            <Lock size={28} className="text-white" />
           </div>
+          <h2 className="font-display text-2xl font-bold mb-2" style={{ color: 'var(--forest-green)' }}>Access Denied</h2>
+          <p className="text-sm mb-6" style={{ color: 'var(--earthy-brown)' }}>
+            You don't have admin privileges to access this panel.
+          </p>
+          <button
+            onClick={handleLogout}
+            className="px-6 py-2 rounded-xl font-semibold text-sm"
+            style={{ backgroundColor: 'var(--forest-green)', color: 'var(--warm-cream)' }}
+          >
+            Logout
+          </button>
         </div>
       </div>
     );

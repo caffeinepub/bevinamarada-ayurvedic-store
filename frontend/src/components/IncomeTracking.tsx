@@ -1,76 +1,70 @@
 import React from 'react';
-import { Wallet, TrendingUp, Calendar, Loader2 } from 'lucide-react';
-import { useGetIncomeSummary } from '../hooks/useQueries';
+import { DollarSign, TrendingUp, Calendar } from 'lucide-react';
 import { Skeleton } from '@/components/ui/skeleton';
+import { useGetSalesReports, useGetTodaysSales } from '../hooks/useQueries';
 
 function formatINR(value: number): string {
-  return new Intl.NumberFormat('en-IN', {
-    style: 'currency',
-    currency: 'INR',
-    maximumFractionDigits: 0,
-  }).format(value);
+  return new Intl.NumberFormat('en-IN', { style: 'currency', currency: 'INR', maximumFractionDigits: 0 }).format(value);
 }
 
 export default function IncomeTracking() {
-  const { data: income, isLoading } = useGetIncomeSummary();
+  const { data: reports, isLoading: reportsLoading } = useGetSalesReports();
+  const { data: todaysSales = [], isLoading: salesLoading } = useGetTodaysSales();
 
-  const cards = [
+  const isLoading = reportsLoading || salesLoading;
+
+  const todaysIncome = todaysSales.reduce((sum, s) => sum + Number(s.totalPrice), 0);
+  const totalIncome = Number(reports?.totalRevenue ?? 0n);
+
+  // Approximate monthly: sales from reports that are within current month (month key "0")
+  const monthlyEntry = reports?.monthlySales?.find(([key]) => key === '0' || key === '00');
+  const monthlyIncome = monthlyEntry ? Number(monthlyEntry[1]) : 0;
+
+  const metrics = [
     {
-      label: 'All-Time Income',
-      value: income ? formatINR(Number(income.totalIncome)) : '₹0',
-      icon: Wallet,
-      color: 'text-primary',
-      bg: 'bg-primary/10',
-      border: 'border-primary/20',
-      delay: '0ms',
+      label: "Today's Income",
+      value: todaysIncome,
+      icon: Calendar,
+      gradientClass: 'gradient-teal',
+      shadowClass: 'shadow-teal',
     },
     {
       label: 'Monthly Income',
-      value: income ? formatINR(Number(income.monthlyIncome)) : '₹0',
-      icon: Calendar,
-      color: 'text-accent',
-      bg: 'bg-accent/10',
-      border: 'border-accent/20',
-      delay: '100ms',
+      value: monthlyIncome,
+      icon: TrendingUp,
+      gradientClass: 'gradient-saffron',
+      shadowClass: 'shadow-saffron',
     },
     {
-      label: "Today's Income",
-      value: income ? formatINR(Number(income.todaysIncome)) : '₹0',
-      icon: TrendingUp,
-      color: 'text-chart-1',
-      bg: 'bg-chart-1/10',
-      border: 'border-chart-1/20',
-      delay: '200ms',
+      label: 'Total Income',
+      value: totalIncome,
+      icon: DollarSign,
+      gradientClass: 'gradient-coral',
+      shadowClass: 'shadow-coral',
     },
   ];
 
   if (isLoading) {
     return (
-      <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
-        {[1, 2, 3].map((i) => (
-          <div key={i} className="bg-card border border-border rounded-2xl p-5">
-            <Skeleton className="h-11 w-11 rounded-xl mb-3 shimmer" />
-            <Skeleton className="h-4 w-28 mb-2 shimmer" />
-            <Skeleton className="h-8 w-36 shimmer" />
-          </div>
+      <div className="space-y-3">
+        {Array.from({ length: 3 }).map((_, i) => (
+          <Skeleton key={i} className="h-20 rounded-xl" />
         ))}
       </div>
     );
   }
 
   return (
-    <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
-      {cards.map((card) => (
-        <div
-          key={card.label}
-          className={`bg-card border ${card.border} rounded-2xl p-5 card-hover animate-fade-in-up`}
-          style={{ animationDelay: card.delay }}
-        >
-          <div className={`w-11 h-11 rounded-xl ${card.bg} flex items-center justify-center mb-3`}>
-            <card.icon className={`w-5 h-5 ${card.color}`} />
+    <div className="space-y-3">
+      {metrics.map(({ label, value, icon: Icon, gradientClass, shadowClass }) => (
+        <div key={label} className="admin-card p-4 flex items-center gap-4">
+          <div className={`w-12 h-12 rounded-xl ${gradientClass} flex items-center justify-center flex-shrink-0 ${shadowClass}`}>
+            <Icon className="w-5 h-5 text-white" />
           </div>
-          <p className="text-muted-foreground text-sm font-bold mb-1">{card.label}</p>
-          <p className={`metric-value text-2xl ${card.color}`}>{card.value}</p>
+          <div>
+            <p className="text-xs font-semibold text-muted-foreground uppercase tracking-wider">{label}</p>
+            <p className="text-2xl font-bold text-foreground mt-0.5">{formatINR(value)}</p>
+          </div>
         </div>
       ))}
     </div>

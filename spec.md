@@ -1,14 +1,12 @@
 # Specification
 
 ## Summary
-**Goal:** Fix the mobile sidebar so it no longer overlaps dashboard content, replacing it with a slide-in drawer toggled by a hamburger button.
+**Goal:** Fix the mobile navigation menu in PublicLayout.tsx so it behaves as a proper full-screen overlay drawer.
 
 **Planned changes:**
-- Hide the left sidebar by default on mobile screens (below md breakpoint)
-- Add a hamburger/menu toggle button in the top bar, visible only on mobile
-- Implement the sidebar as a slide-in drawer from the left when toggled on mobile
-- Add a semi-transparent dark backdrop overlay behind the open drawer; tapping it closes the drawer
-- Make the main content area full viewport width on mobile when the sidebar is closed (no reserved left margin)
-- Keep the desktop sidebar layout completely unchanged
+- Rebuild the mobile menu as a fixed full-screen overlay (position fixed, top-0 left-0, 100vw × 100vh) with a solid opaque background matching the Ayurvedic green/brown theme, so no page content is visible behind it.
+- Stack all navigation links vertically, centered horizontally and vertically, with adequate spacing so no items overlap each other, the logo, or any header elements.
+- Position a clearly visible close (X) button in the top-right corner of the overlay that fully dismisses the menu and restores normal page state.
+- Lock body scroll (overflow-hidden) when the menu is open and restore it when the menu is closed, with no layout shift.
 
-**User-visible outcome:** On mobile, the sidebar no longer overlaps content. Users can open and close the sidebar via a hamburger button, with the drawer sliding in as an overlay over a dimmed backdrop. The main content fills the full screen width when the drawer is closed.
+**User-visible outcome:** On mobile, tapping the hamburger icon opens a clean full-screen menu overlay with properly spaced, centered navigation links and a working close button; background content is completely hidden and non-scrollable while the menu is open.
