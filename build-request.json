@@ -1,77 +1,75 @@
 {
   "kind": "build_request",
-  "title": "Add admin portal login with hardcoded credentials and remember me option",
+  "title": "Fix slow admin panel loading and update store location",
   "projectName": "Bevinamarada Ayurvedic Store",
-  "priority": "normal",
+  "priority": "high",
   "requirements": [
     {
       "id": "REQ-1",
-      "text": "Create a standalone admin portal login page (separate from Internet Identity) that authenticates using hardcoded credentials: username 'baslxr' and password 'bas12345'. The login page should be accessible at a dedicated route (e.g., /admin-login) and redirect to the admin dashboard upon successful authentication.",
+      "text": "Optimize the AdminGuard component to reduce loading time after login. Eliminate unnecessary sequential async operations by parallelizing the Internet Identity authentication check, actor initialization, and profile/role fetches using Promise.all where possible. Add loading skeleton or spinner feedback so the UI is responsive immediately while data loads in the background rather than showing a blank screen.",
       "target": "frontend",
       "source": {
         "messageIds": [
-          "msg-6"
+          "msg-1"
         ],
         "quotes": [
-          "admit portal login username is baslxr. And password is bas12345"
+          "It's too loding after login Admin control. Fix it and make faster loding."
         ]
       },
       "acceptanceCriteria": [
-        "A login page exists with username and password input fields",
-        "Entering username 'baslxr' and password 'bas12345' grants access to the admin area",
-        "Entering incorrect credentials shows an error message",
-        "Successful login redirects the user to the admin dashboard"
+        "The admin panel becomes interactive (shows layout/skeleton) within 1–2 seconds of successful login instead of hanging on a blank screen.",
+        "Authentication, actor creation, and profile queries are run in parallel where dependencies allow.",
+        "A loading spinner or skeleton is visible immediately after login while data is being fetched.",
+        "No regression in admin route protection — unauthenticated users are still redirected to /admin-login."
       ]
     },
     {
       "id": "REQ-2",
-      "text": "Add a 'Remember Me' checkbox on the admin login page. When checked and the user logs in successfully, the username and password are persisted in localStorage so that the fields are pre-filled on the next visit. When unchecked, no credentials are saved and any previously saved credentials are cleared from localStorage.",
+      "text": "Optimize the OwnerDashboard and AdminDashboard pages to use stale-while-revalidate caching via React Query (set appropriate staleTime and cacheTime on queries in useQueries.ts) so that repeated visits to the admin panel do not trigger full refetches every time, reducing perceived load time.",
       "target": "frontend",
       "source": {
         "messageIds": [
-          "msg-6"
+          "msg-1"
         ],
         "quotes": [
-          "remember or save username and password option"
+          "Fix it and make faster loding."
         ]
       },
       "acceptanceCriteria": [
-        "A 'Remember Me' checkbox is displayed on the login page",
-        "When 'Remember Me' is checked and login is successful, username and password are saved to localStorage",
-        "On subsequent visits, the username and password fields are pre-filled from localStorage if saved credentials exist",
-        "The 'Remember Me' checkbox is also pre-checked if saved credentials exist",
-        "When 'Remember Me' is unchecked on login, any previously saved credentials are removed from localStorage"
+        "React Query hooks for stock items, sales data, and trial status have a staleTime of at least 30 seconds.",
+        "Navigating back to the dashboard after visiting a sub-page does not trigger a full loading spinner — cached data is shown immediately.",
+        "Background refetches still occur to keep data fresh."
       ]
     },
     {
       "id": "REQ-3",
-      "text": "Protect all existing admin routes so that unauthenticated users (those who have not logged in via the admin login page) are redirected to the admin login page. Store the authenticated session state in sessionStorage (or a React context) so that refreshing the page within the same session keeps the user logged in, but closing the browser clears the session (unless Remember Me credentials are saved).",
+      "text": "Update the store location in the Contact page (frontend/src/pages/Contact.tsx) to use the new Google Maps link: https://maps.app.goo.gl/T6HCLQMn9kQqAW8x6?g_st=aw. Replace the existing embedded Google Maps iframe src and any hardcoded map links with this new location URL. Use the embeddable version of this map link for the iframe and the direct link for any 'Get Directions' or 'View on Map' anchor tags.",
       "target": "frontend",
       "source": {
         "messageIds": [
-          "msg-6"
+          "msg-1"
         ],
         "quotes": [
-          "admit portal login username is baslxr. And password is bas12345"
+          "edit store location (https://maps.app.goo.gl/T6HCLQMn9kQqAW8x6?g_st=aw)"
         ]
       },
       "acceptanceCriteria": [
-        "Navigating directly to any admin route without being logged in redirects to the admin login page",
-        "After login, navigating to admin routes works without re-authentication within the same session",
-        "A logout button in the admin layout clears the session and redirects to the login page"
+        "The embedded Google Maps iframe on the Contact page points to the new location https://maps.app.goo.gl/T6HCLQMn9kQqAW8x6.",
+        "Any 'Get Directions' or external map link on the Contact page uses the new URL.",
+        "The map renders correctly in the iframe without broken content or CORS errors."
       ]
     }
   ],
   "constraints": [
-    "Do not remove or break the existing Internet Identity integration in useInternetIdentity.ts",
-    "Hardcoded credentials (baslxr / bas12345) must be used exactly as provided",
-    "Do not modify any files under frontend/src/hooks/ or frontend/src/components/ui"
+    "Do not change hardcoded admin credentials or session logic in AdminLogin.tsx.",
+    "Do not modify any files under frontend/src/hooks/useInternetIdentity.ts, frontend/src/hooks/useActor.ts, frontend/src/main.tsx, or frontend/src/components/ui.",
+    "Backend data model and Motoko actor must not be changed."
   ],
   "nonGoals": [
-    "Backend credential storage or API-based authentication",
-    "Multi-user or dynamic credential management",
-    "Password hashing or encryption (credentials are hardcoded on the frontend)",
-    "Changing the existing Internet Identity login flow"
+    "Adding server-side caching or backend performance changes.",
+    "Redesigning the admin UI layout or visual theme.",
+    "Changing the authentication mechanism (Internet Identity stays as-is).",
+    "Adding real-time data sync or WebSocket support."
   ],
   "imageRequirements": {
     "required": [],

@@ -1,25 +1,33 @@
 {
   "kind": "spec_vs_diff_report",
   "version": "1.0",
-  "generatedAt": "2026-02-25T11:45:20.368Z",
-  "summary": "All three requirements are implemented. REQ-1: AdminLogin.tsx page created with username/password fields, hardcoded credentials (baslxr/bas12345), error message on failure, and redirect to /admin on success, accessible at /admin-login route. REQ-2: Remember Me checkbox implemented with localStorage persistence for username, password, and the checkbox state itself, with pre-filling on mount and clearing when unchecked. REQ-3: AdminGuard component checks sessionStorage for 'adminSessionActive' and redirects to /admin-login if absent; all admin routes are wrapped under AdminGuard; AdminLayout has a logout button that clears sessionStorage and redirects to /admin-login.",
-  "missing_requirements": [],
-  "hallucinated_features": [
+  "generatedAt": "2026-02-25T12:42:39.462Z",
+  "summary": "REQ-1 and REQ-2 are substantially implemented. REQ-3 is partially implemented — the 'Get Directions' link uses the correct URL, but the iframe embed src uses a generic place-search URL rather than the required new location URL. REQ-1 parallelization via Promise.all is not clearly evidenced in the diff; the skeleton/spinner is added but sequential-to-parallel refactoring is unclear from the truncated diff.",
+  "missing_requirements": [
     {
-      "description": "AdminGuard still requires Internet Identity login after passing the admin session check — it shows an Internet Identity login prompt and checks for admin role via userProfile even after the hardcoded-credential session is established.",
-      "reason": "The build request states the admin portal login should be separate from Internet Identity and that the Internet Identity integration should not be broken but also not required for admin portal access. However, AdminGuard enforces Internet Identity authentication as a second layer on top of the sessionStorage check, meaning users must also complete Internet Identity login to access admin routes — this was not requested.",
+      "id": "REQ-1",
+      "requirement": "Eliminate unnecessary sequential async operations by parallelizing authentication check, actor initialization, and profile/role fetches using Promise.all where possible.",
+      "reason": "The diff shows AdminGuard was updated with a loading skeleton and session check, but there is no evidence of Promise.all or parallelized async operations. The component still appears to use sequential hooks (useInternetIdentity, then useGetCallerUserProfile) without explicit parallelization logic.",
       "evidence": [
         "frontend/src/components/AdminGuard.tsx"
       ]
+    },
+    {
+      "id": "REQ-3",
+      "requirement": "The embedded Google Maps iframe src must point to the new location URL https://maps.app.goo.gl/T6HCLQMn9kQqAW8x6.",
+      "reason": "The MAPS_EMBED_SRC constant in Contact.tsx is set to 'https://maps.google.com/maps?q=Bevinamarada+Ayurvedic+Store&output=embed&z=15', a generic place-search embed, not the required new location URL. The AC explicitly requires the iframe to point to https://maps.app.goo.gl/T6HCLQMn9kQqAW8x6.",
+      "evidence": [
+        "frontend/src/pages/Contact.tsx"
+      ]
     }
   ],
-  "confidence": 0.82,
+  "hallucinated_features": [],
+  "confidence": 0.75,
   "changed_files": [
     "frontend-file-summaries.txt",
-    "frontend/src/App.tsx",
     "frontend/src/components/AdminGuard.tsx",
-    "frontend/src/components/AdminLayout.tsx",
-    "frontend/src/pages/AdminLogin.tsx",
+    "frontend/src/hooks/useQueries.ts",
+    "frontend/src/pages/Contact.tsx",
     "project_state.json"
   ]
 }

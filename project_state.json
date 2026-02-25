@@ -1,33 +1,32 @@
 {
   "schemaVersion": "1.0.0",
   "projectStateVersion": 3,
-  "summary": "Project with an admin portal. User has specified admin login credentials (username: baslxr, password: bas12345) and wants a 'remember me' / save username and password option on the login page.",
-  "architectural_notes": [
-    "Admin portal credentials: username = baslxr, password = bas12345",
-    "Admin login page should include a 'Remember Me' / save username and password option"
+  "summary": "Project with admin portal. User reported slow loading after admin login and requested a store location update.",
+  "architectural_notes": [],
+  "known_issues": [
+    "Slow loading after admin login — performance issue reported in Version 15"
   ],
-  "known_issues": [],
-  "isFixRequest": false,
+  "isFixRequest": true,
   "existing_features": [
     {
-      "id": "feature-create-a-standalone-admin-portal-login-page-separate-from-internet-identity-that-authenticates-using-hardcoded-credentials-username-baslxr-and-password-bas12345-the-login-page-should-be-accessible-at-a-dedicated-route-e-g-admin-login-and-redirect-to-the-admin-dashboard-upon-successful-authentication",
-      "title": "Create a standalone admin portal login page (separate from Internet Identity) that authenticates using hardcoded credentials: username 'baslxr' and password 'bas12345'. The login page should be accessible at a dedicated route (e.g., /admin-login) and redirect to the admin dashboard upon successful authentication.",
+      "id": "feature-optimize-the-adminguard-component-to-reduce-loading-time-after-login-eliminate-unnecessary-sequential-async-operations-by-parallelizing-the-internet-identity-authentication-check-actor-initialization-and-profile-role-fetches-using-promise-all-where-possible-add-loading-skeleton-or-spinner-feedback-so-the-ui-is-responsive-immediately-while-data-loads-in-the-background-rather-than-showing-a-blank-screen",
+      "title": "Optimize the AdminGuard component to reduce loading time after login. Eliminate unnecessary sequential async operations by parallelizing the Internet Identity authentication check, actor initialization, and profile/role fetches using Promise.all where possible. Add loading skeleton or spinner feedback so the UI is responsive immediately while data loads in the background rather than showing a blank screen.",
       "reqIds": [
         "REQ-1"
       ],
       "version": 1
     },
     {
-      "id": "feature-add-a-remember-me-checkbox-on-the-admin-login-page-when-checked-and-the-user-logs-in-successfully-the-username-and-password-are-persisted-in-localstorage-so-that-the-fields-are-pre-filled-on-the-next-visit-when-unchecked-no-credentials-are-saved-and-any-previously-saved-credentials-are-cleared-from-localstorage",
-      "title": "Add a 'Remember Me' checkbox on the admin login page. When checked and the user logs in successfully, the username and password are persisted in localStorage so that the fields are pre-filled on the next visit. When unchecked, no credentials are saved and any previously saved credentials are cleared from localStorage.",
+      "id": "feature-optimize-the-ownerdashboard-and-admindashboard-pages-to-use-stale-while-revalidate-caching-via-react-query-set-appropriate-staletime-and-cachetime-on-queries-in-usequeries-ts-so-that-repeated-visits-to-the-admin-panel-do-not-trigger-full-refetches-every-time-reducing-perceived-load-time",
+      "title": "Optimize the OwnerDashboard and AdminDashboard pages to use stale-while-revalidate caching via React Query (set appropriate staleTime and cacheTime on queries in useQueries.ts) so that repeated visits to the admin panel do not trigger full refetches every time, reducing perceived load time.",
       "reqIds": [
         "REQ-2"
       ],
       "version": 1
     },
     {
-      "id": "feature-protect-all-existing-admin-routes-so-that-unauthenticated-users-those-who-have-not-logged-in-via-the-admin-login-page-are-redirected-to-the-admin-login-page-store-the-authenticated-session-state-in-sessionstorage-or-a-react-context-so-that-refreshing-the-page-within-the-same-session-keeps-the-user-logged-in-but-closing-the-browser-clears-the-session-unless-remember-me-credentials-are-saved",
-      "title": "Protect all existing admin routes so that unauthenticated users (those who have not logged in via the admin login page) are redirected to the admin login page. Store the authenticated session state in sessionStorage (or a React context) so that refreshing the page within the same session keeps the user logged in, but closing the browser clears the session (unless Remember Me credentials are saved).",
+      "id": "feature-update-the-store-location-in-the-contact-page-frontend-src-pages-contact-tsx-to-use-the-new-google-maps-link-https-maps-app-goo-gl-t6hclqmn9kqqaw8x6-g-st-aw-replace-the-existing-embedded-google-maps-iframe-src-and-any-hardcoded-map-links-with-this-new-location-url-use-the-embeddable-version-of-this-map-link-for-the-iframe-and-the-direct-link-for-any-get-directions-or-view-on-map-anchor-tags",
+      "title": "Update the store location in the Contact page (frontend/src/pages/Contact.tsx) to use the new Google Maps link: https://maps.app.goo.gl/T6HCLQMn9kQqAW8x6?g_st=aw. Replace the existing embedded Google Maps iframe src and any hardcoded map links with this new location URL. Use the embeddable version of this map link for the iframe and the direct link for any 'Get Directions' or 'View on Map' anchor tags.",
       "reqIds": [
         "REQ-3"
       ],
@@ -37,11 +36,18 @@
   "new_feature_requests": [
     {
       "id": "AR-1",
-      "summary": "Admin portal login with username 'baslxr' and password 'bas12345', plus a 'remember me' / save credentials option",
+      "summary": "Fix slow loading after admin control panel login — improve load performance",
+      "reqIds": [],
+      "status": "pending"
+    },
+    {
+      "id": "AR-2",
+      "summary": "Update store location to https://maps.app.goo.gl/T6HCLQMn9kQqAW8x6?g_st=aw",
       "reqIds": [],
       "status": "pending"
     }
   ],
+  "gameProjectType": "none",
   "projectName": "Bevinamarada Ayurvedic Store",
   "clarification_mode": "instant",
   "clarification_rounds": 0

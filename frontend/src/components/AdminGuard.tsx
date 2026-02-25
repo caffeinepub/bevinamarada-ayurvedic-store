@@ -5,6 +5,51 @@ import { Outlet, useNavigate } from '@tanstack/react-router';
 import { Loader2, ShieldX } from 'lucide-react';
 import { UserRole } from '../backend';
 import { useEffect } from 'react';
+import { Skeleton } from '@/components/ui/skeleton';
+
+function AdminLoadingSkeleton() {
+  return (
+    <div className="min-h-screen bg-gradient-to-br from-forest-50 to-sage-50 flex">
+      {/* Sidebar skeleton */}
+      <div className="hidden md:flex flex-col w-64 bg-gradient-to-b from-forest-900 to-sage-900 p-4 gap-4">
+        <div className="flex items-center gap-3 px-2 py-3">
+          <Skeleton className="w-10 h-10 rounded-xl bg-white/10" />
+          <div className="space-y-1.5">
+            <Skeleton className="h-4 w-28 bg-white/10" />
+            <Skeleton className="h-3 w-20 bg-white/10" />
+          </div>
+        </div>
+        <div className="space-y-2 mt-4">
+          {[...Array(6)].map((_, i) => (
+            <Skeleton key={i} className="h-10 w-full rounded-xl bg-white/10" />
+          ))}
+        </div>
+      </div>
+
+      {/* Main content skeleton */}
+      <div className="flex-1 flex flex-col">
+        {/* Top header skeleton */}
+        <div className="h-16 bg-white border-b border-forest-100 flex items-center justify-between px-6">
+          <Skeleton className="h-6 w-40" />
+          <div className="flex items-center gap-3">
+            <Skeleton className="h-8 w-8 rounded-full" />
+            <Skeleton className="h-8 w-24 rounded-lg" />
+          </div>
+        </div>
+
+        {/* Dashboard content skeleton */}
+        <div className="flex-1 p-6 space-y-6">
+          <Skeleton className="h-28 w-full rounded-2xl" />
+          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
+            {[...Array(6)].map((_, i) => (
+              <Skeleton key={i} className="h-32 w-full rounded-2xl" />
+            ))}
+          </div>
+        </div>
+      </div>
+    </div>
+  );
+}
 
 export default function AdminGuard() {
   const navigate = useNavigate();
@@ -37,6 +82,7 @@ export default function AdminGuard() {
     return null;
   }
 
+  // Not yet authenticated — show login prompt
   if (!isAuthenticated) {
     return (
       <div className="min-h-screen flex items-center justify-center bg-gradient-to-br from-forest-50 to-sage-50">
@@ -66,15 +112,9 @@ export default function AdminGuard() {
     );
   }
 
+  // Authenticated but profile still loading — show full skeleton immediately
   if (profileLoading || !isFetched) {
-    return (
-      <div className="min-h-screen flex items-center justify-center bg-gradient-to-br from-forest-50 to-sage-50">
-        <div className="text-center">
-          <Loader2 className="w-10 h-10 animate-spin text-forest-600 mx-auto mb-4" />
-          <p className="text-forest-600">Loading your profile...</p>
-        </div>
-      </div>
-    );
+    return <AdminLoadingSkeleton />;
   }
 
   if (showProfileSetup) {

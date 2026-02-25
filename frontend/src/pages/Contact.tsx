@@ -1,9 +1,14 @@
 import { useState } from 'react';
-import { Phone, MapPin, Clock, Mail, Send } from 'lucide-react';
+import { Phone, MapPin, Clock, Mail, Send, ExternalLink } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Textarea } from '@/components/ui/textarea';
 import { Label } from '@/components/ui/label';
+
+const STORE_MAPS_LINK = 'https://maps.app.goo.gl/T6HCLQMn9kQqAW8x6?g_st=aw';
+// Embed using Google Maps place search — no API key required
+const MAPS_EMBED_SRC =
+  'https://maps.google.com/maps?q=Bevinamarada+Ayurvedic+Store&output=embed&z=15';
 
 export default function Contact() {
   const [formData, setFormData] = useState({
@@ -64,17 +69,28 @@ export default function Contact() {
               </div>
 
               {/* Map */}
-              <div className="rounded-2xl overflow-hidden shadow-lg border border-forest-100 h-64">
-                <iframe
-                  src="https://www.google.com/maps/embed?pb=!1m18!1m12!1m3!1d497698.99!2d77.35073!3d12.97194!2m3!1f0!2f0!3f0!3m2!1i1024!2i768!4f13.1!3m3!1m2!1s0x3bae1670c9b44e6d%3A0xf8dfc3e8517e4fe0!2sBengaluru%2C%20Karnataka!5e0!3m2!1sen!2sin!4v1234567890"
-                  width="100%"
-                  height="100%"
-                  style={{ border: 0 }}
-                  allowFullScreen
-                  loading="lazy"
-                  referrerPolicy="no-referrer-when-downgrade"
-                  title="Store Location"
-                />
+              <div className="rounded-2xl overflow-hidden shadow-lg border border-forest-100">
+                <div className="h-64 relative">
+                  <iframe
+                    src={MAPS_EMBED_SRC}
+                    width="100%"
+                    height="100%"
+                    style={{ border: 0 }}
+                    allowFullScreen
+                    loading="lazy"
+                    referrerPolicy="no-referrer-when-downgrade"
+                    title="Store Location"
+                  />
+                </div>
+                <a
+                  href={STORE_MAPS_LINK}
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  className="flex items-center justify-center gap-2 py-3 bg-white text-forest-700 font-semibold text-sm hover:bg-forest-50 transition-colors border-t border-forest-100"
+                >
+                  <ExternalLink className="w-4 h-4" />
+                  Get Directions
+                </a>
               </div>
             </div>
 

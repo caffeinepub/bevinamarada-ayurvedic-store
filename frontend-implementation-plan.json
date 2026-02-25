@@ -1,66 +1,64 @@
 {
   "kind": "implementation_plan",
   "version": "1.0",
-  "title": "Add admin portal login with hardcoded credentials and remember me option",
+  "title": "Optimize admin panel loading and update store location",
   "requirements": [
     {
       "id": "REQ-1",
-      "summary": "Create a standalone admin portal login page with hardcoded credentials (baslxr/bas12345) that authenticates separately from Internet Identity and redirects to admin dashboard on success",
+      "summary": "Optimize AdminGuard component to reduce loading time after login by parallelizing authentication checks and adding loading feedback",
       "acceptanceCriteria": [
-        "A login page exists with username and password input fields",
-        "Entering username 'baslxr' and password 'bas12345' grants access to the admin area",
-        "Entering incorrect credentials shows an error message",
-        "Successful login redirects the user to the admin dashboard"
-      ],
-      "file_operations": [
-        {
-          "path": "frontend/src/pages/AdminLogin.tsx",
-          "operation": "create",
-          "description": "Create a standalone admin login page component with username and password input fields, hardcoded credential validation (baslxr/bas12345), error message display for invalid credentials, and redirect logic to /admin-dashboard on successful authentication. Use form with controlled inputs and leverage existing Tailwind classes and theme colors (saffron, teal) for consistent styling. Store authenticated session state in sessionStorage upon successful login."
-        },
-        {
-          "path": "frontend/src/App.tsx",
-          "operation": "modify",
-          "description": "Add a new public route for /admin-login that renders the AdminLogin page component. Place this route outside the AdminGuard wrapper so it is accessible without Internet Identity authentication. Ensure the route is registered before the protected admin routes."
-        }
-      ]
-    },
-    {
-      "id": "REQ-2",
-      "summary": "Add a 'Remember Me' checkbox that persists credentials to localStorage when checked and pre-fills login fields on subsequent visits",
-      "acceptanceCriteria": [
-        "A 'Remember Me' checkbox is displayed on the login page",
-        "When 'Remember Me' is checked and login is successful, username and password are saved to localStorage",
-        "On subsequent visits, the username and password fields are pre-filled from localStorage if saved credentials exist",
-        "The 'Remember Me' checkbox is also pre-checked if saved credentials exist",
-        "When 'Remember Me' is unchecked on login, any previously saved credentials are removed from localStorage"
-      ],
-      "file_operations": [
-        {
-          "path": "frontend/src/pages/AdminLogin.tsx",
-          "operation": "modify",
-          "description": "Add a 'Remember Me' checkbox to the login form. On component mount, check localStorage for saved credentials (keys: 'adminUsername', 'adminPassword', 'adminRememberMe') and pre-fill the username and password fields if they exist, also checking the checkbox. On successful login, if 'Remember Me' is checked, save the username and password to localStorage; if unchecked, clear any previously saved credentials from localStorage. Handle the checkbox state and implement the save/clear logic in the form submission handler."
-        }
-      ]
-    },
-    {
-      "id": "REQ-3",
-      "summary": "Protect all existing admin routes by checking session authentication state and redirecting unauthenticated users to the admin login page, with session persistence via sessionStorage",
-      "acceptanceCriteria": [
-        "Navigating directly to any admin route without being logged in redirects to the admin login page",
-        "After login, navigating to admin routes works without re-authentication within the same session",
-        "A logout button in the admin layout clears the session and redirects to the login page"
+        "The admin panel becomes interactive (shows layout/skeleton) within 1–2 seconds of successful login instead of hanging on a blank screen.",
+        "Authentication, actor creation, and profile queries are run in parallel where dependencies allow.",
+        "A loading spinner or skeleton is visible immediately after login while data is being fetched.",
+        "No regression in admin route protection — unauthenticated users are still redirected to /admin-login."
       ],
       "file_operations": [
         {
           "path": "frontend/src/components/AdminGuard.tsx",
           "operation": "modify",
-          "description": "Add session authentication check at the top of the AdminGuard component before the Internet Identity authentication logic. Check sessionStorage for 'adminSessionActive' key. If not present or false, redirect to /admin-login using the router's navigate function. If session is active, proceed with existing Internet Identity and profile setup flow. Do not remove or alter the existing Internet Identity integration; only add the session check as a preliminary gate."
+          "description": "Refactor AdminGuard to parallelize independent async operations using Promise.all. Currently, the component performs sequential checks (session validation, Internet Identity auth, actor initialization, profile fetch, admin check). Parallelize the profile fetch and admin role check since both depend only on the actor being ready. Add an immediate loading skeleton/spinner UI that displays while authentication and data fetching occur in the background, preventing the blank screen issue. Ensure the session check and redirect logic remain intact to protect admin routes from unauthenticated access."
+        }
+      ]
+    },
+    {
+      "id": "REQ-2",
+      "summary": "Optimize OwnerDashboard and AdminDashboard pages with stale-while-revalidate caching to reduce repeated refetches",
+      "acceptanceCriteria": [
+        "React Query hooks for stock items, sales data, and trial status have a staleTime of at least 30 seconds.",
+        "Navigating back to the dashboard after visiting a sub-page does not trigger a full loading spinner — cached data is shown immediately.",
+        "Background refetches still occur to keep data fresh."
+      ],
+      "file_operations": [
+        {
+          "path": "frontend/src/hooks/useQueries.ts",
+          "operation": "modify",
+          "description": "Add stale-while-revalidate caching configuration to all React Query hooks used by OwnerDashboard and AdminDashboard. Set staleTime to 30 seconds (30000ms) and cacheTime to 5 minutes (300000ms) for queries including useGetAllStockItems, useGetLowStockItems, useGetTrendingStockItems, useGetTodaysSales, useGetSalesReports, and useGetTrialStatus. This ensures that repeated visits to the dashboard show cached data immediately while background refetches keep data fresh, reducing perceived load time."
         },
         {
-          "path": "frontend/src/components/AdminLayout.tsx",
+          "path": "frontend/src/pages/OwnerDashboard.tsx",
           "operation": "modify",
-          "description": "Add a 'Logout from Admin Portal' button in the profile dropdown menu (or as a separate visible logout button in the sidebar). On click, clear the 'adminSessionActive' key from sessionStorage and navigate to /admin-login. Keep the existing Internet Identity logout button unchanged. Ensure both logout mechanisms are clearly labeled and do not interfere with each other."
+          "description": "Verify that the OwnerDashboard properly displays cached data from React Query hooks when navigating back from sub-pages. Ensure loading states only show when data is truly being fetched for the first time or when cache has expired, not on every navigation. The updated staleTime configuration in useQueries.ts will handle the caching behavior automatically."
+        },
+        {
+          "path": "frontend/src/pages/AdminDashboard.tsx",
+          "operation": "modify",
+          "description": "Verify that the AdminDashboard properly displays cached data from React Query hooks when navigating back from sub-pages. Ensure the dashboard cards remain interactive and show cached data immediately. The updated staleTime configuration in useQueries.ts will handle the caching behavior automatically."
+        }
+      ]
+    },
+    {
+      "id": "REQ-3",
+      "summary": "Update the store location on the Contact page to use the new Google Maps link",
+      "acceptanceCriteria": [
+        "The embedded Google Maps iframe on the Contact page points to the new location https://maps.app.goo.gl/T6HCLQMn9kQqAW8x6.",
+        "Any 'Get Directions' or external map link on the Contact page uses the new URL.",
+        "The map renders correctly in the iframe without broken content or CORS errors."
+      ],
+      "file_operations": [
+        {
+          "path": "frontend/src/pages/Contact.tsx",
+          "operation": "modify",
+          "description": "Replace the existing Google Maps iframe src with the embeddable version of the new location URL https://maps.app.goo.gl/T6HCLQMn9kQqAW8x6. Convert the shortened Google Maps link to the proper embed format by constructing an iframe-compatible URL (e.g., https://www.google.com/maps/embed?pb=... or using the Place ID from the short link). Update any 'Get Directions' or 'View on Map' anchor tags to use the direct link https://maps.app.goo.gl/T6HCLQMn9kQqAW8x6?g_st=aw. Ensure the iframe renders without CORS errors and displays the correct store location."
         }
       ]
     }

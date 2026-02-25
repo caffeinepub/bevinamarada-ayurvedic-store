@@ -3,6 +3,10 @@ import { useActor } from './useActor';
 import type { StockItem, Sale, SalesReports, UserProfile } from '../backend';
 import { ExternalBlob } from '../backend';
 
+// Cache configuration
+const STALE_TIME = 30_000;       // 30 seconds
+const GC_TIME = 300_000;         // 5 minutes
+
 // ─── Stock Items ────────────────────────────────────────────────────────────
 
 export function useGetAllStockItems() {
@@ -14,6 +18,8 @@ export function useGetAllStockItems() {
       return actor.getAllStockItems();
     },
     enabled: !!actor && !isFetching,
+    staleTime: STALE_TIME,
+    gcTime: GC_TIME,
   });
 }
 
@@ -26,6 +32,8 @@ export function useGetLowStockItems() {
       return actor.getLowStockItems();
     },
     enabled: !!actor && !isFetching,
+    staleTime: STALE_TIME,
+    gcTime: GC_TIME,
   });
 }
 
@@ -38,6 +46,8 @@ export function useGetTrendingStockItems() {
       return actor.getTrendingStockItems();
     },
     enabled: !!actor && !isFetching,
+    staleTime: STALE_TIME,
+    gcTime: GC_TIME,
   });
 }
 
@@ -50,6 +60,8 @@ export function useGetExpiringStockItems() {
       return actor.getExpiringStockItems();
     },
     enabled: !!actor && !isFetching,
+    staleTime: STALE_TIME,
+    gcTime: GC_TIME,
   });
 }
 
@@ -62,6 +74,8 @@ export function useGetExpiredStockItems() {
       return actor.getExpiredStockItems();
     },
     enabled: !!actor && !isFetching,
+    staleTime: STALE_TIME,
+    gcTime: GC_TIME,
   });
 }
 
@@ -170,6 +184,8 @@ export function useGetTodaysSales() {
       return actor.getTodaysSales();
     },
     enabled: !!actor && !isFetching,
+    staleTime: STALE_TIME,
+    gcTime: GC_TIME,
   });
 }
 
@@ -182,6 +198,8 @@ export function useGetSalesReports() {
       return actor.getSalesReports();
     },
     enabled: !!actor && !isFetching,
+    staleTime: STALE_TIME,
+    gcTime: GC_TIME,
   });
 }
 
@@ -214,6 +232,8 @@ export function useGetCallerUserProfile() {
     },
     enabled: !!actor && !actorFetching,
     retry: false,
+    staleTime: STALE_TIME,
+    gcTime: GC_TIME,
   });
   return {
     ...query,
@@ -236,6 +256,8 @@ export function useSaveCallerUserProfile() {
   });
 }
 
+// ─── Trial Status ────────────────────────────────────────────────────────────
+
 export function useGetTrialStatus() {
   const { actor, isFetching } = useActor();
   return useQuery({
@@ -245,5 +267,7 @@ export function useGetTrialStatus() {
       return actor.getTrialStatus();
     },
     enabled: !!actor && !isFetching,
+    staleTime: STALE_TIME,
+    gcTime: GC_TIME,
   });
 }
