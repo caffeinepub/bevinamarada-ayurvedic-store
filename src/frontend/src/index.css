@@ -1,4 +1,26 @@
-@import url("https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&family=Plus+Jakarta+Sans:wght@400;500;600;700;800&family=Playfair+Display:wght@400;500;600;700&display=swap");
+@font-face {
+  font-family: "Cabinet Grotesk";
+  src: url("/assets/fonts/CabinetGrotesk-Variable.woff2") format("woff2");
+  font-weight: 100 900;
+  font-style: normal;
+  font-display: swap;
+}
+
+@font-face {
+  font-family: "Outfit";
+  src: url("/assets/fonts/Outfit-Variable.woff2") format("woff2");
+  font-weight: 100 900;
+  font-style: normal;
+  font-display: swap;
+}
+
+@font-face {
+  font-family: "Geist Mono";
+  src: url("/assets/fonts/GeistMono-Variable.woff2") format("woff2");
+  font-weight: 100 900;
+  font-style: normal;
+  font-display: swap;
+}
 
 @tailwind base;
 @tailwind components;
@@ -6,52 +28,36 @@
 
 @layer base {
   :root {
-    --background: oklch(0.99 0.005 120);
-    --foreground: oklch(0.15 0.02 150);
-    --card: oklch(1 0 0);
-    --card-foreground: oklch(0.15 0.02 150);
-    --popover: oklch(1 0 0);
-    --popover-foreground: oklch(0.15 0.02 150);
-    --primary: oklch(0.42 0.12 155);
-    --primary-foreground: oklch(0.99 0.005 120);
-    --secondary: oklch(0.92 0.04 120);
-    --secondary-foreground: oklch(0.25 0.08 150);
-    --muted: oklch(0.95 0.02 120);
-    --muted-foreground: oklch(0.55 0.04 150);
-    --accent: oklch(0.78 0.14 85);
-    --accent-foreground: oklch(0.15 0.05 85);
-    --destructive: oklch(0.55 0.22 25);
-    --destructive-foreground: oklch(0.99 0.005 120);
-    --border: oklch(0.88 0.03 150);
-    --input: oklch(0.88 0.03 150);
-    --ring: oklch(0.42 0.12 155);
-    --radius: 0.5rem;
-    --success: oklch(0.55 0.15 155);
-    --warning: oklch(0.75 0.18 75);
-  }
-
-  .dark {
-    --background: oklch(0.12 0.02 150);
-    --foreground: oklch(0.95 0.01 120);
-    --card: oklch(0.16 0.025 150);
-    --card-foreground: oklch(0.95 0.01 120);
-    --popover: oklch(0.16 0.025 150);
-    --popover-foreground: oklch(0.95 0.01 120);
-    --primary: oklch(0.58 0.14 155);
-    --primary-foreground: oklch(0.12 0.02 150);
-    --secondary: oklch(0.22 0.04 150);
-    --secondary-foreground: oklch(0.85 0.04 120);
-    --muted: oklch(0.2 0.03 150);
-    --muted-foreground: oklch(0.65 0.04 150);
-    --accent: oklch(0.72 0.16 85);
-    --accent-foreground: oklch(0.12 0.02 150);
-    --destructive: oklch(0.55 0.22 25);
-    --destructive-foreground: oklch(0.99 0.005 120);
-    --border: oklch(0.28 0.04 150);
-    --input: oklch(0.28 0.04 150);
-    --ring: oklch(0.58 0.14 155);
-    --success: oklch(0.58 0.15 155);
-    --warning: oklch(0.75 0.18 75);
+    --background: 0.09 0.005 250;
+    --foreground: 0.94 0.01 250;
+    --card: 0.14 0.008 250;
+    --card-foreground: 0.94 0.01 250;
+    --popover: 0.16 0.008 250;
+    --popover-foreground: 0.94 0.01 250;
+    --primary: 0.75 0.22 150;
+    --primary-foreground: 0.09 0.005 250;
+    --secondary: 0.18 0.01 250;
+    --secondary-foreground: 0.8 0.01 250;
+    --muted: 0.18 0.01 250;
+    --muted-foreground: 0.55 0.02 250;
+    --accent: 0.72 0.18 200;
+    --accent-foreground: 0.09 0.005 250;
+    --destructive: 0.62 0.22 25;
+    --destructive-foreground: 0.98 0 0;
+    --border: 0.22 0.015 250;
+    --input: 0.22 0.015 250;
+    --ring: 0.75 0.22 150;
+    --radius: 0.625rem;
+    --success: 0.72 0.2 150;
+    --warning: 0.75 0.18 72;
+    --sidebar: 0.11 0.006 250;
+    --sidebar-foreground: 0.9 0.01 250;
+    --sidebar-primary: 0.75 0.22 150;
+    --sidebar-primary-foreground: 0.09 0.005 250;
+    --sidebar-accent: 0.18 0.01 250;
+    --sidebar-accent-foreground: 0.9 0.01 250;
+    --sidebar-border: 0.22 0.015 250;
+    --sidebar-ring: 0.75 0.22 150;
   }
 }
 
@@ -65,104 +71,161 @@
 }
 
 @layer utilities {
-  /* Gradient utilities */
-  .gradient-forest {
-    background: linear-gradient(
-      135deg,
-      oklch(0.32 0.1 155) 0%,
-      oklch(0.42 0.12 155) 50%,
-      oklch(0.38 0.11 165) 100%
-    );
+  /* Neon glow shadows */
+  .neon-glow-green {
+    box-shadow: 0 0 8px oklch(0.75 0.22 150 / 0.4), 0 0 24px
+      oklch(0.75 0.22 150 / 0.15);
   }
-  .gradient-sage {
-    background: linear-gradient(
-      135deg,
-      oklch(0.88 0.06 140) 0%,
-      oklch(0.92 0.04 120) 100%
-    );
+  .neon-glow-cyan {
+    box-shadow: 0 0 8px oklch(0.72 0.18 200 / 0.4), 0 0 24px
+      oklch(0.72 0.18 200 / 0.15);
   }
-  .gradient-gold {
-    background: linear-gradient(
-      135deg,
-      oklch(0.78 0.14 85) 0%,
-      oklch(0.72 0.16 75) 100%
-    );
-  }
-  .gradient-hero {
-    background: linear-gradient(
-      135deg,
-      oklch(0.28 0.09 155) 0%,
-      oklch(0.38 0.12 155) 40%,
-      oklch(0.45 0.1 165) 100%
-    );
-  }
-  .gradient-card-green {
-    background: linear-gradient(
-      135deg,
-      oklch(0.42 0.12 155) 0%,
-      oklch(0.5 0.14 160) 100%
-    );
-  }
-  .gradient-card-gold {
-    background: linear-gradient(
-      135deg,
-      oklch(0.72 0.16 75) 0%,
-      oklch(0.78 0.14 85) 100%
-    );
-  }
-  .gradient-card-teal {
-    background: linear-gradient(
-      135deg,
-      oklch(0.48 0.12 195) 0%,
-      oklch(0.55 0.14 200) 100%
-    );
-  }
-  .gradient-card-emerald {
-    background: linear-gradient(
-      135deg,
-      oklch(0.52 0.15 155) 0%,
-      oklch(0.58 0.16 160) 100%
-    );
+  .neon-glow-blue {
+    box-shadow: 0 0 8px oklch(0.65 0.22 250 / 0.4), 0 0 24px
+      oklch(0.65 0.22 250 / 0.15);
   }
 
-  /* Herbal background overlay */
-  .herbal-bg-overlay {
-    background-image: url("/assets/generated/herbal-background.dim_1920x1080.png");
-    background-size: cover;
-    background-position: center;
-    background-blend-mode: overlay;
-    opacity: 0.08;
+  /* Glowing divider */
+  .neon-divider {
+    height: 1px;
+    background: linear-gradient(
+      90deg,
+      transparent 0%,
+      oklch(0.75 0.22 150 / 0.4) 30%,
+      oklch(0.72 0.18 200 / 0.4) 70%,
+      transparent 100%
+    );
+    box-shadow: 0 0 6px oklch(0.75 0.22 150 / 0.25);
+    border-radius: 9999px;
+    width: 100%;
+  }
+
+  /* Neon card hover */
+  .neon-card {
+    @apply transition-all duration-300;
+  }
+  .neon-card:hover {
+    box-shadow: 0 0 0 1px oklch(0.75 0.22 150 / 0.3), 0 0 20px
+      oklch(0.75 0.22 150 / 0.1);
+    transform: translateY(-2px);
+  }
+
+  /* Neon button glow */
+  .neon-btn {
+    box-shadow: 0 0 10px oklch(0.75 0.22 150 / 0.3), 0 2px 8px
+      oklch(0.75 0.22 150 / 0.2);
+    transition: box-shadow 0.2s ease, transform 0.15s ease;
+  }
+  .neon-btn:hover {
+    box-shadow: 0 0 18px oklch(0.75 0.22 150 / 0.5), 0 4px 16px
+      oklch(0.75 0.22 150 / 0.3);
+    transform: translateY(-1px);
+  }
+
+  /* Particle background for login */
+  @keyframes float-particle {
+    0%,
+    100% {
+      transform: translateY(0) translateX(0) scale(1);
+      opacity: 0.4;
+    }
+    33% {
+      transform: translateY(-20px) translateX(10px) scale(1.1);
+      opacity: 0.6;
+    }
+    66% {
+      transform: translateY(10px) translateX(-8px) scale(0.9);
+      opacity: 0.3;
+    }
+  }
+
+  /* Neon input focus */
+  .neon-input:focus {
+    border-color: oklch(0.75 0.22 150 / 0.8);
+    box-shadow: 0 0 0 2px oklch(0.75 0.22 150 / 0.15), 0 0 8px
+      oklch(0.75 0.22 150 / 0.2);
+    outline: none;
+  }
+
+  /* Neon pulse animation for borders */
+  @keyframes neon-pulse {
+    0%,
+    100% {
+      box-shadow: 0 0 6px oklch(0.75 0.22 150 / 0.3);
+    }
+    50% {
+      box-shadow: 0 0 14px oklch(0.75 0.22 150 / 0.6), 0 0 28px
+        oklch(0.75 0.22 150 / 0.2);
+    }
+  }
+  .neon-pulse {
+    animation: neon-pulse 2.5s ease-in-out infinite;
+  }
+
+  /* Glassmorphism */
+  .glass-card {
+    background: oklch(0.94 0.01 250 / 0.05);
+    backdrop-filter: blur(20px);
+    -webkit-backdrop-filter: blur(20px);
+    border: 1px solid oklch(0.75 0.22 150 / 0.2);
+  }
+
+  /* Animated gradient background for login */
+  @keyframes gradient-shift {
+    0% {
+      background-position: 0% 50%;
+    }
+    50% {
+      background-position: 100% 50%;
+    }
+    100% {
+      background-position: 0% 50%;
+    }
+  }
+  .animated-gradient-bg {
+    background: linear-gradient(
+      135deg,
+      oklch(0.09 0.005 250) 0%,
+      oklch(0.12 0.02 180) 25%,
+      oklch(0.09 0.005 250) 50%,
+      oklch(0.12 0.02 150) 75%,
+      oklch(0.09 0.005 250) 100%
+    );
+    background-size: 400% 400%;
+    animation: gradient-shift 8s ease infinite;
+  }
+
+  /* Neon gradients */
+  .gradient-neon-primary {
+    background: linear-gradient(
+      135deg,
+      oklch(0.65 0.22 150) 0%,
+      oklch(0.72 0.2 160) 100%
+    );
+  }
+  .gradient-neon-cyan {
+    background: linear-gradient(
+      135deg,
+      oklch(0.6 0.2 200) 0%,
+      oklch(0.68 0.18 210) 100%
+    );
   }
 
   /* Card styles */
   .pharma-card {
-    @apply bg-card rounded-xl shadow-md border border-border/50 overflow-hidden;
+    @apply bg-card rounded-xl shadow-card border border-border overflow-hidden;
   }
   .stat-card {
-    @apply rounded-xl p-6 text-white shadow-lg;
-  }
-
-  /* Admin component classes */
-  .admin-sidebar {
-    @apply bg-forest text-white h-full flex flex-col;
-  }
-  .admin-nav-item {
-    @apply flex items-center gap-3 px-4 py-3 rounded-lg text-sm font-medium transition-all duration-200;
-  }
-  .admin-nav-item-active {
-    @apply bg-white/20 text-white;
-  }
-  .admin-nav-item-inactive {
-    @apply text-white/70 hover:bg-white/10 hover:text-white;
+    @apply rounded-xl p-6 shadow-lg;
   }
 
   /* Shimmer loading animation */
   .shimmer {
     background: linear-gradient(
       90deg,
-      oklch(0.92 0.02 120) 25%,
-      oklch(0.96 0.01 120) 50%,
-      oklch(0.92 0.02 120) 75%
+      oklch(0.18 0.01 250) 25%,
+      oklch(0.22 0.015 250) 50%,
+      oklch(0.18 0.01 250) 75%
     );
     background-size: 200% 100%;
     animation: shimmer 1.5s infinite;
@@ -179,7 +242,7 @@
 
   /* Fade in animation */
   .fade-in {
-    animation: fadeIn 0.5s ease-in-out;
+    animation: fadeIn 0.4s ease-out forwards;
   }
 
   @keyframes fadeIn {
@@ -193,49 +256,32 @@
     }
   }
 
+  /* Page entrance animation */
+  @keyframes pageEnter {
+    from {
+      opacity: 0;
+      transform: translateY(16px);
+    }
+    to {
+      opacity: 1;
+      transform: translateY(0);
+    }
+  }
+  .page-enter {
+    animation: pageEnter 0.35s ease-out forwards;
+  }
+
   /* Staggered fade in */
   .stagger-1 {
-    animation-delay: 0.1s;
+    animation-delay: 0.05s;
   }
   .stagger-2 {
-    animation-delay: 0.2s;
+    animation-delay: 0.1s;
   }
   .stagger-3 {
-    animation-delay: 0.3s;
+    animation-delay: 0.15s;
   }
   .stagger-4 {
-    animation-delay: 0.4s;
-  }
-
-  /* Neon theme utilities (for admin portal) */
-  .neon-text-glow {
-    text-shadow: 0 0 10px oklch(0.75 0.25 145), 0 0 20px oklch(0.75 0.25 145), 0
-      0 40px oklch(0.75 0.25 145);
-  }
-  .neon-glow {
-    box-shadow: 0 0 10px oklch(0.75 0.25 145), 0 0 20px
-      oklch(0.75 0.25 145 / 0.5);
-  }
-  .bg-grid-neon {
-    background-image: linear-gradient(
-        oklch(0.75 0.25 145 / 0.05) 1px,
-        transparent 1px
-      ),
-      linear-gradient(90deg, oklch(0.75 0.25 145 / 0.05) 1px, transparent 1px);
-    background-size: 40px 40px;
-  }
-
-  @keyframes pulseGlow {
-    0%,
-    100% {
-      box-shadow: 0 0 5px oklch(0.75 0.25 145 / 0.5);
-    }
-    50% {
-      box-shadow: 0 0 20px oklch(0.75 0.25 145), 0 0 40px
-        oklch(0.75 0.25 145 / 0.5);
-    }
-  }
-  .animate-pulse-glow {
-    animation: pulseGlow 2s ease-in-out infinite;
+    animation-delay: 0.2s;
   }
 }

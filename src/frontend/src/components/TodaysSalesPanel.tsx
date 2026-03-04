@@ -19,61 +19,106 @@ export default function TodaysSalesPanel() {
     return item?.name ?? `Product #${String(id)}`;
   };
 
-  const summaryCards = [
-    {
-      label: "Today's Revenue",
-      value: `₹${totalRevenue.toLocaleString("en-IN")}`,
-      icon: DollarSign,
-      color: "gradient-card-green",
-    },
-    {
-      label: "Transactions",
-      value: sales ? sales.length.toString() : "0",
-      icon: ShoppingCart,
-      color: "gradient-card-teal",
-    },
-    {
-      label: "Units Sold",
-      value: totalQuantity.toLocaleString("en-IN"),
-      icon: Package,
-      color: "gradient-card-gold",
-    },
-  ];
+  const cardStyle = {
+    background: "oklch(0.14 0.008 250)",
+    border: "1px solid oklch(0.22 0.015 250)",
+  };
 
   return (
     <div className="space-y-6">
       {/* Summary cards */}
       <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
-        {summaryCards.map((card) => {
-          const Icon = card.icon;
-          return (
+        <div
+          className="rounded-xl shadow-card p-5 border-l-4 border-l-primary flex flex-col gap-2 neon-card"
+          style={cardStyle}
+        >
+          <div className="flex items-start justify-between">
+            <span className="text-xs font-semibold uppercase tracking-wider text-muted-foreground">
+              Today's Revenue
+            </span>
             <div
-              key={card.label}
-              className={`${card.color} rounded-xl p-5 text-white shadow-lg`}
+              className="w-9 h-9 rounded-full flex items-center justify-center"
+              style={{ background: "oklch(0.75 0.22 150 / 0.12)" }}
             >
-              <div className="flex items-center gap-3 mb-2">
-                <div className="w-9 h-9 rounded-lg bg-white/20 flex items-center justify-center">
-                  <Icon className="w-4 h-4 text-white" />
-                </div>
-              </div>
-              {salesLoading ? (
-                <div className="h-7 w-20 bg-white/20 rounded animate-pulse" />
-              ) : (
-                <div className="font-heading font-bold text-xl text-white">
-                  {card.value}
-                </div>
-              )}
-              <div className="text-white/70 text-xs mt-1">{card.label}</div>
+              <DollarSign className="w-4 h-4 text-primary" />
             </div>
-          );
-        })}
+          </div>
+          {salesLoading ? (
+            <div className="h-7 w-20 bg-muted rounded animate-pulse" />
+          ) : (
+            <div className="font-display font-bold text-2xl text-foreground">
+              ₹{totalRevenue.toLocaleString("en-IN")}
+            </div>
+          )}
+        </div>
+        <div
+          className="rounded-xl shadow-card p-5 border-l-4 border-l-accent flex flex-col gap-2 neon-card"
+          style={cardStyle}
+        >
+          <div className="flex items-start justify-between">
+            <span className="text-xs font-semibold uppercase tracking-wider text-muted-foreground">
+              Transactions
+            </span>
+            <div
+              className="w-9 h-9 rounded-full flex items-center justify-center"
+              style={{ background: "oklch(0.72 0.18 200 / 0.12)" }}
+            >
+              <ShoppingCart
+                className="w-4 h-4"
+                style={{ color: "oklch(0.72 0.18 200)" }}
+              />
+            </div>
+          </div>
+          {salesLoading ? (
+            <div className="h-7 w-20 bg-muted rounded animate-pulse" />
+          ) : (
+            <div className="font-display font-bold text-2xl text-foreground">
+              {sales ? sales.length.toString() : "0"}
+            </div>
+          )}
+        </div>
+        <div
+          className="rounded-xl shadow-card p-5 border-l-4 flex flex-col gap-2 neon-card"
+          style={{
+            ...cardStyle,
+            borderLeftColor: "oklch(0.75 0.18 72)",
+          }}
+        >
+          <div className="flex items-start justify-between">
+            <span className="text-xs font-semibold uppercase tracking-wider text-muted-foreground">
+              Units Sold
+            </span>
+            <div
+              className="w-9 h-9 rounded-full flex items-center justify-center"
+              style={{ background: "oklch(0.75 0.18 72 / 0.12)" }}
+            >
+              <Package
+                className="w-4 h-4"
+                style={{ color: "oklch(0.75 0.18 72)" }}
+              />
+            </div>
+          </div>
+          {salesLoading ? (
+            <div className="h-7 w-20 bg-muted rounded animate-pulse" />
+          ) : (
+            <div className="font-display font-bold text-2xl text-foreground">
+              {totalQuantity.toLocaleString("en-IN")}
+            </div>
+          )}
+        </div>
       </div>
 
       {/* Transactions table */}
-      <div className="bg-white rounded-xl border border-border/50 shadow-card overflow-hidden">
-        <div className="px-5 py-4 border-b border-border/50">
+      <div className="rounded-xl overflow-hidden shadow-card" style={cardStyle}>
+        <div
+          className="px-5 py-4"
+          style={{
+            borderBottom: "1px solid oklch(0.22 0.015 250)",
+            background: "oklch(0.18 0.01 250 / 0.3)",
+          }}
+        >
           <h3 className="font-heading font-semibold text-foreground flex items-center gap-2">
-            <TrendingUp className="w-4 h-4 text-forest" />
+            <TrendingUp className="w-4 h-4 text-primary" />
             Today's Transactions
           </h3>
         </div>
@@ -91,26 +136,44 @@ export default function TodaysSalesPanel() {
           <div className="overflow-x-auto">
             <table className="w-full text-sm">
               <thead>
-                <tr className="bg-muted/50">
-                  <th className="text-left px-5 py-3 font-semibold text-foreground/70 text-xs uppercase tracking-wide">
+                <tr
+                  style={{
+                    background: "oklch(0.18 0.01 250 / 0.5)",
+                    borderBottom: "1px solid oklch(0.22 0.015 250)",
+                  }}
+                >
+                  <th className="text-left px-5 py-3 font-semibold text-muted-foreground text-xs uppercase tracking-wide">
                     Product
                   </th>
-                  <th className="text-right px-5 py-3 font-semibold text-foreground/70 text-xs uppercase tracking-wide">
+                  <th className="text-right px-5 py-3 font-semibold text-muted-foreground text-xs uppercase tracking-wide">
                     Qty
                   </th>
-                  <th className="text-right px-5 py-3 font-semibold text-foreground/70 text-xs uppercase tracking-wide">
+                  <th className="text-right px-5 py-3 font-semibold text-muted-foreground text-xs uppercase tracking-wide">
                     Amount
                   </th>
-                  <th className="text-right px-5 py-3 font-semibold text-foreground/70 text-xs uppercase tracking-wide">
+                  <th className="text-right px-5 py-3 font-semibold text-muted-foreground text-xs uppercase tracking-wide">
                     Time
                   </th>
                 </tr>
               </thead>
-              <tbody className="divide-y divide-border/50">
+              <tbody>
                 {sales.map((sale) => (
                   <tr
                     key={String(sale.id)}
-                    className="hover:bg-muted/30 transition-colors"
+                    className="transition-colors"
+                    style={{
+                      borderBottom: "1px solid oklch(0.22 0.015 250 / 0.4)",
+                    }}
+                    onMouseEnter={(e) => {
+                      (
+                        e.currentTarget as HTMLTableRowElement
+                      ).style.background = "oklch(0.18 0.01 250 / 0.4)";
+                    }}
+                    onMouseLeave={(e) => {
+                      (
+                        e.currentTarget as HTMLTableRowElement
+                      ).style.background = "";
+                    }}
                   >
                     <td className="px-5 py-3 font-medium text-foreground">
                       {getProductName(sale.stockItemId)}
@@ -118,7 +181,7 @@ export default function TodaysSalesPanel() {
                     <td className="px-5 py-3 text-right text-muted-foreground">
                       {String(sale.quantity)}
                     </td>
-                    <td className="px-5 py-3 text-right font-semibold text-forest">
+                    <td className="px-5 py-3 text-right font-semibold text-primary">
                       ₹{Number(sale.totalPrice).toLocaleString("en-IN")}
                     </td>
                     <td className="px-5 py-3 text-right text-muted-foreground text-xs">

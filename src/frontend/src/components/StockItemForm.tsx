@@ -1,8 +1,9 @@
-import { Package, Save, Upload, X } from "lucide-react";
+import { AlertCircle, Package, Save, Upload, X } from "lucide-react";
 import type React from "react";
 import { useEffect, useRef, useState } from "react";
 import { ExternalBlob } from "../backend";
 import type { StockItem } from "../backend";
+import { useActor } from "../hooks/useActor";
 import { useAddStockItem, useUpdateStockItem } from "../hooks/useQueries";
 
 export interface StockItemFormProps {
@@ -38,13 +39,16 @@ export default function StockItemForm({
   const [imageFile, setImageFile] = useState<File | null>(null);
   const [imagePreview, setImagePreview] = useState<string | null>(null);
   const [uploadProgress, setUploadProgress] = useState(0);
+  const [submitError, setSubmitError] = useState<string | null>(null);
   const fileInputRef = useRef<HTMLInputElement>(null);
 
+  const { actor, isFetching } = useActor();
   const addMutation = useAddStockItem();
   const updateMutation = useUpdateStockItem();
 
   useEffect(() => {
     if (open) {
+      setSubmitError(null);
       if (editItem) {
         setName(editItem.name);
         setCategory(editItem.category);
@@ -84,53 +88,70 @@ export default function StockItemForm({
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
-    if (!name.trim()) return alert("Product name is required");
-
-    let imageBlob: ExternalBlob | null = null;
-    if (imageFile) {
-      const bytes = new Uint8Array(await imageFile.arrayBuffer());
-      imageBlob = ExternalBlob.fromBytes(bytes).withUploadProgress((pct) =>
-        setUploadProgress(pct),
-      );
-    } else if (editItem?.image) {
-      imageBlob = editItem.image;
+    if (!name.trim()) {
+      setSubmitError("Product name is required.");
+      return;
     }
 
-    const expiryTimestamp = expiryDate
-      ? BigInt(new Date(expiryDate).getTime()) * 1_000_000n
-      : null;
+    setSubmitError(null);
 
-    if (editItem) {
-      await updateMutation.mutateAsync({
-        id: editItem.id,
-        name: name.trim(),
-        category,
-        quantity: BigInt(quantity || "0"),
-        unitPrice: BigInt(unitPrice || "0"),
-        lowStockThreshold: BigInt(lowStockThreshold || "10"),
-        image: imageBlob,
-        expiryDate: expiryTimestamp,
-      });
-    } else {
-      await addMutation.mutateAsync({
-        name: name.trim(),
-        category,
-        quantity: BigInt(quantity || "0"),
-        unitPrice: BigInt(unitPrice || "0"),
-        lowStockThreshold: BigInt(lowStockThreshold || "10"),
-        image: imageBlob,
-        expiryDate: expiryTimestamp,
-      });
+    try {
+      let imageBlob: ExternalBlob | null = null;
+      if (imageFile) {
+        const bytes = new Uint8Array(await imageFile.arrayBuffer());
+        imageBlob = ExternalBlob.fromBytes(bytes).withUploadProgress((pct) =>
+          setUploadProgress(pct),
+        );
+      } else if (editItem?.image) {
+        imageBlob = editItem.image;
+      }
+
+      const expiryTimestamp = expiryDate
+        ? BigInt(new Date(expiryDate).getTime()) * 1_000_000n
+        : null;
+
+      if (editItem) {
+        await updateMutation.mutateAsync({
+          id: editItem.id,
+          name: name.trim(),
+          category,
+          quantity: BigInt(quantity || "0"),
+          unitPrice: BigInt(unitPrice || "0"),
+          lowStockThreshold: BigInt(lowStockThreshold || "10"),
+          image: imageBlob,
+          expiryDate: expiryTimestamp,
+        });
+      } else {
+        await addMutation.mutateAsync({
+          name: name.trim(),
+          category,
+          quantity: BigInt(quantity || "0"),
+          unitPrice: BigInt(unitPrice || "0"),
+          lowStockThreshold: BigInt(lowStockThreshold || "10"),
+          image: imageBlob,
+          expiryDate: expiryTimestamp,
+        });
+      }
+      onOpenChange(false);
+    } catch (err: unknown) {
+      const message =
+        err instanceof Error
+          ? err.message
+          : "Failed to save item. Please try again.";
+      setSubmitError(message);
     }
-    onOpenChange(false);
   };
 
   const isLoading = addMutation.isPending || updateMutation.isPending;
+  const isBackendReady = !!actor && !isFetching;
 
   const inputClass =
-    "w-full px-3 py-2.5 border border-[oklch(0.88_0.01_200)] rounded-lg text-[oklch(0.15_0.02_220)] placeholder-[oklch(0.65_0.02_200)] bg-white focus:outline-none focus:ring-2 focus:ring-[oklch(0.45_0.15_195)] focus:border-transparent text-sm";
-  const labelClass =
-    "block text-sm font-medium text-[oklch(0.25_0.03_220)] mb-1.5";
+    "w-full px-3.5 py-2.5 rounded-xl text-foreground placeholder:text-muted-foreground/50 text-sm transition-all neon-input";
+  const inputStyle = {
+    background: "oklch(0.18 0.01 250)",
+    border: "1px solid oklch(0.22 0.015 250)",
+  };
+  const labelClass = "block text-sm font-semibold text-foreground mb-1.5";
 
   if (!open) return null;
 
@@ -138,7 +159,8 @@ export default function StockItemForm({
     <div className="fixed inset-0 z-50 flex items-center justify-center p-4">
       {/* Backdrop */}
       <div
-        className="absolute inset-0 bg-black/50"
+        className="absolute inset-0 backdrop-blur-sm"
+        style={{ background: "oklch(0 0 0 / 0.7)" }}
         role="button"
         tabIndex={0}
         aria-label="Close dialog"
@@ -153,14 +175,30 @@ export default function StockItemForm({
       />
 
       {/* Dialog */}
-      <div className="relative bg-white rounded-2xl shadow-modal border border-[oklch(0.88_0.01_200)] w-full max-w-lg max-h-[90vh] overflow-y-auto">
+      <div
+        className="relative rounded-2xl w-full max-w-lg max-h-[90vh] overflow-y-auto shadow-modal"
+        style={{
+          background: "oklch(0.14 0.008 250)",
+          border: "1px solid oklch(0.22 0.015 250)",
+        }}
+        data-ocid="stock.dialog"
+      >
         {/* Header */}
-        <div className="flex items-center justify-between px-6 py-4 border-b border-[oklch(0.92_0.01_200)] sticky top-0 bg-white z-10">
-          <div className="flex items-center gap-2">
-            <div className="w-8 h-8 rounded-lg bg-[oklch(0.92_0.05_195)] flex items-center justify-center">
-              <Package className="w-4 h-4 text-[oklch(0.45_0.15_195)]" />
+        <div
+          className="flex items-center justify-between px-6 py-4 sticky top-0 z-10"
+          style={{
+            background: "oklch(0.14 0.008 250)",
+            borderBottom: "1px solid oklch(0.22 0.015 250)",
+          }}
+        >
+          <div className="flex items-center gap-2.5">
+            <div
+              className="w-8 h-8 rounded-lg flex items-center justify-center"
+              style={{ background: "oklch(0.75 0.22 150 / 0.12)" }}
+            >
+              <Package className="w-4 h-4 text-primary" />
             </div>
-            <h2 className="text-lg font-bold text-[oklch(0.15_0.02_220)] font-heading">
+            <h2 className="text-lg font-bold text-foreground font-heading">
               {editItem ? "Edit Stock Item" : "Add New Item"}
             </h2>
           </div>
@@ -170,11 +208,48 @@ export default function StockItemForm({
               if (!isLoading) onOpenChange(false);
             }}
             disabled={isLoading}
-            className="p-2 rounded-lg hover:bg-[oklch(0.95_0.02_200)] text-[oklch(0.4_0.03_220)] transition-colors disabled:opacity-50"
+            data-ocid="stock.close_button"
+            className="p-2 rounded-xl text-muted-foreground hover:text-foreground hover:bg-muted transition-colors disabled:opacity-50"
           >
             <X className="w-4 h-4" />
           </button>
         </div>
+
+        {/* Backend connecting notice */}
+        {!isBackendReady && (
+          <div
+            className="mx-6 mt-4 flex items-center gap-2 px-3.5 py-2.5 rounded-xl text-sm font-medium"
+            style={{
+              background: "oklch(0.72 0.18 200 / 0.08)",
+              border: "1px solid oklch(0.72 0.18 200 / 0.2)",
+              color: "oklch(0.72 0.18 200)",
+            }}
+          >
+            <div
+              className="w-3.5 h-3.5 rounded-full border border-t-transparent animate-spin"
+              style={{
+                borderColor: "oklch(0.72 0.18 200 / 0.4)",
+                borderTopColor: "oklch(0.72 0.18 200)",
+              }}
+            />
+            Connecting to backend...
+          </div>
+        )}
+
+        {/* Submit error */}
+        {submitError && (
+          <div
+            data-ocid="stock.error_state"
+            className="mx-6 mt-4 flex items-start gap-2.5 px-3.5 py-3 rounded-xl text-sm font-medium"
+            style={{
+              background: "oklch(0.62 0.22 25 / 0.1)",
+              border: "1px solid oklch(0.62 0.22 25 / 0.3)",
+            }}
+          >
+            <AlertCircle className="w-4 h-4 text-destructive shrink-0 mt-0.5" />
+            <p className="text-destructive">{submitError}</p>
+          </div>
+        )}
 
         {/* Form */}
         <form onSubmit={handleSubmit} className="p-6 space-y-4">
@@ -186,18 +261,30 @@ export default function StockItemForm({
             <button
               type="button"
               onClick={() => fileInputRef.current?.click()}
-              className="w-full border-2 border-dashed border-[oklch(0.88_0.01_200)] rounded-xl p-4 text-center cursor-pointer hover:border-[oklch(0.45_0.15_195)] hover:bg-[oklch(0.97_0.01_200)] transition-all"
+              data-ocid="stock.upload_button"
+              className="w-full rounded-xl p-4 text-center cursor-pointer transition-all"
+              style={{
+                border: "2px dashed oklch(0.22 0.015 250)",
+              }}
+              onMouseEnter={(e) => {
+                (e.currentTarget as HTMLButtonElement).style.borderColor =
+                  "oklch(0.75 0.22 150 / 0.5)";
+              }}
+              onMouseLeave={(e) => {
+                (e.currentTarget as HTMLButtonElement).style.borderColor =
+                  "oklch(0.22 0.015 250)";
+              }}
             >
               {imagePreview ? (
                 <img
                   src={imagePreview}
                   alt="Preview"
-                  className="w-24 h-24 object-cover rounded-lg mx-auto"
+                  className="w-24 h-24 object-cover rounded-xl mx-auto"
                 />
               ) : (
-                <div className="flex flex-col items-center gap-2 text-[oklch(0.5_0.03_200)]">
-                  <Upload className="w-8 h-8 opacity-50" />
-                  <p className="text-sm">Click to upload image</p>
+                <div className="flex flex-col items-center gap-2 text-muted-foreground">
+                  <Upload className="w-8 h-8 opacity-40" />
+                  <p className="text-sm font-medium">Click to upload image</p>
                   <p className="text-xs opacity-60">PNG, JPG up to 5MB</p>
                 </div>
               )}
@@ -212,13 +299,16 @@ export default function StockItemForm({
             />
             {uploadProgress > 0 && uploadProgress < 100 && (
               <div className="mt-2">
-                <div className="h-1.5 bg-[oklch(0.92_0.01_200)] rounded-full overflow-hidden">
+                <div
+                  className="h-1.5 rounded-full overflow-hidden"
+                  style={{ background: "oklch(0.22 0.015 250)" }}
+                >
                   <div
-                    className="h-full bg-[oklch(0.45_0.15_195)] rounded-full transition-all"
+                    className="h-full bg-primary rounded-full transition-all"
                     style={{ width: `${uploadProgress}%` }}
                   />
                 </div>
-                <p className="text-xs text-[oklch(0.5_0.03_200)] mt-1">
+                <p className="text-xs text-muted-foreground mt-1">
                   {uploadProgress}% uploaded
                 </p>
               </div>
@@ -232,12 +322,14 @@ export default function StockItemForm({
             </label>
             <input
               id="product-name"
+              data-ocid="stock.name.input"
               type="text"
               value={name}
               onChange={(e) => setName(e.target.value)}
-              placeholder="e.g. Paracetamol 500mg"
+              placeholder="e.g. Ashwagandha Capsules"
               required
               className={inputClass}
+              style={inputStyle}
             />
           </div>
 
@@ -248,12 +340,18 @@ export default function StockItemForm({
             </label>
             <select
               id="product-category"
+              data-ocid="stock.category.select"
               value={category}
               onChange={(e) => setCategory(e.target.value)}
               className={inputClass}
+              style={inputStyle}
             >
               {categories.map((cat) => (
-                <option key={cat} value={cat}>
+                <option
+                  key={cat}
+                  value={cat}
+                  style={{ background: "oklch(0.14 0.008 250)" }}
+                >
                   {cat}
                 </option>
               ))}
@@ -268,12 +366,14 @@ export default function StockItemForm({
               </label>
               <input
                 id="product-quantity"
+                data-ocid="stock.quantity.input"
                 type="number"
                 value={quantity}
                 onChange={(e) => setQuantity(e.target.value)}
                 placeholder="0"
                 min="0"
                 className={inputClass}
+                style={inputStyle}
               />
             </div>
             <div>
@@ -282,12 +382,14 @@ export default function StockItemForm({
               </label>
               <input
                 id="product-price"
+                data-ocid="stock.price.input"
                 type="number"
                 value={unitPrice}
                 onChange={(e) => setUnitPrice(e.target.value)}
                 placeholder="0"
                 min="0"
                 className={inputClass}
+                style={inputStyle}
               />
             </div>
           </div>
@@ -299,12 +401,14 @@ export default function StockItemForm({
             </label>
             <input
               id="product-threshold"
+              data-ocid="stock.threshold.input"
               type="number"
               value={lowStockThreshold}
               onChange={(e) => setLowStockThreshold(e.target.value)}
               placeholder="10"
               min="0"
               className={inputClass}
+              style={inputStyle}
             />
           </div>
 
@@ -315,10 +419,15 @@ export default function StockItemForm({
             </label>
             <input
               id="product-expiry"
+              data-ocid="stock.expiry.input"
               type="date"
               value={expiryDate}
               onChange={(e) => setExpiryDate(e.target.value)}
               className={inputClass}
+              style={{
+                ...inputStyle,
+                colorScheme: "dark",
+              }}
             />
           </div>
 
@@ -330,18 +439,27 @@ export default function StockItemForm({
                 if (!isLoading) onOpenChange(false);
               }}
               disabled={isLoading}
-              className="flex-1 px-4 py-2.5 border border-[oklch(0.88_0.01_200)] text-[oklch(0.3_0.03_220)] font-medium rounded-lg hover:bg-[oklch(0.95_0.02_200)] transition-colors text-sm disabled:opacity-50"
+              data-ocid="stock.cancel_button"
+              className="flex-1 px-4 py-2.5 text-foreground font-semibold rounded-xl hover:bg-muted transition-colors text-sm disabled:opacity-50 h-11"
+              style={{ border: "1px solid oklch(0.22 0.015 250)" }}
             >
               Cancel
             </button>
             <button
               type="submit"
-              disabled={isLoading}
-              className="flex-1 px-4 py-2.5 bg-[oklch(0.45_0.15_195)] hover:bg-[oklch(0.4_0.15_195)] text-white font-semibold rounded-lg transition-colors text-sm flex items-center justify-center gap-2 disabled:opacity-60"
+              disabled={isLoading || !isBackendReady}
+              data-ocid="stock.submit_button"
+              className="flex-1 px-4 py-2.5 bg-primary text-primary-foreground font-semibold rounded-xl text-sm flex items-center justify-center gap-2 disabled:opacity-60 h-11 neon-btn"
             >
               {isLoading ? (
                 <>
-                  <div className="w-4 h-4 border-2 border-white/30 border-t-white rounded-full animate-spin" />
+                  <div
+                    className="w-4 h-4 border-2 rounded-full animate-spin"
+                    style={{
+                      borderColor: "oklch(0.09 0.005 250 / 0.3)",
+                      borderTopColor: "oklch(0.09 0.005 250)",
+                    }}
+                  />
                   {uploadProgress > 0
                     ? `Uploading ${uploadProgress}%`
                     : "Saving..."}

@@ -31,18 +31,26 @@ export default function EnquiryManagement() {
   const displayed =
     tab === "today" ? enquiries.filter((e) => isToday(e.date)) : enquiries;
 
+  const cardStyle = {
+    background: "oklch(0.14 0.008 250)",
+    border: "1px solid oklch(0.22 0.015 250)",
+  };
+
   return (
-    <div className="p-6 lg:p-8">
+    <div className="p-6 lg:p-8 page-enter">
       {/* Header */}
       <div className="flex items-center gap-3 mb-6">
         <Link
           to="/admin"
-          className="p-2 rounded-lg text-muted-foreground hover:text-forest hover:bg-sage-light transition-colors"
+          className="p-2 rounded-lg text-muted-foreground hover:text-primary hover:bg-primary/10 transition-colors"
         >
           <ArrowLeft className="w-4 h-4" />
         </Link>
-        <div className="w-9 h-9 rounded-xl bg-forest/10 flex items-center justify-center">
-          <MessageSquare className="w-5 h-5 text-forest" />
+        <div
+          className="w-9 h-9 rounded-xl flex items-center justify-center"
+          style={{ background: "oklch(0.62 0.22 25 / 0.12)" }}
+        >
+          <MessageSquare className="w-5 h-5 text-destructive" />
         </div>
         <div>
           <h1 className="text-2xl font-bold text-foreground font-heading">
@@ -61,19 +69,35 @@ export default function EnquiryManagement() {
             key={t}
             type="button"
             onClick={() => setTab(t)}
-            className={`px-4 py-2 rounded-lg text-sm font-medium transition-all duration-200 ${
+            className="px-4 py-2 rounded-xl text-sm font-semibold transition-all duration-200"
+            style={
               tab === t
-                ? "bg-forest text-white shadow-pharma"
-                : "bg-white text-foreground border border-border hover:bg-sage-light hover:border-forest/30"
-            }`}
+                ? {
+                    background: "oklch(0.75 0.22 150)",
+                    color: "oklch(0.09 0.005 250)",
+                    boxShadow: "0 0 8px oklch(0.75 0.22 150 / 0.3)",
+                  }
+                : {
+                    background: "oklch(0.14 0.008 250)",
+                    color: "oklch(0.94 0.01 250)",
+                    border: "1px solid oklch(0.22 0.015 250)",
+                  }
+            }
           >
             {t === "all" ? "All Enquiries" : "Today's"}
             <span
-              className={`ml-2 px-1.5 py-0.5 rounded-full text-xs ${
-                t === tab
-                  ? "bg-white/20 text-white"
-                  : "bg-muted text-muted-foreground"
-              }`}
+              className="ml-2 px-1.5 py-0.5 rounded-full text-xs"
+              style={
+                tab === t
+                  ? {
+                      background: "oklch(0 0 0 / 0.2)",
+                      color: "oklch(0.09 0.005 250)",
+                    }
+                  : {
+                      background: "oklch(0.18 0.01 250)",
+                      color: "oklch(0.55 0.02 250)",
+                    }
+              }
             >
               {t === "all"
                 ? enquiries.length
@@ -86,7 +110,8 @@ export default function EnquiryManagement() {
       {/* List */}
       {displayed.length === 0 ? (
         <div
-          className="bg-white rounded-xl border border-border shadow-card py-16 text-center"
+          className="rounded-xl py-16 text-center shadow-card"
+          style={cardStyle}
           data-ocid="enquiries.empty_state"
         >
           <MessageSquare className="w-12 h-12 text-muted-foreground/30 mx-auto mb-3" />
@@ -98,36 +123,57 @@ export default function EnquiryManagement() {
           </p>
         </div>
       ) : (
-        <div className="bg-white rounded-xl border border-border shadow-card overflow-hidden">
+        <div
+          className="rounded-xl overflow-hidden shadow-card"
+          style={cardStyle}
+        >
           <div className="overflow-x-auto">
             <table className="w-full">
               <thead>
-                <tr className="bg-forest/5 border-b border-border">
-                  <th className="text-left px-4 py-3 text-xs font-semibold text-forest uppercase tracking-wider">
+                <tr
+                  style={{
+                    background: "oklch(0.18 0.01 250 / 0.5)",
+                    borderBottom: "1px solid oklch(0.22 0.015 250)",
+                  }}
+                >
+                  <th className="text-left px-4 py-3 text-xs font-semibold text-muted-foreground uppercase tracking-wider">
                     Customer
                   </th>
-                  <th className="text-left px-4 py-3 text-xs font-semibold text-forest uppercase tracking-wider">
+                  <th className="text-left px-4 py-3 text-xs font-semibold text-muted-foreground uppercase tracking-wider">
                     Product
                   </th>
-                  <th className="text-left px-4 py-3 text-xs font-semibold text-forest uppercase tracking-wider">
+                  <th className="text-left px-4 py-3 text-xs font-semibold text-muted-foreground uppercase tracking-wider">
                     Message
                   </th>
-                  <th className="text-left px-4 py-3 text-xs font-semibold text-forest uppercase tracking-wider">
+                  <th className="text-left px-4 py-3 text-xs font-semibold text-muted-foreground uppercase tracking-wider">
                     Date
                   </th>
                 </tr>
               </thead>
-              <tbody className="divide-y divide-border/40">
+              <tbody>
                 {displayed.map((enq, idx) => (
                   <tr
                     key={enq.id}
-                    className="hover:bg-sage-light/30 transition-colors"
+                    className="transition-colors"
+                    style={{
+                      borderBottom: "1px solid oklch(0.22 0.015 250 / 0.4)",
+                    }}
                     data-ocid={`enquiries.item.${idx + 1}`}
+                    onMouseEnter={(e) => {
+                      (
+                        e.currentTarget as HTMLTableRowElement
+                      ).style.background = "oklch(0.18 0.01 250 / 0.4)";
+                    }}
+                    onMouseLeave={(e) => {
+                      (
+                        e.currentTarget as HTMLTableRowElement
+                      ).style.background = "";
+                    }}
                   >
                     <td className="px-4 py-3 text-sm font-medium text-foreground">
                       {enq.customerName}
                     </td>
-                    <td className="px-4 py-3 text-sm text-forest font-medium">
+                    <td className="px-4 py-3 text-sm text-primary font-medium">
                       {enq.product}
                     </td>
                     <td className="px-4 py-3 text-sm text-muted-foreground max-w-xs truncate">

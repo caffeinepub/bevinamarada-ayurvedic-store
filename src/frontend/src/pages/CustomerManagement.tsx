@@ -45,6 +45,13 @@ const emptyCustomer: Omit<Customer, "id" | "visitCount" | "lastVisit"> = {
   notes: "",
 };
 
+const avatarColors = [
+  { bg: "oklch(0.75 0.22 150 / 0.12)", text: "oklch(0.75 0.22 150)" },
+  { bg: "oklch(0.72 0.18 200 / 0.12)", text: "oklch(0.72 0.18 200)" },
+  { bg: "oklch(0.75 0.18 72 / 0.12)", text: "oklch(0.75 0.18 72)" },
+  { bg: "oklch(0.65 0.22 250 / 0.12)", text: "oklch(0.65 0.22 250)" },
+];
+
 export default function CustomerManagement() {
   const [customers, setCustomers] = useState<Customer[]>([]);
   const [enquiries, setEnquiries] = useState<Enquiry[]>([]);
@@ -153,17 +160,27 @@ export default function CustomerManagement() {
   });
 
   const inputClass =
-    "w-full px-3 py-2.5 border border-[oklch(0.88_0.01_200)] rounded-lg text-[oklch(0.15_0.02_220)] placeholder-[oklch(0.65_0.02_200)] bg-white focus:outline-none focus:ring-2 focus:ring-[oklch(0.45_0.15_195)] focus:border-transparent text-sm";
+    "w-full px-3.5 py-2.5 rounded-xl text-foreground placeholder:text-muted-foreground/50 text-sm transition-all neon-input";
+  const inputStyle = {
+    background: "oklch(0.18 0.01 250)",
+    border: "1px solid oklch(0.22 0.015 250)",
+  };
+  const labelClass = "block text-sm font-semibold text-foreground mb-1.5";
+
+  const cardStyle = {
+    background: "oklch(0.14 0.008 250)",
+    border: "1px solid oklch(0.22 0.015 250)",
+  };
 
   return (
-    <div className="p-6 lg:p-8">
+    <div className="p-6 lg:p-8 page-enter">
       {/* Header */}
       <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 mb-6">
         <div>
-          <h1 className="text-2xl font-bold text-[oklch(0.15_0.02_220)] font-heading">
+          <h1 className="text-2xl font-bold text-foreground font-display">
             Customer Management
           </h1>
-          <p className="text-[oklch(0.5_0.03_200)] text-sm mt-0.5">
+          <p className="text-muted-foreground text-sm mt-0.5">
             Manage customer records and enquiries
           </p>
         </div>
@@ -171,7 +188,9 @@ export default function CustomerManagement() {
           <button
             type="button"
             onClick={() => setShowEnquiryForm(true)}
-            className="inline-flex items-center gap-2 px-4 py-2.5 bg-white border border-[oklch(0.88_0.01_200)] text-[oklch(0.3_0.03_220)] font-semibold rounded-lg hover:bg-[oklch(0.95_0.02_200)] transition-colors text-sm"
+            data-ocid="customers.add_enquiry.button"
+            className="inline-flex items-center gap-2 px-4 py-2.5 text-foreground font-semibold rounded-xl hover:bg-muted transition-colors text-sm h-11"
+            style={cardStyle}
           >
             <MessageSquare className="w-4 h-4" />
             Add Enquiry
@@ -179,7 +198,8 @@ export default function CustomerManagement() {
           <button
             type="button"
             onClick={handleOpenAdd}
-            className="inline-flex items-center gap-2 px-4 py-2.5 bg-[oklch(0.45_0.15_195)] hover:bg-[oklch(0.4_0.15_195)] text-white font-semibold rounded-lg transition-colors shadow-pharma-sm text-sm"
+            data-ocid="customers.primary_button"
+            className="inline-flex items-center gap-2 px-4 py-2.5 bg-primary text-primary-foreground font-semibold rounded-xl transition-colors text-sm h-11 neon-btn"
           >
             <Plus className="w-4 h-4" />
             Add Customer
@@ -202,15 +222,36 @@ export default function CustomerManagement() {
             key={tab.key}
             type="button"
             onClick={() => setActiveTab(tab.key as typeof activeTab)}
-            className={`px-4 py-2 rounded-lg text-sm font-medium transition-all ${
+            data-ocid={`customers.${tab.key}.tab`}
+            className="px-4 py-2 rounded-xl text-sm font-semibold transition-all"
+            style={
               activeTab === tab.key
-                ? "bg-[oklch(0.45_0.15_195)] text-white shadow-pharma-sm"
-                : "bg-white text-[oklch(0.3_0.03_220)] border border-[oklch(0.88_0.01_200)] hover:bg-[oklch(0.95_0.02_200)]"
-            }`}
+                ? {
+                    background: "oklch(0.75 0.22 150)",
+                    color: "oklch(0.09 0.005 250)",
+                    boxShadow: "0 0 8px oklch(0.75 0.22 150 / 0.3)",
+                  }
+                : {
+                    background: "oklch(0.14 0.008 250)",
+                    color: "oklch(0.94 0.01 250)",
+                    border: "1px solid oklch(0.22 0.015 250)",
+                  }
+            }
           >
             {tab.label}
             <span
-              className={`ml-2 px-1.5 py-0.5 rounded-full text-xs ${activeTab === tab.key ? "bg-white/20 text-white" : "bg-[oklch(0.92_0.01_200)] text-[oklch(0.4_0.03_220)]"}`}
+              className="ml-2 px-1.5 py-0.5 rounded-full text-xs font-medium"
+              style={
+                activeTab === tab.key
+                  ? {
+                      background: "oklch(0 0 0 / 0.2)",
+                      color: "oklch(0.09 0.005 250)",
+                    }
+                  : {
+                      background: "oklch(0.18 0.01 250)",
+                      color: "oklch(0.55 0.02 250)",
+                    }
+              }
             >
               {tab.count}
             </span>
@@ -221,60 +262,90 @@ export default function CustomerManagement() {
       {/* Search */}
       {activeTab !== "enquiries" && (
         <div className="relative mb-5">
-          <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-[oklch(0.6_0.03_200)]" />
+          <Search className="absolute left-3.5 top-1/2 -translate-y-1/2 w-4 h-4 text-muted-foreground" />
           <input
             type="text"
             placeholder="Search customers..."
             value={search}
             onChange={(e) => setSearch(e.target.value)}
-            className="w-full pl-10 pr-4 py-2.5 border border-[oklch(0.88_0.01_200)] rounded-lg text-[oklch(0.15_0.02_220)] placeholder-[oklch(0.65_0.02_200)] bg-white focus:outline-none focus:ring-2 focus:ring-[oklch(0.45_0.15_195)] focus:border-transparent text-sm"
+            data-ocid="customers.search_input"
+            className="w-full pl-10 pr-4 py-2.5 rounded-xl text-foreground placeholder:text-muted-foreground/50 text-sm transition-all neon-input"
+            style={{
+              background: "oklch(0.14 0.008 250)",
+              border: "1px solid oklch(0.22 0.015 250)",
+            }}
           />
         </div>
       )}
 
       {/* Content */}
       {activeTab === "enquiries" ? (
-        <div className="bg-white rounded-xl border border-[oklch(0.88_0.01_200)] shadow-card overflow-hidden">
+        <div
+          className="rounded-xl overflow-hidden shadow-card"
+          style={cardStyle}
+        >
           {enquiries.length === 0 ? (
-            <div className="flex flex-col items-center justify-center py-16 text-[oklch(0.5_0.03_200)]">
+            <div
+              className="flex flex-col items-center justify-center py-16 text-muted-foreground"
+              data-ocid="customers.enquiries.empty_state"
+            >
               <MessageSquare className="w-12 h-12 mb-3 opacity-30" />
-              <p className="font-medium">No enquiries yet</p>
+              <p className="font-semibold text-foreground">No enquiries yet</p>
             </div>
           ) : (
             <div className="overflow-x-auto">
-              <table className="w-full">
+              <table className="w-full" data-ocid="customers.enquiries.table">
                 <thead>
-                  <tr className="bg-[oklch(0.97_0.01_200)] border-b border-[oklch(0.88_0.01_200)]">
-                    <th className="text-left px-4 py-3 text-xs font-semibold text-[oklch(0.4_0.03_220)] uppercase tracking-wider">
+                  <tr
+                    style={{
+                      background: "oklch(0.18 0.01 250 / 0.5)",
+                      borderBottom: "1px solid oklch(0.22 0.015 250)",
+                    }}
+                  >
+                    <th className="text-left px-4 py-3 text-xs font-semibold text-muted-foreground uppercase tracking-wider">
                       Customer
                     </th>
-                    <th className="text-left px-4 py-3 text-xs font-semibold text-[oklch(0.4_0.03_220)] uppercase tracking-wider">
+                    <th className="text-left px-4 py-3 text-xs font-semibold text-muted-foreground uppercase tracking-wider">
                       Product
                     </th>
-                    <th className="text-left px-4 py-3 text-xs font-semibold text-[oklch(0.4_0.03_220)] uppercase tracking-wider">
+                    <th className="text-left px-4 py-3 text-xs font-semibold text-muted-foreground uppercase tracking-wider">
                       Message
                     </th>
-                    <th className="text-left px-4 py-3 text-xs font-semibold text-[oklch(0.4_0.03_220)] uppercase tracking-wider">
+                    <th className="text-left px-4 py-3 text-xs font-semibold text-muted-foreground uppercase tracking-wider">
                       Date
                     </th>
                   </tr>
                 </thead>
-                <tbody className="divide-y divide-[oklch(0.94_0.01_200)]">
-                  {enquiries.map((enq) => (
+                <tbody>
+                  {enquiries.map((enq, idx) => (
                     <tr
                       key={enq.id}
-                      className="hover:bg-[oklch(0.98_0.005_200)] transition-colors"
+                      className="transition-colors"
+                      style={{
+                        borderBottom: "1px solid oklch(0.22 0.015 250 / 0.5)",
+                      }}
+                      data-ocid={`customers.enquiry.item.${idx + 1}`}
+                      onMouseEnter={(e) => {
+                        (
+                          e.currentTarget as HTMLTableRowElement
+                        ).style.background = "oklch(0.18 0.01 250 / 0.4)";
+                      }}
+                      onMouseLeave={(e) => {
+                        (
+                          e.currentTarget as HTMLTableRowElement
+                        ).style.background = "";
+                      }}
                     >
-                      <td className="px-4 py-3 text-sm font-medium text-[oklch(0.15_0.02_220)]">
+                      <td className="px-4 py-4 text-sm font-semibold text-foreground">
                         {enq.customerName}
                       </td>
-                      <td className="px-4 py-3 text-sm text-[oklch(0.3_0.03_220)]">
+                      <td className="px-4 py-4 text-sm text-foreground">
                         {enq.product}
                       </td>
-                      <td className="px-4 py-3 text-sm text-[oklch(0.4_0.03_220)] max-w-xs truncate">
+                      <td className="px-4 py-4 text-sm text-muted-foreground max-w-xs truncate">
                         {enq.message || "—"}
                       </td>
-                      <td className="px-4 py-3 text-sm text-[oklch(0.5_0.03_200)]">
+                      <td className="px-4 py-4 text-sm text-muted-foreground">
                         {enq.date}
                       </td>
                     </tr>
@@ -285,98 +356,170 @@ export default function CustomerManagement() {
           )}
         </div>
       ) : (
-        <div className="bg-white rounded-xl border border-[oklch(0.88_0.01_200)] shadow-card overflow-hidden">
+        <div
+          className="rounded-xl overflow-hidden shadow-card"
+          style={cardStyle}
+        >
           {filteredCustomers.length === 0 ? (
-            <div className="flex flex-col items-center justify-center py-16 text-[oklch(0.5_0.03_200)]">
+            <div
+              className="flex flex-col items-center justify-center py-16 text-muted-foreground"
+              data-ocid="customers.empty_state"
+            >
               <Users className="w-12 h-12 mb-3 opacity-30" />
-              <p className="font-medium">No customers found</p>
+              <p className="font-semibold text-foreground">
+                No customers found
+              </p>
               <button
                 type="button"
                 onClick={handleOpenAdd}
-                className="mt-3 text-sm text-[oklch(0.45_0.15_195)] hover:underline"
+                className="mt-3 text-sm text-primary hover:text-primary/80 font-semibold hover:underline transition-colors"
               >
                 Add your first customer
               </button>
             </div>
           ) : (
             <div className="overflow-x-auto">
-              <table className="w-full">
+              <table className="w-full" data-ocid="customers.table">
                 <thead>
-                  <tr className="bg-[oklch(0.97_0.01_200)] border-b border-[oklch(0.88_0.01_200)]">
-                    <th className="text-left px-4 py-3 text-xs font-semibold text-[oklch(0.4_0.03_220)] uppercase tracking-wider">
+                  <tr
+                    style={{
+                      background: "oklch(0.18 0.01 250 / 0.5)",
+                      borderBottom: "1px solid oklch(0.22 0.015 250)",
+                    }}
+                  >
+                    <th className="text-left px-4 py-3 text-xs font-semibold text-muted-foreground uppercase tracking-wider">
                       Name
                     </th>
-                    <th className="text-left px-4 py-3 text-xs font-semibold text-[oklch(0.4_0.03_220)] uppercase tracking-wider">
+                    <th className="text-left px-4 py-3 text-xs font-semibold text-muted-foreground uppercase tracking-wider">
                       Phone
                     </th>
-                    <th className="text-left px-4 py-3 text-xs font-semibold text-[oklch(0.4_0.03_220)] uppercase tracking-wider">
+                    <th className="text-left px-4 py-3 text-xs font-semibold text-muted-foreground uppercase tracking-wider">
                       Email
                     </th>
-                    <th className="text-left px-4 py-3 text-xs font-semibold text-[oklch(0.4_0.03_220)] uppercase tracking-wider">
+                    <th className="text-left px-4 py-3 text-xs font-semibold text-muted-foreground uppercase tracking-wider">
                       Visits
                     </th>
-                    <th className="text-left px-4 py-3 text-xs font-semibold text-[oklch(0.4_0.03_220)] uppercase tracking-wider">
+                    <th className="text-left px-4 py-3 text-xs font-semibold text-muted-foreground uppercase tracking-wider">
                       Last Visit
                     </th>
-                    <th className="text-right px-4 py-3 text-xs font-semibold text-[oklch(0.4_0.03_220)] uppercase tracking-wider">
+                    <th className="text-right px-4 py-3 text-xs font-semibold text-muted-foreground uppercase tracking-wider">
                       Actions
                     </th>
                   </tr>
                 </thead>
-                <tbody className="divide-y divide-[oklch(0.94_0.01_200)]">
-                  {filteredCustomers.map((customer) => (
-                    <tr
-                      key={customer.id}
-                      className="hover:bg-[oklch(0.98_0.005_200)] transition-colors"
-                    >
-                      <td className="px-4 py-3">
-                        <div className="flex items-center gap-2">
-                          <div className="w-8 h-8 rounded-full bg-[oklch(0.92_0.05_195)] flex items-center justify-center flex-shrink-0">
-                            <span className="text-xs font-bold text-[oklch(0.35_0.15_195)]">
-                              {customer.name.charAt(0).toUpperCase()}
+                <tbody>
+                  {filteredCustomers.map((customer, idx) => {
+                    const colorStyle = avatarColors[idx % avatarColors.length];
+                    return (
+                      <tr
+                        key={customer.id}
+                        className="transition-colors"
+                        style={{
+                          borderBottom: "1px solid oklch(0.22 0.015 250 / 0.5)",
+                        }}
+                        data-ocid={`customers.item.${idx + 1}`}
+                        onMouseEnter={(e) => {
+                          (
+                            e.currentTarget as HTMLTableRowElement
+                          ).style.background = "oklch(0.18 0.01 250 / 0.4)";
+                        }}
+                        onMouseLeave={(e) => {
+                          (
+                            e.currentTarget as HTMLTableRowElement
+                          ).style.background = "";
+                        }}
+                      >
+                        <td className="px-4 py-4">
+                          <div className="flex items-center gap-2.5">
+                            <div
+                              className="w-8 h-8 rounded-full flex items-center justify-center flex-shrink-0"
+                              style={{ background: colorStyle.bg }}
+                            >
+                              <span
+                                className="text-xs font-bold"
+                                style={{ color: colorStyle.text }}
+                              >
+                                {customer.name.charAt(0).toUpperCase()}
+                              </span>
+                            </div>
+                            <span className="font-semibold text-foreground text-sm">
+                              {customer.name}
                             </span>
                           </div>
-                          <span className="font-medium text-[oklch(0.15_0.02_220)] text-sm">
-                            {customer.name}
+                        </td>
+                        <td className="px-4 py-4 text-sm text-muted-foreground">
+                          {customer.phone || "—"}
+                        </td>
+                        <td className="px-4 py-4 text-sm text-muted-foreground">
+                          {customer.email || "—"}
+                        </td>
+                        <td className="px-4 py-4">
+                          <span
+                            className="inline-flex items-center px-2.5 py-1 rounded-full text-xs font-semibold"
+                            style={
+                              customer.visitCount > 1
+                                ? {
+                                    background: "oklch(0.75 0.22 150 / 0.12)",
+                                    color: "oklch(0.75 0.22 150)",
+                                  }
+                                : {
+                                    background: "oklch(0.18 0.01 250)",
+                                    color: "oklch(0.55 0.02 250)",
+                                  }
+                            }
+                          >
+                            {customer.visitCount}
                           </span>
-                        </div>
-                      </td>
-                      <td className="px-4 py-3 text-sm text-[oklch(0.3_0.03_220)]">
-                        {customer.phone || "—"}
-                      </td>
-                      <td className="px-4 py-3 text-sm text-[oklch(0.3_0.03_220)]">
-                        {customer.email || "—"}
-                      </td>
-                      <td className="px-4 py-3">
-                        <span
-                          className={`inline-flex items-center px-2 py-0.5 rounded-full text-xs font-medium ${customer.visitCount > 1 ? "bg-[oklch(0.92_0.06_155)] text-[oklch(0.35_0.15_155)]" : "bg-[oklch(0.92_0.01_200)] text-[oklch(0.4_0.03_220)]"}`}
-                        >
-                          {customer.visitCount}
-                        </span>
-                      </td>
-                      <td className="px-4 py-3 text-sm text-[oklch(0.5_0.03_200)]">
-                        {customer.lastVisit}
-                      </td>
-                      <td className="px-4 py-3">
-                        <div className="flex items-center justify-end gap-1">
-                          <button
-                            type="button"
-                            onClick={() => handleOpenEdit(customer)}
-                            className="p-1.5 rounded-lg text-[oklch(0.45_0.15_230)] hover:bg-[oklch(0.92_0.05_230)] transition-colors"
-                          >
-                            <Edit className="w-4 h-4" />
-                          </button>
-                          <button
-                            type="button"
-                            onClick={() => handleDelete(customer.id)}
-                            className="p-1.5 rounded-lg text-[oklch(0.5_0.18_25)] hover:bg-[oklch(0.95_0.05_25)] transition-colors"
-                          >
-                            <Trash2 className="w-4 h-4" />
-                          </button>
-                        </div>
-                      </td>
-                    </tr>
-                  ))}
+                        </td>
+                        <td className="px-4 py-4 text-sm text-muted-foreground">
+                          {customer.lastVisit}
+                        </td>
+                        <td className="px-4 py-4">
+                          <div className="flex items-center justify-end gap-1">
+                            <button
+                              type="button"
+                              onClick={() => handleOpenEdit(customer)}
+                              data-ocid={`customers.edit_button.${idx + 1}`}
+                              className="p-1.5 rounded-lg transition-colors"
+                              style={{ color: "oklch(0.72 0.18 200)" }}
+                              onMouseEnter={(e) => {
+                                (
+                                  e.currentTarget as HTMLButtonElement
+                                ).style.background =
+                                  "oklch(0.72 0.18 200 / 0.1)";
+                              }}
+                              onMouseLeave={(e) => {
+                                (
+                                  e.currentTarget as HTMLButtonElement
+                                ).style.background = "";
+                              }}
+                            >
+                              <Edit className="w-4 h-4" />
+                            </button>
+                            <button
+                              type="button"
+                              onClick={() => handleDelete(customer.id)}
+                              data-ocid={`customers.delete_button.${idx + 1}`}
+                              className="p-1.5 rounded-lg text-destructive transition-colors"
+                              onMouseEnter={(e) => {
+                                (
+                                  e.currentTarget as HTMLButtonElement
+                                ).style.background =
+                                  "oklch(0.62 0.22 25 / 0.1)";
+                              }}
+                              onMouseLeave={(e) => {
+                                (
+                                  e.currentTarget as HTMLButtonElement
+                                ).style.background = "";
+                              }}
+                            >
+                              <Trash2 className="w-4 h-4" />
+                            </button>
+                          </div>
+                        </td>
+                      </tr>
+                    );
+                  })}
                 </tbody>
               </table>
             </div>
@@ -388,7 +531,8 @@ export default function CustomerManagement() {
       {showForm && (
         <div className="fixed inset-0 z-50 flex items-center justify-center p-4">
           <div
-            className="absolute inset-0 bg-black/50"
+            className="absolute inset-0 backdrop-blur-sm"
+            style={{ background: "oklch(0 0 0 / 0.7)" }}
             role="button"
             tabIndex={0}
             aria-label="Close dialog"
@@ -397,29 +541,35 @@ export default function CustomerManagement() {
               if (e.key === "Enter" || e.key === " ") setShowForm(false);
             }}
           />
-          <div className="relative bg-white rounded-2xl shadow-modal border border-[oklch(0.88_0.01_200)] w-full max-w-lg max-h-[90vh] overflow-y-auto">
-            <div className="flex items-center justify-between px-6 py-4 border-b border-[oklch(0.92_0.01_200)]">
-              <h2 className="text-lg font-bold text-[oklch(0.15_0.02_220)] font-heading">
+          <div
+            className="relative rounded-2xl w-full max-w-lg max-h-[90vh] overflow-y-auto shadow-modal"
+            style={cardStyle}
+            data-ocid="customers.dialog"
+          >
+            <div
+              className="flex items-center justify-between px-6 py-4"
+              style={{ borderBottom: "1px solid oklch(0.22 0.015 250)" }}
+            >
+              <h2 className="text-lg font-bold text-foreground font-heading">
                 {editCustomer ? "Edit Customer" : "Add New Customer"}
               </h2>
               <button
                 type="button"
                 onClick={() => setShowForm(false)}
-                className="p-2 rounded-lg hover:bg-[oklch(0.95_0.02_200)] text-[oklch(0.4_0.03_220)] transition-colors"
+                data-ocid="customers.close_button"
+                className="p-2 rounded-xl text-muted-foreground hover:text-foreground hover:bg-muted transition-colors"
               >
                 <X className="w-4 h-4" />
               </button>
             </div>
             <div className="p-6 space-y-4">
               <div>
-                <label
-                  htmlFor="cust-name"
-                  className="block text-sm font-medium text-[oklch(0.25_0.03_220)] mb-1.5"
-                >
+                <label htmlFor="cust-name" className={labelClass}>
                   Full Name *
                 </label>
                 <input
                   id="cust-name"
+                  data-ocid="customers.name.input"
                   type="text"
                   value={formData.name}
                   onChange={(e) =>
@@ -427,17 +577,16 @@ export default function CustomerManagement() {
                   }
                   placeholder="Enter customer name"
                   className={inputClass}
+                  style={inputStyle}
                 />
               </div>
               <div>
-                <label
-                  htmlFor="cust-phone"
-                  className="block text-sm font-medium text-[oklch(0.25_0.03_220)] mb-1.5"
-                >
+                <label htmlFor="cust-phone" className={labelClass}>
                   Phone Number
                 </label>
                 <input
                   id="cust-phone"
+                  data-ocid="customers.phone.input"
                   type="tel"
                   value={formData.phone}
                   onChange={(e) =>
@@ -445,17 +594,16 @@ export default function CustomerManagement() {
                   }
                   placeholder="Enter phone number"
                   className={inputClass}
+                  style={inputStyle}
                 />
               </div>
               <div>
-                <label
-                  htmlFor="cust-email"
-                  className="block text-sm font-medium text-[oklch(0.25_0.03_220)] mb-1.5"
-                >
+                <label htmlFor="cust-email" className={labelClass}>
                   Email Address
                 </label>
                 <input
                   id="cust-email"
+                  data-ocid="customers.email.input"
                   type="email"
                   value={formData.email}
                   onChange={(e) =>
@@ -463,17 +611,16 @@ export default function CustomerManagement() {
                   }
                   placeholder="Enter email address"
                   className={inputClass}
+                  style={inputStyle}
                 />
               </div>
               <div>
-                <label
-                  htmlFor="cust-address"
-                  className="block text-sm font-medium text-[oklch(0.25_0.03_220)] mb-1.5"
-                >
+                <label htmlFor="cust-address" className={labelClass}>
                   Address
                 </label>
                 <textarea
                   id="cust-address"
+                  data-ocid="customers.address.textarea"
                   value={formData.address}
                   onChange={(e) =>
                     setFormData({ ...formData, address: e.target.value })
@@ -481,17 +628,16 @@ export default function CustomerManagement() {
                   placeholder="Enter address"
                   rows={2}
                   className={inputClass}
+                  style={inputStyle}
                 />
               </div>
               <div>
-                <label
-                  htmlFor="cust-notes"
-                  className="block text-sm font-medium text-[oklch(0.25_0.03_220)] mb-1.5"
-                >
+                <label htmlFor="cust-notes" className={labelClass}>
                   Notes
                 </label>
                 <textarea
                   id="cust-notes"
+                  data-ocid="customers.notes.textarea"
                   value={formData.notes}
                   onChange={(e) =>
                     setFormData({ ...formData, notes: e.target.value })
@@ -499,21 +645,28 @@ export default function CustomerManagement() {
                   placeholder="Additional notes"
                   rows={2}
                   className={inputClass}
+                  style={inputStyle}
                 />
               </div>
             </div>
-            <div className="flex gap-3 px-6 py-4 border-t border-[oklch(0.92_0.01_200)]">
+            <div
+              className="flex gap-3 px-6 py-4"
+              style={{ borderTop: "1px solid oklch(0.22 0.015 250)" }}
+            >
               <button
                 type="button"
                 onClick={() => setShowForm(false)}
-                className="flex-1 px-4 py-2.5 border border-[oklch(0.88_0.01_200)] text-[oklch(0.3_0.03_220)] font-medium rounded-lg hover:bg-[oklch(0.95_0.02_200)] transition-colors text-sm"
+                data-ocid="customers.cancel_button"
+                className="flex-1 px-4 py-2.5 text-foreground font-semibold rounded-xl hover:bg-muted transition-colors text-sm h-11"
+                style={{ border: "1px solid oklch(0.22 0.015 250)" }}
               >
                 Cancel
               </button>
               <button
                 type="button"
                 onClick={handleSaveCustomer}
-                className="flex-1 px-4 py-2.5 bg-[oklch(0.45_0.15_195)] hover:bg-[oklch(0.4_0.15_195)] text-white font-semibold rounded-lg transition-colors text-sm flex items-center justify-center gap-2"
+                data-ocid="customers.save_button"
+                className="flex-1 px-4 py-2.5 bg-primary text-primary-foreground font-semibold rounded-xl transition-colors text-sm flex items-center justify-center gap-2 h-11 neon-btn"
               >
                 <Save className="w-4 h-4" />
                 {editCustomer ? "Save Changes" : "Add Customer"}
@@ -527,7 +680,8 @@ export default function CustomerManagement() {
       {showEnquiryForm && (
         <div className="fixed inset-0 z-50 flex items-center justify-center p-4">
           <div
-            className="absolute inset-0 bg-black/50"
+            className="absolute inset-0 backdrop-blur-sm"
+            style={{ background: "oklch(0 0 0 / 0.7)" }}
             role="button"
             tabIndex={0}
             aria-label="Close dialog"
@@ -536,29 +690,35 @@ export default function CustomerManagement() {
               if (e.key === "Enter" || e.key === " ") setShowEnquiryForm(false);
             }}
           />
-          <div className="relative bg-white rounded-2xl shadow-modal border border-[oklch(0.88_0.01_200)] w-full max-w-md">
-            <div className="flex items-center justify-between px-6 py-4 border-b border-[oklch(0.92_0.01_200)]">
-              <h2 className="text-lg font-bold text-[oklch(0.15_0.02_220)] font-heading">
+          <div
+            className="relative rounded-2xl w-full max-w-md shadow-modal"
+            style={cardStyle}
+            data-ocid="customers.enquiry.dialog"
+          >
+            <div
+              className="flex items-center justify-between px-6 py-4"
+              style={{ borderBottom: "1px solid oklch(0.22 0.015 250)" }}
+            >
+              <h2 className="text-lg font-bold text-foreground font-heading">
                 Add Enquiry
               </h2>
               <button
                 type="button"
                 onClick={() => setShowEnquiryForm(false)}
-                className="p-2 rounded-lg hover:bg-[oklch(0.95_0.02_200)] text-[oklch(0.4_0.03_220)] transition-colors"
+                data-ocid="customers.enquiry.close_button"
+                className="p-2 rounded-xl text-muted-foreground hover:text-foreground hover:bg-muted transition-colors"
               >
                 <X className="w-4 h-4" />
               </button>
             </div>
             <div className="p-6 space-y-4">
               <div>
-                <label
-                  htmlFor="enq-customer"
-                  className="block text-sm font-medium text-[oklch(0.25_0.03_220)] mb-1.5"
-                >
+                <label htmlFor="enq-customer" className={labelClass}>
                   Customer *
                 </label>
                 <select
                   id="enq-customer"
+                  data-ocid="customers.enquiry.customer.select"
                   value={enquiryData.customerId}
                   onChange={(e) =>
                     setEnquiryData({
@@ -567,24 +727,32 @@ export default function CustomerManagement() {
                     })
                   }
                   className={inputClass}
+                  style={inputStyle}
                 >
-                  <option value="">Select customer</option>
+                  <option
+                    value=""
+                    style={{ background: "oklch(0.14 0.008 250)" }}
+                  >
+                    Select customer
+                  </option>
                   {customers.map((c) => (
-                    <option key={c.id} value={c.id}>
+                    <option
+                      key={c.id}
+                      value={c.id}
+                      style={{ background: "oklch(0.14 0.008 250)" }}
+                    >
                       {c.name}
                     </option>
                   ))}
                 </select>
               </div>
               <div>
-                <label
-                  htmlFor="enq-product"
-                  className="block text-sm font-medium text-[oklch(0.25_0.03_220)] mb-1.5"
-                >
+                <label htmlFor="enq-product" className={labelClass}>
                   Product *
                 </label>
                 <input
                   id="enq-product"
+                  data-ocid="customers.enquiry.product.input"
                   type="text"
                   value={enquiryData.product}
                   onChange={(e) =>
@@ -592,17 +760,16 @@ export default function CustomerManagement() {
                   }
                   placeholder="Product name"
                   className={inputClass}
+                  style={inputStyle}
                 />
               </div>
               <div>
-                <label
-                  htmlFor="enq-message"
-                  className="block text-sm font-medium text-[oklch(0.25_0.03_220)] mb-1.5"
-                >
+                <label htmlFor="enq-message" className={labelClass}>
                   Message
                 </label>
                 <textarea
                   id="enq-message"
+                  data-ocid="customers.enquiry.message.textarea"
                   value={enquiryData.message}
                   onChange={(e) =>
                     setEnquiryData({ ...enquiryData, message: e.target.value })
@@ -610,21 +777,28 @@ export default function CustomerManagement() {
                   placeholder="Enquiry details"
                   rows={3}
                   className={inputClass}
+                  style={inputStyle}
                 />
               </div>
             </div>
-            <div className="flex gap-3 px-6 py-4 border-t border-[oklch(0.92_0.01_200)]">
+            <div
+              className="flex gap-3 px-6 py-4"
+              style={{ borderTop: "1px solid oklch(0.22 0.015 250)" }}
+            >
               <button
                 type="button"
                 onClick={() => setShowEnquiryForm(false)}
-                className="flex-1 px-4 py-2.5 border border-[oklch(0.88_0.01_200)] text-[oklch(0.3_0.03_220)] font-medium rounded-lg hover:bg-[oklch(0.95_0.02_200)] transition-colors text-sm"
+                data-ocid="customers.enquiry.cancel_button"
+                className="flex-1 px-4 py-2.5 text-foreground font-semibold rounded-xl hover:bg-muted transition-colors text-sm h-11"
+                style={{ border: "1px solid oklch(0.22 0.015 250)" }}
               >
                 Cancel
               </button>
               <button
                 type="button"
                 onClick={handleAddEnquiry}
-                className="flex-1 px-4 py-2.5 bg-[oklch(0.45_0.15_195)] hover:bg-[oklch(0.4_0.15_195)] text-white font-semibold rounded-lg transition-colors text-sm flex items-center justify-center gap-2"
+                data-ocid="customers.enquiry.submit_button"
+                className="flex-1 px-4 py-2.5 bg-primary text-primary-foreground font-semibold rounded-xl transition-colors text-sm flex items-center justify-center gap-2 h-11 neon-btn"
               >
                 <Save className="w-4 h-4" />
                 Add Enquiry

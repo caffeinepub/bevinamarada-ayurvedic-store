@@ -19,91 +19,158 @@ export default function IncomeTracking() {
 
   const totalIncome = reports ? Number(reports.totalRevenue) : 0;
 
-  const incomeCards = [
-    {
-      label: "Today's Income",
-      value: `₹${todayIncome.toLocaleString("en-IN")}`,
-      icon: DollarSign,
-      color: "gradient-card-green",
-      sub: "Current day earnings",
-    },
-    {
-      label: "Monthly Income",
-      value: `₹${monthlyIncome.toLocaleString("en-IN")}`,
-      icon: Calendar,
-      color: "gradient-card-teal",
-      sub: "This month total",
-    },
-    {
-      label: "Total Income",
-      value: `₹${totalIncome.toLocaleString("en-IN")}`,
-      icon: TrendingUp,
-      color: "gradient-card-gold",
-      sub: "All time earnings",
-    },
-  ];
+  const cardStyle = {
+    background: "oklch(0.14 0.008 250)",
+    border: "1px solid oklch(0.22 0.015 250)",
+  };
 
   return (
     <div className="space-y-6">
       {/* Income cards */}
       <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
-        {incomeCards.map((card) => {
-          const Icon = card.icon;
-          return (
+        <div
+          className="rounded-xl shadow-card p-5 border-l-4 border-l-primary flex flex-col gap-1 neon-card"
+          style={cardStyle}
+        >
+          <div className="flex items-start justify-between mb-1">
+            <span className="text-xs font-semibold uppercase tracking-wider text-muted-foreground">
+              Today's Income
+            </span>
             <div
-              key={card.label}
-              className={`${card.color} rounded-xl p-5 text-white shadow-lg`}
+              className="w-9 h-9 rounded-full flex items-center justify-center"
+              style={{ background: "oklch(0.75 0.22 150 / 0.12)" }}
             >
-              <div className="w-9 h-9 rounded-lg bg-white/20 flex items-center justify-center mb-3">
-                <Icon className="w-4 h-4 text-white" />
-              </div>
-              {isLoading ? (
-                <div className="h-7 w-24 bg-white/20 rounded animate-pulse" />
-              ) : (
-                <div className="font-heading font-bold text-xl text-white">
-                  {card.value}
-                </div>
-              )}
-              <div className="text-white/80 text-sm font-medium mt-1">
-                {card.label}
-              </div>
-              <div className="text-white/60 text-xs mt-0.5">{card.sub}</div>
+              <DollarSign className="w-4 h-4 text-primary" />
             </div>
-          );
-        })}
+          </div>
+          {isLoading ? (
+            <div className="h-7 w-24 bg-muted rounded animate-pulse" />
+          ) : (
+            <div className="font-display font-bold text-2xl text-foreground">
+              ₹{todayIncome.toLocaleString("en-IN")}
+            </div>
+          )}
+          <div className="text-xs text-muted-foreground">
+            Current day earnings
+          </div>
+        </div>
+        <div
+          className="rounded-xl shadow-card p-5 border-l-4 border-l-accent flex flex-col gap-1 neon-card"
+          style={cardStyle}
+        >
+          <div className="flex items-start justify-between mb-1">
+            <span className="text-xs font-semibold uppercase tracking-wider text-muted-foreground">
+              Monthly Income
+            </span>
+            <div
+              className="w-9 h-9 rounded-full flex items-center justify-center"
+              style={{ background: "oklch(0.72 0.18 200 / 0.12)" }}
+            >
+              <Calendar
+                className="w-4 h-4"
+                style={{ color: "oklch(0.72 0.18 200)" }}
+              />
+            </div>
+          </div>
+          {isLoading ? (
+            <div className="h-7 w-24 bg-muted rounded animate-pulse" />
+          ) : (
+            <div className="font-display font-bold text-2xl text-foreground">
+              ₹{monthlyIncome.toLocaleString("en-IN")}
+            </div>
+          )}
+          <div className="text-xs text-muted-foreground">This month total</div>
+        </div>
+        <div
+          className="rounded-xl shadow-card p-5 border-l-4 flex flex-col gap-1 neon-card"
+          style={{
+            ...cardStyle,
+            borderLeftColor: "oklch(0.75 0.18 72)",
+          }}
+        >
+          <div className="flex items-start justify-between mb-1">
+            <span className="text-xs font-semibold uppercase tracking-wider text-muted-foreground">
+              Total Income
+            </span>
+            <div
+              className="w-9 h-9 rounded-full flex items-center justify-center"
+              style={{ background: "oklch(0.75 0.18 72 / 0.12)" }}
+            >
+              <TrendingUp
+                className="w-4 h-4"
+                style={{ color: "oklch(0.75 0.18 72)" }}
+              />
+            </div>
+          </div>
+          {isLoading ? (
+            <div className="h-7 w-24 bg-muted rounded animate-pulse" />
+          ) : (
+            <div className="font-display font-bold text-2xl text-foreground">
+              ₹{totalIncome.toLocaleString("en-IN")}
+            </div>
+          )}
+          <div className="text-xs text-muted-foreground">All time earnings</div>
+        </div>
       </div>
 
       {/* Monthly breakdown */}
       {reports?.monthlySales && reports.monthlySales.length > 0 && (
-        <div className="bg-white rounded-xl border border-border/50 shadow-card overflow-hidden">
-          <div className="px-5 py-4 border-b border-border/50">
+        <div
+          className="rounded-xl overflow-hidden shadow-card"
+          style={cardStyle}
+        >
+          <div
+            className="px-5 py-4"
+            style={{
+              borderBottom: "1px solid oklch(0.22 0.015 250)",
+              background: "oklch(0.18 0.01 250 / 0.3)",
+            }}
+          >
             <h3 className="font-heading font-semibold text-foreground flex items-center gap-2">
-              <Calendar className="w-4 h-4 text-forest" />
+              <Calendar className="w-4 h-4 text-primary" />
               Monthly Breakdown
             </h3>
           </div>
           <div className="overflow-x-auto">
             <table className="w-full text-sm">
               <thead>
-                <tr className="bg-muted/50">
-                  <th className="text-left px-5 py-3 font-semibold text-foreground/70 text-xs uppercase tracking-wide">
+                <tr
+                  style={{
+                    background: "oklch(0.18 0.01 250 / 0.5)",
+                    borderBottom: "1px solid oklch(0.22 0.015 250)",
+                  }}
+                >
+                  <th className="text-left px-5 py-3 font-semibold text-muted-foreground text-xs uppercase tracking-wide">
                     Period
                   </th>
-                  <th className="text-right px-5 py-3 font-semibold text-foreground/70 text-xs uppercase tracking-wide">
+                  <th className="text-right px-5 py-3 font-semibold text-muted-foreground text-xs uppercase tracking-wide">
                     Revenue
                   </th>
                 </tr>
               </thead>
-              <tbody className="divide-y divide-border/50">
+              <tbody>
                 {reports.monthlySales.map(([period, amount]) => (
                   <tr
                     key={period}
-                    className="hover:bg-muted/30 transition-colors"
+                    className="transition-colors"
+                    style={{
+                      borderBottom: "1px solid oklch(0.22 0.015 250 / 0.4)",
+                    }}
+                    onMouseEnter={(e) => {
+                      (
+                        e.currentTarget as HTMLTableRowElement
+                      ).style.background = "oklch(0.18 0.01 250 / 0.4)";
+                    }}
+                    onMouseLeave={(e) => {
+                      (
+                        e.currentTarget as HTMLTableRowElement
+                      ).style.background = "";
+                    }}
                   >
                     <td className="px-5 py-3 font-medium text-foreground">
                       Month {period}
                     </td>
-                    <td className="px-5 py-3 text-right font-semibold text-forest">
+                    <td className="px-5 py-3 text-right font-semibold text-primary">
                       ₹{Number(amount).toLocaleString("en-IN")}
                     </td>
                   </tr>

@@ -101,16 +101,46 @@ export default function SalesReports() {
     { id: "products", label: "Per Product" },
   ];
 
+  const summaryCards = [
+    {
+      label: "Total Revenue",
+      value: `₹${Number(reports?.totalRevenue ?? 0).toLocaleString("en-IN")}`,
+      icon: IndianRupee,
+      borderColor: "border-l-primary",
+      iconBg: "oklch(0.75 0.22 150 / 0.12)",
+      iconColor: "oklch(0.75 0.22 150)",
+    },
+    {
+      label: "Total Sales",
+      value: String(reports?.totalSales ?? 0),
+      icon: ShoppingBag,
+      borderColor: "border-l-accent",
+      iconBg: "oklch(0.72 0.18 200 / 0.12)",
+      iconColor: "oklch(0.72 0.18 200)",
+    },
+    {
+      label: "Today's Sales",
+      value: String(todaysSales.length),
+      icon: TrendingUp,
+      borderColor: "border-l-success",
+      iconBg: "oklch(0.72 0.2 150 / 0.12)",
+      iconColor: "oklch(0.72 0.2 150)",
+    },
+  ];
+
   return (
-    <div className="p-6 lg:p-8 space-y-6">
+    <div className="p-6 lg:p-8 space-y-6 page-enter">
       {/* Header */}
       <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
         <div className="flex items-center gap-3">
-          <div className="w-10 h-10 rounded-xl bg-forest/10 flex items-center justify-center">
-            <BarChart3 className="w-5 h-5 text-forest" />
+          <div
+            className="w-10 h-10 rounded-xl flex items-center justify-center"
+            style={{ background: "oklch(0.75 0.22 150 / 0.12)" }}
+          >
+            <BarChart3 className="w-5 h-5 text-primary" />
           </div>
           <div>
-            <h1 className="text-2xl font-bold text-foreground font-heading">
+            <h1 className="text-2xl font-bold text-foreground font-display">
               Sales Reports
             </h1>
             <p className="text-muted-foreground text-sm">
@@ -122,7 +152,7 @@ export default function SalesReports() {
           type="button"
           onClick={handleExportPDF}
           data-ocid="reports.primary_button"
-          className="inline-flex items-center gap-2 px-4 py-2.5 bg-forest text-white font-semibold rounded-lg hover:bg-forest-dark transition-colors shadow-pharma text-sm"
+          className="inline-flex items-center gap-2 px-4 py-2.5 bg-primary text-primary-foreground font-semibold rounded-xl text-sm h-11 neon-btn"
         >
           <Download className="w-4 h-4" />
           Export PDF
@@ -131,39 +161,30 @@ export default function SalesReports() {
 
       {/* Summary Cards */}
       <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
-        <div className="gradient-card-green rounded-xl p-5 text-white shadow-pharma">
-          <div className="flex items-center gap-2 mb-2">
-            <IndianRupee className="w-4 h-4 text-white/80" />
-            <span className="text-white/80 text-xs font-semibold uppercase tracking-wide">
-              Total Revenue
-            </span>
-          </div>
-          <div className="text-2xl font-bold font-heading">
-            ₹{Number(reports?.totalRevenue ?? 0).toLocaleString("en-IN")}
-          </div>
-        </div>
-        <div className="gradient-card-teal rounded-xl p-5 text-white shadow-pharma">
-          <div className="flex items-center gap-2 mb-2">
-            <ShoppingBag className="w-4 h-4 text-white/80" />
-            <span className="text-white/80 text-xs font-semibold uppercase tracking-wide">
-              Total Sales
-            </span>
-          </div>
-          <div className="text-2xl font-bold font-heading">
-            {String(reports?.totalSales ?? 0)}
-          </div>
-        </div>
-        <div className="gradient-card-emerald rounded-xl p-5 text-white shadow-pharma">
-          <div className="flex items-center gap-2 mb-2">
-            <TrendingUp className="w-4 h-4 text-white/80" />
-            <span className="text-white/80 text-xs font-semibold uppercase tracking-wide">
-              Today's Sales
-            </span>
-          </div>
-          <div className="text-2xl font-bold font-heading">
-            {todaysSales.length}
-          </div>
-        </div>
+        {summaryCards.map((card) => {
+          const Icon = card.icon;
+          return (
+            <div
+              key={card.label}
+              className={`bg-card rounded-xl shadow-card p-5 border-l-4 ${card.borderColor} flex flex-col gap-2 neon-card`}
+            >
+              <div className="flex items-start justify-between">
+                <span className="text-xs font-semibold uppercase tracking-wider text-muted-foreground">
+                  {card.label}
+                </span>
+                <div
+                  className="w-9 h-9 rounded-full flex items-center justify-center"
+                  style={{ background: card.iconBg }}
+                >
+                  <Icon className="w-4 h-4" style={{ color: card.iconColor }} />
+                </div>
+              </div>
+              <div className="text-2xl font-bold font-display text-foreground">
+                {card.value}
+              </div>
+            </div>
+          );
+        })}
       </div>
 
       {/* Tabs */}
@@ -174,11 +195,20 @@ export default function SalesReports() {
             type="button"
             data-ocid={`reports.${tab.id}.tab`}
             onClick={() => setActiveTab(tab.id)}
-            className={`px-4 py-2 rounded-lg text-sm font-medium transition-all duration-200 ${
+            className="px-4 py-2 rounded-xl text-sm font-semibold transition-all duration-200"
+            style={
               activeTab === tab.id
-                ? "bg-forest text-white shadow-pharma"
-                : "bg-white text-foreground border border-border hover:bg-sage-light hover:border-forest/30"
-            }`}
+                ? {
+                    background: "oklch(0.75 0.22 150)",
+                    color: "oklch(0.09 0.005 250)",
+                    boxShadow: "0 0 8px oklch(0.75 0.22 150 / 0.3)",
+                  }
+                : {
+                    background: "oklch(0.14 0.008 250)",
+                    color: "oklch(0.94 0.01 250)",
+                    border: "1px solid oklch(0.22 0.015 250)",
+                  }
+            }
           >
             {tab.label}
           </button>
@@ -186,11 +216,23 @@ export default function SalesReports() {
       </div>
 
       {/* Tab Content */}
-      <div className="bg-white rounded-xl border border-border shadow-card overflow-hidden">
+      <div
+        className="rounded-xl overflow-hidden shadow-card"
+        style={{
+          background: "oklch(0.14 0.008 250)",
+          border: "1px solid oklch(0.22 0.015 250)",
+        }}
+      >
         {isLoading ? (
           <div className="p-12 text-center" data-ocid="reports.loading_state">
-            <div className="w-8 h-8 border-2 border-forest border-t-transparent rounded-full animate-spin mx-auto mb-3" />
-            <p className="text-muted-foreground text-sm font-heading">
+            <div
+              className="w-8 h-8 border-2 rounded-full animate-spin mx-auto mb-3"
+              style={{
+                borderColor: "oklch(0.22 0.015 250)",
+                borderTopColor: "oklch(0.75 0.22 150)",
+              }}
+            />
+            <p className="text-muted-foreground text-sm font-medium">
               Loading reports...
             </p>
           </div>
@@ -199,11 +241,16 @@ export default function SalesReports() {
             {activeTab === "daily" && (
               <table className="w-full">
                 <thead>
-                  <tr className="bg-forest/5 border-b border-border">
-                    <th className="text-left px-4 py-3 text-xs font-semibold text-forest uppercase tracking-wider">
+                  <tr
+                    style={{
+                      background: "oklch(0.18 0.01 250 / 0.5)",
+                      borderBottom: "1px solid oklch(0.22 0.015 250)",
+                    }}
+                  >
+                    <th className="text-left px-4 py-3 text-xs font-semibold text-muted-foreground uppercase tracking-wider">
                       Days Ago
                     </th>
-                    <th className="text-left px-4 py-3 text-xs font-semibold text-forest uppercase tracking-wider">
+                    <th className="text-left px-4 py-3 text-xs font-semibold text-muted-foreground uppercase tracking-wider">
                       Revenue
                     </th>
                   </tr>
@@ -223,13 +270,26 @@ export default function SalesReports() {
                     (reports?.dailySales ?? []).map(([day, revenue], idx) => (
                       <tr
                         key={String(day)}
-                        className="border-b border-border/40 hover:bg-sage-light/30 transition-colors"
+                        style={{
+                          borderBottom: "1px solid oklch(0.22 0.015 250 / 0.4)",
+                        }}
                         data-ocid={`reports.row.${idx + 1}`}
+                        className="transition-colors"
+                        onMouseEnter={(e) => {
+                          (
+                            e.currentTarget as HTMLTableRowElement
+                          ).style.background = "oklch(0.18 0.01 250 / 0.4)";
+                        }}
+                        onMouseLeave={(e) => {
+                          (
+                            e.currentTarget as HTMLTableRowElement
+                          ).style.background = "";
+                        }}
                       >
-                        <td className="px-4 py-3 text-foreground text-sm">
+                        <td className="px-4 py-3.5 text-foreground text-sm font-medium">
                           {String(day)} days ago
                         </td>
-                        <td className="px-4 py-3 text-forest font-semibold text-sm">
+                        <td className="px-4 py-3.5 text-primary font-semibold text-sm">
                           ₹{Number(revenue).toLocaleString("en-IN")}
                         </td>
                       </tr>
@@ -241,11 +301,16 @@ export default function SalesReports() {
             {activeTab === "monthly" && (
               <table className="w-full">
                 <thead>
-                  <tr className="bg-forest/5 border-b border-border">
-                    <th className="text-left px-4 py-3 text-xs font-semibold text-forest uppercase tracking-wider">
+                  <tr
+                    style={{
+                      background: "oklch(0.18 0.01 250 / 0.5)",
+                      borderBottom: "1px solid oklch(0.22 0.015 250)",
+                    }}
+                  >
+                    <th className="text-left px-4 py-3 text-xs font-semibold text-muted-foreground uppercase tracking-wider">
                       Month
                     </th>
-                    <th className="text-left px-4 py-3 text-xs font-semibold text-forest uppercase tracking-wider">
+                    <th className="text-left px-4 py-3 text-xs font-semibold text-muted-foreground uppercase tracking-wider">
                       Revenue
                     </th>
                   </tr>
@@ -266,13 +331,27 @@ export default function SalesReports() {
                       ([month, revenue], idx) => (
                         <tr
                           key={month}
-                          className="border-b border-border/40 hover:bg-sage-light/30 transition-colors"
+                          style={{
+                            borderBottom:
+                              "1px solid oklch(0.22 0.015 250 / 0.4)",
+                          }}
                           data-ocid={`reports.row.${idx + 1}`}
+                          className="transition-colors"
+                          onMouseEnter={(e) => {
+                            (
+                              e.currentTarget as HTMLTableRowElement
+                            ).style.background = "oklch(0.18 0.01 250 / 0.4)";
+                          }}
+                          onMouseLeave={(e) => {
+                            (
+                              e.currentTarget as HTMLTableRowElement
+                            ).style.background = "";
+                          }}
                         >
-                          <td className="px-4 py-3 text-foreground text-sm">
+                          <td className="px-4 py-3.5 text-foreground text-sm font-medium">
                             Month {month}
                           </td>
-                          <td className="px-4 py-3 text-forest font-semibold text-sm">
+                          <td className="px-4 py-3.5 text-primary font-semibold text-sm">
                             ₹{Number(revenue).toLocaleString("en-IN")}
                           </td>
                         </tr>
@@ -285,11 +364,16 @@ export default function SalesReports() {
             {activeTab === "products" && (
               <table className="w-full">
                 <thead>
-                  <tr className="bg-forest/5 border-b border-border">
-                    <th className="text-left px-4 py-3 text-xs font-semibold text-forest uppercase tracking-wider">
+                  <tr
+                    style={{
+                      background: "oklch(0.18 0.01 250 / 0.5)",
+                      borderBottom: "1px solid oklch(0.22 0.015 250)",
+                    }}
+                  >
+                    <th className="text-left px-4 py-3 text-xs font-semibold text-muted-foreground uppercase tracking-wider">
                       Product
                     </th>
-                    <th className="text-left px-4 py-3 text-xs font-semibold text-forest uppercase tracking-wider">
+                    <th className="text-left px-4 py-3 text-xs font-semibold text-muted-foreground uppercase tracking-wider">
                       Units Sold
                     </th>
                   </tr>
@@ -310,13 +394,27 @@ export default function SalesReports() {
                       ([productId, qty], idx) => (
                         <tr
                           key={String(productId)}
-                          className="border-b border-border/40 hover:bg-sage-light/30 transition-colors"
+                          style={{
+                            borderBottom:
+                              "1px solid oklch(0.22 0.015 250 / 0.4)",
+                          }}
                           data-ocid={`reports.row.${idx + 1}`}
+                          className="transition-colors"
+                          onMouseEnter={(e) => {
+                            (
+                              e.currentTarget as HTMLTableRowElement
+                            ).style.background = "oklch(0.18 0.01 250 / 0.4)";
+                          }}
+                          onMouseLeave={(e) => {
+                            (
+                              e.currentTarget as HTMLTableRowElement
+                            ).style.background = "";
+                          }}
                         >
-                          <td className="px-4 py-3 text-foreground text-sm font-medium">
+                          <td className="px-4 py-3.5 text-foreground text-sm font-semibold">
                             {getProductName(productId)}
                           </td>
-                          <td className="px-4 py-3 text-forest font-semibold text-sm">
+                          <td className="px-4 py-3.5 text-primary font-semibold text-sm">
                             {String(qty)}
                           </td>
                         </tr>
@@ -332,8 +430,20 @@ export default function SalesReports() {
 
       {/* Today's Sales Detail */}
       {todaysSales.length > 0 && (
-        <div className="bg-white rounded-xl border border-border shadow-card overflow-hidden">
-          <div className="px-5 py-4 border-b border-border bg-forest/5">
+        <div
+          className="rounded-xl overflow-hidden shadow-card"
+          style={{
+            background: "oklch(0.14 0.008 250)",
+            border: "1px solid oklch(0.22 0.015 250)",
+          }}
+        >
+          <div
+            className="px-5 py-4"
+            style={{
+              borderBottom: "1px solid oklch(0.22 0.015 250)",
+              background: "oklch(0.18 0.01 250 / 0.3)",
+            }}
+          >
             <h2 className="font-heading font-semibold text-foreground text-base">
               Today's Transactions
             </h2>
@@ -341,14 +451,19 @@ export default function SalesReports() {
           <div className="overflow-x-auto">
             <table className="w-full">
               <thead>
-                <tr className="bg-forest/5 border-b border-border">
-                  <th className="text-left px-4 py-3 text-xs font-semibold text-forest uppercase tracking-wider">
+                <tr
+                  style={{
+                    background: "oklch(0.18 0.01 250 / 0.5)",
+                    borderBottom: "1px solid oklch(0.22 0.015 250)",
+                  }}
+                >
+                  <th className="text-left px-4 py-3 text-xs font-semibold text-muted-foreground uppercase tracking-wider">
                     Product
                   </th>
-                  <th className="text-left px-4 py-3 text-xs font-semibold text-forest uppercase tracking-wider">
+                  <th className="text-left px-4 py-3 text-xs font-semibold text-muted-foreground uppercase tracking-wider">
                     Qty
                   </th>
-                  <th className="text-left px-4 py-3 text-xs font-semibold text-forest uppercase tracking-wider">
+                  <th className="text-left px-4 py-3 text-xs font-semibold text-muted-foreground uppercase tracking-wider">
                     Total
                   </th>
                 </tr>
@@ -357,16 +472,29 @@ export default function SalesReports() {
                 {todaysSales.map((sale, idx) => (
                   <tr
                     key={String(sale.id)}
-                    className="border-b border-border/40 hover:bg-sage-light/30 transition-colors"
+                    style={{
+                      borderBottom: "1px solid oklch(0.22 0.015 250 / 0.4)",
+                    }}
                     data-ocid={`reports.item.${idx + 1}`}
+                    className="transition-colors"
+                    onMouseEnter={(e) => {
+                      (
+                        e.currentTarget as HTMLTableRowElement
+                      ).style.background = "oklch(0.18 0.01 250 / 0.4)";
+                    }}
+                    onMouseLeave={(e) => {
+                      (
+                        e.currentTarget as HTMLTableRowElement
+                      ).style.background = "";
+                    }}
                   >
-                    <td className="px-4 py-3 text-foreground text-sm font-medium">
+                    <td className="px-4 py-3.5 text-foreground text-sm font-semibold">
                       {getProductName(sale.stockItemId)}
                     </td>
-                    <td className="px-4 py-3 text-muted-foreground text-sm">
+                    <td className="px-4 py-3.5 text-muted-foreground text-sm">
                       {String(sale.quantity)}
                     </td>
-                    <td className="px-4 py-3 text-forest font-semibold text-sm">
+                    <td className="px-4 py-3.5 text-primary font-semibold text-sm">
                       ₹{Number(sale.totalPrice).toLocaleString("en-IN")}
                     </td>
                   </tr>

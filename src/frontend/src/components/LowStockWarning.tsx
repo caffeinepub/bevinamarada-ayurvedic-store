@@ -9,9 +9,18 @@ export default function LowStockWarning() {
   if (isLoading || !lowStockItems || lowStockItems.length === 0) return null;
 
   return (
-    <div className="bg-warning/10 border border-warning/30 rounded-xl p-4">
+    <div
+      className="rounded-xl p-4"
+      style={{
+        background: "oklch(0.75 0.18 72 / 0.08)",
+        border: "1px solid oklch(0.75 0.18 72 / 0.25)",
+      }}
+    >
       <div className="flex items-start gap-3">
-        <AlertTriangle className="w-5 h-5 text-warning shrink-0 mt-0.5" />
+        <AlertTriangle
+          className="w-5 h-5 shrink-0 mt-0.5"
+          style={{ color: "oklch(0.75 0.18 72)" }}
+        />
         <div className="flex-1 min-w-0">
           <h3 className="font-heading font-semibold text-foreground text-sm mb-2">
             Low Stock Alert — {lowStockItems.length} item
@@ -21,7 +30,12 @@ export default function LowStockWarning() {
             {lowStockItems.slice(0, 5).map((item) => (
               <span
                 key={String(item.id)}
-                className="inline-flex items-center gap-1 bg-warning/20 text-warning-foreground text-xs px-2 py-1 rounded-full font-medium"
+                className="inline-flex items-center gap-1 text-xs px-2 py-1 rounded-full font-medium"
+                style={{
+                  background: "oklch(0.75 0.18 72 / 0.15)",
+                  color: "oklch(0.75 0.18 72)",
+                  border: "1px solid oklch(0.75 0.18 72 / 0.2)",
+                }}
               >
                 <Package className="w-3 h-3" />
                 {item.name} ({String(item.quantity)} left)
@@ -35,7 +49,8 @@ export default function LowStockWarning() {
           </div>
           <Link
             to="/admin/stock"
-            className="text-xs font-medium text-forest hover:text-forest-dark transition-colors underline"
+            className="text-xs font-medium transition-colors hover:underline"
+            style={{ color: "oklch(0.75 0.22 150)" }}
           >
             Go to Stock Management →
           </Link>

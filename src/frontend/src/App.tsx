@@ -43,7 +43,9 @@ const publicLayoutRoute = createRoute({
 const homeRoute = createRoute({
   getParentRoute: () => publicLayoutRoute,
   path: "/",
-  component: Home,
+  beforeLoad: () => {
+    throw redirect({ to: "/admin-login" });
+  },
 });
 
 const productsRoute = createRoute({

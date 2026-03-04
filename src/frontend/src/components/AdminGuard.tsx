@@ -34,10 +34,19 @@ export default function AdminGuard() {
 
   if (!checked) {
     return (
-      <div className="min-h-screen bg-white flex items-center justify-center">
+      <div
+        className="min-h-screen bg-background flex items-center justify-center"
+        data-ocid="guard.loading_state"
+      >
         <div className="flex flex-col items-center gap-4">
-          <div className="w-12 h-12 border-2 border-forest border-t-transparent rounded-full animate-spin" />
-          <p className="text-forest font-heading text-sm font-medium">
+          <div
+            className="w-12 h-12 rounded-full border-2 border-t-primary animate-spin"
+            style={{
+              borderColor: "oklch(0.22 0.015 250)",
+              borderTopColor: "oklch(0.75 0.22 150)",
+            }}
+          />
+          <p className="text-primary font-heading text-sm font-medium tracking-wide">
             Verifying access...
           </p>
         </div>
